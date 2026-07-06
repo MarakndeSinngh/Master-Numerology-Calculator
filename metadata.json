@@ -1,0 +1,10 @@
+{
+  "name": "Numerology Calc Master",
+  "description": "Vedic Astrology (Parashari \u0026 KP), Chaldean \u0026 Pythagorean Numerology, Mobile Aura frequencies diagnostic, and Lal Kitab remedies driven by traditional rule-engines and Gemini AI.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
