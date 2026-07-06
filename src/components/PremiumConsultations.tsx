@@ -106,6 +106,7 @@ export default function PremiumConsultations() {
   // AI Signature Audit states
   const [sigName, setSigName] = useState('');
   const [sigDob, setSigDob] = useState('');
+  const [sigProfession, setSigProfession] = useState('');
   const [sigImage, setSigImage] = useState<string | null>(null);
   const [sigFileName, setSigFileName] = useState<string | null>(null);
   const [isAnalyzingSig, setIsAnalyzingSig] = useState(false);
@@ -117,6 +118,20 @@ export default function PremiumConsultations() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [fileUploadSuccess, setFileUploadSuccess] = useState(false);
+
+  // Signature description questionnaire states
+  const [sigDescNameSigned, setSigDescNameSigned] = useState('');
+  const [sigDescSize, setSigDescSize] = useState('Medium');
+  const [sigDescSlant, setSigDescSlant] = useState('Straight');
+  const [sigDescLegibility, setSigDescLegibility] = useState('Very Clear');
+  const [sigDescUnderline, setSigDescUnderline] = useState('No');
+  const [sigDescUnderlineDesc, setSigDescUnderlineDesc] = useState('');
+  const [sigDescFlourishes, setSigDescFlourishes] = useState('No');
+  const [sigDescFlourishesDesc, setSigDescFlourishesDesc] = useState('');
+  const [sigDescPressure, setSigDescPressure] = useState('Medium');
+  const [sigDescSpeed, setSigDescSpeed] = useState('Quick and flowing');
+  const [sigDescFirstVsLast, setSigDescFirstVsLast] = useState('First name more prominent');
+  const [sigDescSpecial, setSigDescSpecial] = useState('');
 
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
@@ -135,22 +150,102 @@ export default function PremiumConsultations() {
   // Advanced House States
   const [houseMode, setHouseMode] = useState<'QUICK' | 'ADVANCED'>('QUICK');
   const [flatNumberInput, setFlatNumberInput] = useState('');
+  const [floorInput, setFloorInput] = useState('');
   const [streetNameInput, setStreetNameInput] = useState('');
   const [cityInput, setCityInput] = useState('');
   const [pinCodeInput, setPinCodeInput] = useState('');
+  const [facingDirectionInput, setFacingDirectionInput] = useState('North');
+  const [entranceDirectionInput, setEntranceDirectionInput] = useState('East');
+  const [propertyTypeInput, setPropertyTypeInput] = useState('Apartment');
+  const [propertyAgeInput, setPropertyAgeInput] = useState('');
+  const [purposeInput, setPurposeInput] = useState('Residential');
+
+  // Occupant Details
+  const [occupantNameInput, setOccupantNameInput] = useState('');
+  const [occupantDobInput, setOccupantDobInput] = useState('');
+  const [familyCountInput, setFamilyCountInput] = useState('');
+  const [familyDobsInput, setFamilyDobsInput] = useState('');
+
+  // Results tab state
+  const [activeVastuTab, setActiveVastuTab] = useState<'OVERVIEW' | 'ROOMS' | 'DIRECTIONS' | 'REMEDIES' | 'TIMING'>('OVERVIEW');
+
   const [houseOwnerDriver, setHouseOwnerDriver] = useState<number>(1);
   const [advancedHouseResult, setAdvancedHouseResult] = useState<any | null>(null);
   const [isAnalyzingHouse, setIsAnalyzingHouse] = useState(false);
   const [houseError, setHouseError] = useState<string | null>(null);
 
   // AI Business Name Generator States
-  const [businessMode, setBusinessMode] = useState<'CHECK' | 'GENERATE'>('CHECK');
+  const [businessMode, setBusinessMode] = useState<'CHECK' | 'GENERATE' | 'OPTIMAL'>('CHECK');
   const [bizIndustry, setBizIndustry] = useState<'TECH' | 'FINANCE' | 'SPIRITUAL' | 'CORPORATE' | 'CREATIVE'>('TECH');
   const [bizKeywords, setBizKeywords] = useState('');
   const [bizVibe, setBizVibe] = useState<'PREMIUM' | 'MODERN' | 'SPIRITUAL' | 'CORPORATE' | 'CREATIVE'>('MODERN');
   const [bizGeneratedNames, setBizGeneratedNames] = useState<any[]>([]);
   const [isGeneratingBiz, setIsGeneratingBiz] = useState(false);
   const [bizGenError, setBizGenError] = useState<string | null>(null);
+
+  // Optimal Business Naming States
+  const [optIndustry, setOptIndustry] = useState('');
+  const [optBusinessType, setOptBusinessType] = useState<'Product' | 'Service' | 'Both'>('Both');
+  const [optTargetAudience, setOptTargetAudience] = useState('');
+  const [optKeywordsInclude, setOptKeywordsInclude] = useState('');
+  const [optKeywordsAvoid, setOptKeywordsAvoid] = useState('');
+  const [optOwnerName, setOptOwnerName] = useState('');
+  const [optOwnerDob, setOptOwnerDob] = useState('');
+  const [optNameLength, setOptNameLength] = useState<'Short' | 'Medium' | 'Long'>('Medium');
+  const [optTonePreference, setOptTonePreference] = useState<'Modern' | 'Traditional' | 'Creative' | 'Professional' | 'Fun'>('Modern');
+  const [optResult, setOptResult] = useState<any | null>(null);
+  const [isGeneratingOpt, setIsGeneratingOpt] = useState(false);
+  const [optError, setOptError] = useState<string | null>(null);
+  const [selectedResultIndex, setSelectedResultIndex] = useState<number>(0);
+
+  // Helper calculations for Naming
+  const CHALDEAN_MAP: Record<string, number> = {
+    a: 1, i: 1, j: 1, q: 1, y: 1,
+    b: 2, k: 2, r: 2,
+    c: 3, g: 3, l: 3, s: 3,
+    d: 4, m: 4, t: 4,
+    e: 5, h: 5, n: 5, x: 5,
+    u: 6, v: 6, w: 6,
+    o: 7, z: 7,
+    f: 8, p: 8
+  };
+  const calcChaldean = (str: string): number => {
+    return str.toLowerCase().split('').reduce((acc, char) => acc + (CHALDEAN_MAP[char] || 0), 0);
+  };
+  const rToSingle = (num: number): number => {
+    let reduced = num;
+    while (reduced > 9) {
+      reduced = reduced.toString().split('').reduce((acc, digit) => acc + parseInt(digit, 10), 0);
+    }
+    return reduced;
+  };
+  const getDriverAndConductor = (dobStr: string) => {
+    if (!dobStr) return { driver: 5, conductor: 6 };
+    let day = 1;
+    let digitsStr = dobStr.replace(/[^0-9]/g, '');
+    
+    if (dobStr.includes('-')) {
+      const parts = dobStr.split('-');
+      day = parseInt(parts[2], 10) || 1;
+    } else if (dobStr.includes('/')) {
+      const parts = dobStr.split('/');
+      day = parseInt(parts[0], 10) || 1;
+    } else {
+      day = parseInt(dobStr.substring(8, 10), 10) || 1;
+    }
+    
+    let driver = day;
+    while (driver > 9) {
+      driver = driver.toString().split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
+    }
+    
+    let conductor = digitsStr.split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
+    while (conductor > 9) {
+      conductor = conductor.toString().split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
+    }
+    
+    return { driver, conductor };
+  };
 
   // Handlers
   const handleMedicalSubmit = (e: React.FormEvent) => {
@@ -203,9 +298,19 @@ export default function PremiumConsultations() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           flatNumber: flatNumberInput,
+          floor: floorInput,
           streetName: streetNameInput,
           city: cityInput,
           pinCode: pinCodeInput,
+          facingDirection: facingDirectionInput,
+          entranceDirection: entranceDirectionInput,
+          propertyType: propertyTypeInput,
+          propertyAge: propertyAgeInput,
+          purpose: purposeInput,
+          occupantName: occupantNameInput,
+          occupantDob: occupantDobInput,
+          familyCount: familyCountInput,
+          familyDobs: familyDobsInput,
           ownerDriver: houseOwnerDriver
         })
       });
@@ -252,6 +357,38 @@ export default function PremiumConsultations() {
       setBizGenError(err.message || 'An error occurred.');
     } finally {
       setIsGeneratingBiz(false);
+    }
+  };
+
+  const handleGenerateOptimalNames = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsGeneratingOpt(true);
+    setOptError(null);
+    try {
+      const response = await fetch('/api/generate-optimal-business-names', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          industry: optIndustry,
+          businessType: optBusinessType,
+          targetAudience: optTargetAudience,
+          keywordsInclude: optKeywordsInclude,
+          keywordsAvoid: optKeywordsAvoid,
+          ownerName: optOwnerName,
+          ownerDob: optOwnerDob,
+          nameLength: optNameLength,
+          tonePreference: optTonePreference
+        })
+      });
+      if (!response.ok) throw new Error('Failed to generate optimal business names.');
+      const data = await response.json();
+      setOptResult(data);
+      setSelectedResultIndex(0); // select the first result automatically
+    } catch (err: any) {
+      console.error(err);
+      setOptError(err.message || 'An error occurred during generation.');
+    } finally {
+      setIsGeneratingOpt(false);
     }
   };
 
@@ -546,13 +683,300 @@ export default function PremiumConsultations() {
     }
   };
 
+  const generateLocal7PartSignatureAudit = (styleId: string, name: string, dob: string, description?: any) => {
+    const finalStyleId = styleId || "RISING_UNDERLINE";
+    const driver = getDriverNumber(dob);
+    const conductor = getConductorNumber(dob);
+    const nameNumber = getChaldeanNameNumber(name);
+
+    // Standardize input description from manual style or provided description
+    let d = description;
+    if (!d) {
+      if (finalStyleId === "TRAILING_DOT_BELOW") {
+        d = {
+          nameSigned: name,
+          size: "Small",
+          slant: "Straight",
+          legibility: "Moderately Clear",
+          underline: "No",
+          underlineDesc: "",
+          flourishes: "No",
+          flourishesDesc: "",
+          pressure: "Medium",
+          speed: "Slow and careful",
+          firstVsLast: "First name more prominent",
+          specialCharacteristics: "Trailing dot below signature"
+        };
+      } else if (finalStyleId === "FALLING_LINE") {
+        d = {
+          nameSigned: name,
+          size: "Medium",
+          slant: "Backward",
+          legibility: "Stylized",
+          underline: "No",
+          underlineDesc: "",
+          flourishes: "No",
+          flourishesDesc: "",
+          pressure: "Heavy",
+          speed: "Slow and careful",
+          firstVsLast: "First name more prominent",
+          specialCharacteristics: "Downward sloping trailing segment"
+        };
+      } else if (finalStyleId === "DOUBLE_UNDERLINE") {
+        d = {
+          nameSigned: name,
+          size: "Medium",
+          slant: "Straight",
+          legibility: "Very Clear",
+          underline: "Yes",
+          underlineDesc: "Double straight parallel underlines",
+          flourishes: "No",
+          flourishesDesc: "",
+          pressure: "Medium",
+          speed: "Quick and flowing",
+          firstVsLast: "Equally balanced",
+          specialCharacteristics: "Perfect parallel foundations"
+        };
+      } else { // RISING_UNDERLINE
+        d = {
+          nameSigned: name,
+          size: "Large",
+          slant: "Forward",
+          legibility: "Very Clear",
+          underline: "Yes",
+          underlineDesc: "A clean single ascending underline",
+          flourishes: "Yes",
+          flourishesDesc: "Assertive upward exit flick",
+          pressure: "Medium",
+          speed: "Quick and flowing",
+          firstVsLast: "First name more prominent",
+          specialCharacteristics: "Auspicious ascending progress node"
+        };
+      }
+    }
+
+    const sizeVal = d.size || "Medium";
+    const slantVal = d.slant || "Straight";
+    const legibilityVal = d.legibility || "Very Clear";
+    const underlineVal = d.underline || "No";
+    const flourishesVal = d.flourishes || "No";
+    const pressureVal = d.pressure || "Medium";
+    const speedVal = d.speed || "Quick and flowing";
+
+    // Let's map different profiles
+    let confidence = "";
+    let ego = "";
+    let publicPrivate = "";
+    let emotional = "";
+    let ambition = "";
+    let score = 8;
+    let explanation = "";
+    let firstImpression = "";
+    let authority = "";
+    let suitability = "";
+    let sizeDesc = "";
+    let slantDesc = "";
+    let legibilityDesc = "";
+    let underlineDescText = "";
+    let flourishesDescText = "";
+    let recommendationText = "";
+    let variants = ["", ""];
+    let legal = "";
+    let creative = "";
+    let financial = "";
+    let personal = "";
+
+    if (finalStyleId === "TRAILING_DOT_BELOW") {
+       score = 7;
+       confidence = "Reflects a highly strategic and self-reliant mindset. Confidence is moderate-to-high, but tempered by caution.";
+       ego = `Substantial self-esteem, shown by a prominent initial letter of '${name}', but protected by defensive barriers.`;
+       publicPrivate = "Keeps plans strictly confidential, sharing details on a highly strategic, need-to-know basis.";
+       emotional = "Deep self-control and analytical reserve. Emotions are kept under wrap, maintaining composure.";
+       ambition = "Steady and cautious progression. Prefers strong planning over rapid execution to minimize exposure.";
+       explanation = `The trailing dot acts as a cosmic stop or anchor. For a native with Driver #${driver} and Conductor #${conductor}, this provides high stability but can occasionally create sudden administrative blocks or stalls in pending transactions.`;
+       firstImpression = "Projects a quiet, formidable presence and a strong air of professional discretion.";
+       authority = "Command is projected through self-reliance rather than social assertion. Needs stronger foundation lines.";
+       suitability = "Exceptional for strategic planning, corporate compliance, finance, and confidential audit sectors.";
+       sizeDesc = "Compact lettering suggests strong detail-orientation and high mental focus.";
+       slantDesc = "Straight letters indicate high logical control and objective execution.";
+       legibilityDesc = "Highly stylized, reflecting high discretion and guarding of personal plans.";
+       underlineDescText = "No active underline foundation is utilized, signifying an independent self-made path.";
+       flourishesDescText = "A solitary trailing dot below acts as a protective boundary but can create energetic blockages.";
+       recommendationText = "Yes. Shifting the trailing dot to a double dot under an ascending underline will unlock stagnant wealth flows.";
+       variants = [
+         `Variant A: Write '${name}' with a bold starting initial, ending with an upward sweep and a clean ascending underline.`,
+         `Variant B: Write your first name clearly, draw a straight support underline underneath, and place two dots below.`
+       ];
+       legal = "Spell out your full legal name clearly, avoid isolated trailing dots, and use a solid single underline.";
+       creative = "You can use creative flourishes or stylized curves with a large initial and an upward trailing sweep.";
+       financial = "Keep letters uniform in height and draw two parallel underline foundations, adding two horizontal dots below.";
+       personal = "Write your first name in a warm, flowing script, avoiding sharp angles or blocking dots.";
+    } else if (finalStyleId === "FALLING_LINE") {
+       score = 5;
+       confidence = "Fluctuating confidence under sustained pressure, shown by a gradual downward trailing slope.";
+       ego = "Starts with positive ambition but can experience self-doubt or fatigue towards the completion of major tasks.";
+       publicPrivate = "High sensitivity to public opinion, occasionally leading to feelings of being overwhelmed.";
+       emotional = "Prone to high internal stress and stamina drains. Emotional energy is leaked through downward slopes.";
+       ambition = "High initial motivation but tends to lose steam or interest right before the finish line.";
+       explanation = `The southwest downward slope acts as a severe wealth and career drain. Immediate alignment is required to protect liquid assets under Driver #${driver} and Conductor #${conductor}.`;
+       firstImpression = "Appears highly enthusiastic at the start but can project exhaustion or over-commitment later.";
+       authority = "Prone to sudden drops in commanding authority due to trailing letter compression.";
+       suitability = "Suited for supportive execution roles. Struggles with high-pressure leadership positions.";
+       sizeDesc = "Starts medium but shrinks towards the end, showing stamina leaks.";
+       slantDesc = "Backward slant reflects high emotional reserve and cautious self-defense.";
+       legibilityDesc = "Compressed or scribbled trailing characters, causing administrative or communication delays.";
+       underlineDescText = "Absent or drooping downwards, which drains stability and causes anxiety.";
+       flourishesDescText = "Scribbled ending loops that capture mental worry or loops of overthinking.";
+       recommendationText = "Yes. You must consciously tilt your signature upwards at a 10 to 15-degree angle from left to right.";
+       variants = [
+         `Variant A: Write your name with uniform letter height, sloping upwards, with a straight rising underline.`,
+         `Variant B: Write your first name clearly with an upward flick at the end, and an independent upward-flicking underline.`
+       ];
+       legal = "Draw a solid rising underline that rises slightly at the end to act as a cosmic support shield.";
+       creative = "Ensure the trailing characters rise upwards at a 15-degree angle to keep Jovian/Mercury energies active.";
+       financial = "Avoid any trailing downward slope to prevent wealth leakage. Ensure a parallel double underline.";
+       personal = "Write in an upright, ascending flow with a clean starting letter to keep positive vibrations active.";
+    } else if (finalStyleId === "DOUBLE_UNDERLINE") {
+       score = 9;
+       confidence = "Extremely high confidence and resilience, backed by a strong internal support system.";
+       ego = "Pristine self-image and powerful professional pride. Demands respect and commands authority.";
+       publicPrivate = "Clear, healthy balance between public presentation and private boundaries.";
+       emotional = "Stable, grounded, and emotionally composed under severe corporate pressure.";
+       ambition = "High administrative drive, looking for long-term legacy and permanent organizational stature.";
+       explanation = `The double parallel underline acts as a double-lock safe. It provides exceptional stability for those with Driver #${driver} and Conductor #${conductor}.`;
+       firstImpression = "Projects absolute authority, solid reliability, and high executive power.";
+       authority = "Superb leadership command. The double lines act as an unshakable cosmic foundation.";
+       suitability = "Outstanding for executive leadership, corporate directorships, business enterprises, and legal administration.";
+       sizeDesc = "Medium and balanced, showing practical social adaptiveness and objectivity.";
+       slantDesc = "Straight characters showing objective logic, absolute control, and stable mind.";
+       legibilityDesc = "Very clear and distinct script, showing direct, transparent communication.";
+       underlineDescText = "Two parallel straight lines run underneath, acting as a massive stable foundation (Earth Element).";
+       flourishesDescText = "No unnecessary loops, signifying disciplined, straight-to-the-point execution.";
+       recommendationText = "No. Your current signature has excellent structural Vastu nodes. Only minor fine-tuning is needed.";
+       variants = [
+         `Variant A: Keep your double-underline exactly as is, ensuring it starts after the first letter and never cuts any characters.`,
+         `Variant B: Enlarge the first letter slightly so it stands exactly 2.5 times higher than the lowercase letters.`
+       ];
+       legal = "Use your full name with a double underline in deep black ink to lock in Saturnian asset protection.";
+       creative = "Soften the sharp angles slightly to allow smooth creative flows while retaining the foundation lines.";
+       financial = "Ensure double underlines are perfectly parallel, with two neat horizontal dots below.";
+       personal = "Use a warm, slightly more compact single-underline version for cozy family letters.";
+    } else { // RISING_UNDERLINE (Auspicious Default)
+       score = 9;
+       confidence = "High, progressive, and healthy confidence. Always looking for growth and forward expansion.";
+       ego = "Balanced self-worth, high professional ambition, and strong leadership potential.";
+       publicPrivate = "Direct and honest public communication with balanced personal boundaries.";
+       emotional = "Positive, warm, responsive, and highly proactive in social and professional circles.";
+       ambition = `Strong career momentum. Naturally strives for promotions, fame, and executive authority under Driver #${driver}.`;
+       explanation = `A 15-degree rising line with a single clean underline foundation. This perfectly aligns with Driver #${driver} and Conductor #${conductor}.`;
+       firstImpression = "Projects a highly dynamic, optimistic, and trustworthy professional persona.";
+       authority = "Command is projected smoothly through clear, rising letters and an independent underline support.";
+       suitability = "Highly suited for leadership, sales, creative entrepreneurship, public speaking, and business.";
+       sizeDesc = "Slightly large, showing healthy pride and strong executive drive.";
+       slantDesc = "Forward slant at 15 degrees, showing warm proactivity and high emotional intelligence.";
+       legibilityDesc = "Highly legible and transparent, indicating direct and honest intentions.";
+       underlineDescText = "A clean single rising line runs from the second letter, signifying strong cosmic support.";
+       flourishesDescText = "A graceful upward-right exit stroke, signaling positive closure and prosperous agreements.";
+       recommendationText = "No. Excellent Vastu flow. Keep practicing this script daily to maintain progressive vibrations.";
+       variants = [
+         `Variant A: Write your first name clearly, sloping upwards at a 15-degree angle, with a straight independent underline.`,
+         `Variant B: Write first initial large and bold, followed by full surname, supported by a clean rising underline.`
+       ];
+       legal = "Write full first and last name legibly, supported by a clean rising underline in royal blue ink.";
+       creative = "Let the trailing exit stroke sweep gracefully upwards in a grand arc for high public recognition.";
+       financial = "Ensure the underline begins after the first letter and never cuts any lower loops (g, j, p, y).";
+       personal = "Use your first name or preferred nickname with a soft, ascending slope to share warm vibes.";
+     }
+
+    // Adjust score and details if customized questionnaire fields are provided
+    if (description) {
+      if (underlineVal === "No" || legibilityVal === "Illegible" || slantVal === "Backward") {
+        score = Math.max(4, score - 2);
+      } else if (underlineVal === "Yes" && legibilityVal === "Very Clear" && slantVal === "Forward") {
+        score = Math.min(10, score + 1);
+      }
+    }
+
+    return {
+      psychologicalInterpretation: {
+        confidenceLevel: confidence,
+        egoSelfImage: ego,
+        publicPrivateGap: publicPrivate,
+        emotionalStyle: emotional,
+        ambitionDrive: ambition
+      },
+      numerologicalCompatibility: {
+        signatureNameValue: nameNumber,
+        birthNameValue: getChaldeanNameNumber(name),
+        compatibilityScore: score,
+        explanation: `Your signed name '${d.nameSigned || name}' and birth path form a highly compatible acoustic resonance.`
+      },
+      professionalImpact: {
+        firstImpression: firstImpression,
+        authorityCredibility: authority,
+        industrySuitability: suitability
+      },
+      specificTraitIndicators: {
+        size: sizeDesc,
+        slant: slantDesc,
+        legibility: legibilityDesc,
+        underline: underlineDescText,
+        flourishes: flourishesDescText
+      },
+      compatibilityScore: {
+        score: score,
+        detailedExplanation: `Your overall signature compatibility score is calculated at ${score}/10 based on Chaldean numeric frequency synastry. Graphologically, your selections reflect ${legibilityVal === "Very Clear" ? "exceptional directness" : "deep strategic reservation"} and ${underlineVal === "Yes" ? "a strong foundation" : "high personal self-reliance"}.`
+      },
+      recommendations: {
+        shouldModify: recommendationText,
+        variants: variants,
+        colors: [
+          { color: "Royal Blue Ink", reason: "Invokes powerful Jovian/Mercury vibrations, enhancing communication authority." },
+          { color: "Deep Black Ink", reason: "Provides rock-solid Saturnian grounding, protecting assets from cash drains." },
+          { color: "Emerald Green Ink", reason: "Stimulates financial growth and increases commercial intelligence." }
+        ],
+        penType: pressureVal === "Heavy" ? "Medium Rollerball or Gel pen to smooth out friction and allow faster ink flow." : "Classic Fountain pen to enrich strokes.",
+        signingDirection: slantVal === "Forward" ? "Right slant rising at a neat 15-degree angle" : "Straight and horizontal with a slight upward exit stroke"
+      },
+      differentPurposes: {
+        legal: legal,
+        creative: creative,
+        financial: financial,
+        personal: personal
+      }
+    };
+  };
+
   React.useEffect(() => {
     // Keep sigAuditResult in sync with manual signature inputs unless a custom AI image analysis has run successfully
     if (!sigImage) {
-      const localAudit = generateLocalFallbackSignatureAudit(signatureStyle, sigName || 'Aspirant', sigDob || '1990-01-01');
+      const localAudit = generateLocal7PartSignatureAudit(
+        signatureStyle,
+        sigName || 'Aspirant',
+        sigDob || '1990-01-01',
+        {
+          nameSigned: sigDescNameSigned,
+          size: sigDescSize,
+          slant: sigDescSlant,
+          legibility: sigDescLegibility,
+          underline: sigDescUnderline,
+          underlineDesc: sigDescUnderlineDesc,
+          flourishes: sigDescFlourishes,
+          flourishesDesc: sigDescFlourishesDesc,
+          pressure: sigDescPressure,
+          speed: sigDescSpeed,
+          firstVsLast: sigDescFirstVsLast,
+          specialCharacteristics: sigDescSpecial
+        }
+      );
       setSigAuditResult(localAudit);
     }
-  }, [signatureStyle, sigName, sigDob, sigImage]);
+  }, [
+    signatureStyle, sigName, sigDob, sigImage,
+    sigDescNameSigned, sigDescSize, sigDescSlant, sigDescLegibility,
+    sigDescUnderline, sigDescUnderlineDesc, sigDescFlourishes, sigDescFlourishesDesc,
+    sigDescPressure, sigDescSpeed, sigDescFirstVsLast, sigDescSpecial
+  ]);
 
   // Profile selection
   const handleProfileSelectChange = (idx: number) => {
@@ -742,11 +1166,25 @@ export default function PremiumConsultations() {
         },
         body: JSON.stringify({
           image: sigImage || undefined,
-          personalDetails: { name: sigName, dob: sigDob },
+          personalDetails: { name: sigName, dob: sigDob, profession: sigProfession },
           manualSelection: { styleId: signatureStyle },
           driver: getDriverNumber(sigDob),
           conductor: getConductorNumber(sigDob),
-          nameNumber: getChaldeanNameNumber(sigName)
+          nameNumber: getChaldeanNameNumber(sigName),
+          description: {
+            nameSigned: sigDescNameSigned || sigName,
+            size: sigDescSize,
+            slant: sigDescSlant,
+            legibility: sigDescLegibility,
+            underline: sigDescUnderline,
+            underlineDesc: sigDescUnderlineDesc,
+            flourishes: sigDescFlourishes,
+            flourishesDesc: sigDescFlourishesDesc,
+            pressure: sigDescPressure,
+            speed: sigDescSpeed,
+            firstVsLast: sigDescFirstVsLast,
+            specialCharacteristics: sigDescSpecial
+          }
         })
       });
 
@@ -779,7 +1217,25 @@ export default function PremiumConsultations() {
         console.error("Signature Audit failed with status:", response.status, "and parsed result:", result);
         
         // Automatically switch to manual signature style selection as a fallback
-        const fallbackResult = generateLocalFallbackSignatureAudit(signatureStyle || 'RISING_UNDERLINE', sigName, sigDob);
+        const fallbackResult = generateLocal7PartSignatureAudit(
+          signatureStyle || 'RISING_UNDERLINE',
+          sigName,
+          sigDob,
+          {
+            nameSigned: sigDescNameSigned,
+            size: sigDescSize,
+            slant: sigDescSlant,
+            legibility: sigDescLegibility,
+            underline: sigDescUnderline,
+            underlineDesc: sigDescUnderlineDesc,
+            flourishes: sigDescFlourishes,
+            flourishesDesc: sigDescFlourishesDesc,
+            pressure: sigDescPressure,
+            speed: sigDescSpeed,
+            firstVsLast: sigDescFirstVsLast,
+            specialCharacteristics: sigDescSpecial
+          }
+        );
         setSigAuditResult(fallbackResult);
         handleSignatureTrigger(signatureStyle || 'RISING_UNDERLINE');
         
@@ -793,7 +1249,25 @@ export default function PremiumConsultations() {
       setSigError(fallbackErrorMessage);
       
       // Automatically switch to manual signature style selection on any failure
-      const fallbackResult = generateLocalFallbackSignatureAudit(signatureStyle || 'RISING_UNDERLINE', sigName, sigDob);
+      const fallbackResult = generateLocal7PartSignatureAudit(
+        signatureStyle || 'RISING_UNDERLINE',
+        sigName,
+        sigDob,
+        {
+          nameSigned: sigDescNameSigned,
+          size: sigDescSize,
+          slant: sigDescSlant,
+          legibility: sigDescLegibility,
+          underline: sigDescUnderline,
+          underlineDesc: sigDescUnderlineDesc,
+          flourishes: sigDescFlourishes,
+          flourishesDesc: sigDescFlourishesDesc,
+          pressure: sigDescPressure,
+          speed: sigDescSpeed,
+          firstVsLast: sigDescFirstVsLast,
+          specialCharacteristics: sigDescSpecial
+        }
+      );
       setSigAuditResult(fallbackResult);
       handleSignatureTrigger(signatureStyle || 'RISING_UNDERLINE');
     } finally {
@@ -1061,75 +1535,224 @@ export default function PremiumConsultations() {
               </div>
             ) : (
               <div className="space-y-6">
-                <form onSubmit={handleAdvancedHouseSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Flat / Door Number</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 403 or B-101"
-                      value={flatNumberInput}
-                      onChange={(e) => setFlatNumberInput(e.target.value)}
-                      className="w-full bg-white border border-[#E5E7EB] py-3 px-4 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
-                    />
+                <form onSubmit={handleAdvancedHouseSubmit} className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
+                  {/* Section 1: Property Core Details */}
+                  <div>
+                    <h4 className="text-xs font-mono text-[#1E3A8A] uppercase tracking-wider font-bold mb-3 flex items-center gap-1.5 border-b pb-1">
+                      <Home className="w-3.5 h-3.5 text-[#1E3A8A]" /> 1. Property Core Details
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">House / Flat Number</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. 403 or B-101"
+                          value={flatNumberInput}
+                          onChange={(e) => setFlatNumberInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Floor (if apartment)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 4th Floor"
+                          value={floorInput}
+                          onChange={(e) => setFloorInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Street Number / Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. MG Road or Regency Crest"
+                          value={streetNameInput}
+                          onChange={(e) => setStreetNameInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">City / State</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. New Delhi"
+                          value={cityInput}
+                          onChange={(e) => setCityInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Postal Code / Pin Code</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. 110001"
+                          value={pinCodeInput}
+                          onChange={(e) => setPinCodeInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Property Type</label>
+                        <select
+                          value={propertyTypeInput}
+                          onChange={(e) => setPropertyTypeInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        >
+                          <option value="Independent House">Independent House</option>
+                          <option value="Apartment">Apartment</option>
+                          <option value="Villa">Villa</option>
+                          <option value="Plot">Plot</option>
+                          <option value="Commercial Office">Commercial Office</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Property Age (years)</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 3"
+                          value={propertyAgeInput}
+                          onChange={(e) => setPropertyAgeInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Usage Purpose</label>
+                        <select
+                          value={purposeInput}
+                          onChange={(e) => setPurposeInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        >
+                          <option value="Residential">Residential</option>
+                          <option value="Commercial">Commercial</option>
+                          <option value="Both">Both</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Street / Building Name</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Regency Crest or MG Road"
-                      value={streetNameInput}
-                      onChange={(e) => setStreetNameInput(e.target.value)}
-                      className="w-full bg-white border border-[#E5E7EB] py-3 px-4 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
-                    />
+
+                  {/* Section 2: Vastu Directions */}
+                  <div>
+                    <h4 className="text-xs font-mono text-[#1E3A8A] uppercase tracking-wider font-bold mb-3 flex items-center gap-1.5 border-b pb-1">
+                      <Compass className="w-3.5 h-3.5 text-[#1E3A8A]" /> 2. Vastu Directions
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Facing Direction of Property</label>
+                        <select
+                          value={facingDirectionInput}
+                          onChange={(e) => setFacingDirectionInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        >
+                          <option value="North">North</option>
+                          <option value="South">South</option>
+                          <option value="East">East</option>
+                          <option value="West">West</option>
+                          <option value="North-East">North-East (Ishan)</option>
+                          <option value="North-West">North-West (Vayu)</option>
+                          <option value="South-East">South-East (Agni)</option>
+                          <option value="South-West">South-West (Nairutya)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Main Entrance Direction</label>
+                        <select
+                          value={entranceDirectionInput}
+                          onChange={(e) => setEntranceDirectionInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        >
+                          <option value="North">North</option>
+                          <option value="South">South</option>
+                          <option value="East">East</option>
+                          <option value="West">West</option>
+                          <option value="North-East">North-East (Ishan)</option>
+                          <option value="North-West">North-West (Vayu)</option>
+                          <option value="South-East">South-East (Agni)</option>
+                          <option value="South-West">South-West (Nairutya)</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">City / State</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. New Delhi"
-                      value={cityInput}
-                      onChange={(e) => setCityInput(e.target.value)}
-                      className="w-full bg-white border border-[#E5E7EB] py-3 px-4 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
-                    />
+
+                  {/* Section 3: Occupant Details */}
+                  <div>
+                    <h4 className="text-xs font-mono text-[#1E3A8A] uppercase tracking-wider font-bold mb-3 flex items-center gap-1.5 border-b pb-1">
+                      <User className="w-3.5 h-3.5 text-[#1E3A8A]" /> 3. Primary Occupant & Family
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Primary Occupant Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Rajesh Kumar"
+                          value={occupantNameInput}
+                          onChange={(e) => setOccupantNameInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Date of Birth (DD/MM/YYYY)</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. 15/08/1988"
+                          value={occupantDobInput}
+                          onChange={(e) => setOccupantDobInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Primary Owner Driver (1-9)</label>
+                        <select
+                          value={houseOwnerDriver}
+                          onChange={(e) => setHouseOwnerDriver(parseInt(e.target.value, 10))}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        >
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => <option key={n} value={n}>Driver {n}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Family Members Count</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 4"
+                          value={familyCountInput}
+                          onChange={(e) => setFamilyCountInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                      <div className="md:col-span-2 space-y-1">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Family Members DOBs (comma separated)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 12/03/1990, 05/11/2015"
+                          value={familyDobsInput}
+                          onChange={(e) => setFamilyDobsInput(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Pin Code / Postal Code</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 110001"
-                      value={pinCodeInput}
-                      onChange={(e) => setPinCodeInput(e.target.value)}
-                      className="w-full bg-white border border-[#E5E7EB] py-3 px-4 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
-                    />
-                  </div>
-                  <div className="col-span-1 sm:col-span-2 space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Primary Resident's Driver Number</label>
-                    <select
-                      value={houseOwnerDriver}
-                      onChange={(e) => setHouseOwnerDriver(parseInt(e.target.value, 10))}
-                      className="w-full bg-white border border-[#E5E7EB] py-3 px-4 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => <option key={n} value={n}>Driver {n}</option>)}
-                    </select>
-                  </div>
+
                   <button
                     type="submit"
                     disabled={isAnalyzingHouse}
-                    className="col-span-1 sm:col-span-2 w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 disabled:bg-slate-300 text-white py-3.5 rounded-xl font-mono text-xs uppercase tracking-widest font-bold cursor-pointer transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 disabled:bg-slate-300 text-white py-3 px-4 rounded-xl font-mono text-xs uppercase tracking-widest font-bold cursor-pointer transition-all flex items-center justify-center gap-2"
                   >
                     {isAnalyzingHouse ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        Auditing Address Energetics...
+                        Performing Scientific Astro-Vastu & Numerology Analysis...
                       </>
                     ) : (
                       <>
                         <Compass className="w-4 h-4 text-amber-300 animate-pulse" />
-                        Perform Advanced Vastu Audit
+                        Generate Complete 13-Point Astro-Vastu Audit
                       </>
                     )}
                   </button>
@@ -1144,41 +1767,44 @@ export default function PremiumConsultations() {
 
                 {advancedHouseResult && (
                   <div className="p-6 md:p-8 bg-white border rounded-3xl space-y-6 animate-in fade-in duration-500 leading-relaxed font-sans">
-                    
-                    {/* Header */}
+                    {/* Upper Badges & Main Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
                       <div>
-                        <div className="flex gap-2 items-center">
+                        <div className="flex flex-wrap gap-2 items-center">
                           <span className="text-[9px] font-mono bg-indigo-50 text-[#1E3A8A] font-extrabold px-3 py-1 rounded-full uppercase">
                             Compound Address Value: {advancedHouseResult.totalSum}
                           </span>
                           <span className="text-[9px] font-mono bg-amber-50 text-amber-700 font-extrabold px-3 py-1 rounded-full uppercase">
                             VIBE: {advancedHouseResult.vibe}
                           </span>
+                          <span className="text-[9px] font-mono bg-emerald-50 text-emerald-700 font-extrabold px-3 py-1 rounded-full uppercase">
+                            Root {advancedHouseResult.reducedTotal} Alignment
+                          </span>
                         </div>
-                        <h4 className="font-playfair text-lg font-bold text-slate-800 mt-2">
-                          Address Vibration Root: {advancedHouseResult.reducedTotal} ({advancedHouseResult.energyType})
+                        <h4 className="font-playfair text-xl font-bold text-slate-800 mt-2">
+                          House Number & Vastu Audit Report
                         </h4>
+                        <p className="text-xs text-slate-500 mt-0.5 font-sans">For {occupantNameInput || 'Seeker'} • Governed by {advancedHouseResult.energyType || 'Vedic Forces'}</p>
                       </div>
                     </div>
 
-                    {/* Breakdown */}
+                    {/* Breakdown Mini Cards */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-50 border p-4 rounded-2xl">
                       <div>
-                        <span className="text-[9px] font-mono text-slate-400 uppercase">Flat/Door Sum</span>
-                        <p className="font-bold text-slate-700 font-mono">{advancedHouseResult.addressBreakdown.flatSum}</p>
+                        <span className="text-[9px] font-mono text-slate-400 uppercase">Flat / Door Sum</span>
+                        <p className="font-bold text-slate-700 font-mono">{advancedHouseResult.addressBreakdown?.flatSum || 'Calculated'}</p>
                       </div>
                       <div>
-                        <span className="text-[9px] font-mono text-slate-400 uppercase">Street/Building Sum</span>
-                        <p className="font-bold text-slate-700 font-mono">{advancedHouseResult.addressBreakdown.streetSum}</p>
+                        <span className="text-[9px] font-mono text-slate-400 uppercase">Street / Building Sum</span>
+                        <p className="font-bold text-slate-700 font-mono">{advancedHouseResult.addressBreakdown?.streetSum || 'Calculated'}</p>
                       </div>
                       <div>
                         <span className="text-[9px] font-mono text-slate-400 uppercase">City Sum</span>
-                        <p className="font-bold text-slate-700 font-mono">{advancedHouseResult.addressBreakdown.citySum}</p>
+                        <p className="font-bold text-slate-700 font-mono">{advancedHouseResult.addressBreakdown?.citySum || 'Calculated'}</p>
                       </div>
                       <div>
                         <span className="text-[9px] font-mono text-slate-400 uppercase">Pincode Sum</span>
-                        <p className="font-bold text-slate-700 font-mono">{advancedHouseResult.addressBreakdown.pinSum}</p>
+                        <p className="font-bold text-slate-700 font-mono">{advancedHouseResult.addressBreakdown?.pinSum || 'Calculated'}</p>
                       </div>
                     </div>
 
@@ -1187,106 +1813,484 @@ export default function PremiumConsultations() {
                       <div className="p-4 bg-slate-50/50 border rounded-2xl space-y-1">
                         <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Prosperity Potential</span>
                         <div className="flex items-baseline gap-1.5">
-                          <span className="text-xl font-bold font-mono text-[#1E3A8A]">{advancedHouseResult.scores.prosperityScore}</span>
+                          <span className="text-xl font-bold font-mono text-[#1E3A8A]">{advancedHouseResult.scores?.prosperityScore || 85}</span>
                           <span className="text-xs text-slate-400">/ 100</span>
                         </div>
                         <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                          <div className="h-full bg-indigo-500" style={{ width: `${advancedHouseResult.scores.prosperityScore}%` }} />
+                          <div className="h-full bg-indigo-500" style={{ width: `${advancedHouseResult.scores?.prosperityScore || 85}%` }} />
                         </div>
                       </div>
 
                       <div className="p-4 bg-slate-50/50 border rounded-2xl space-y-1">
                         <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Domestic Harmony</span>
                         <div className="flex items-baseline gap-1.5">
-                          <span className="text-xl font-bold font-mono text-emerald-600">{advancedHouseResult.scores.peaceScore}</span>
+                          <span className="text-xl font-bold font-mono text-emerald-600">{advancedHouseResult.scores?.peaceScore || 80}</span>
                           <span className="text-xs text-slate-400">/ 100</span>
                         </div>
                         <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                          <div className="h-full bg-emerald-500" style={{ width: `${advancedHouseResult.scores.peaceScore}%` }} />
+                          <div className="h-full bg-emerald-500" style={{ width: `${advancedHouseResult.scores?.peaceScore || 80}%` }} />
                         </div>
                       </div>
 
                       <div className="p-4 bg-slate-50/50 border rounded-2xl space-y-1">
                         <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Safety & Protection</span>
                         <div className="flex items-baseline gap-1.5">
-                          <span className="text-xl font-bold font-mono text-amber-600">{advancedHouseResult.scores.safetyScore}</span>
+                          <span className="text-xl font-bold font-mono text-amber-600">{advancedHouseResult.scores?.safetyScore || 90}</span>
                           <span className="text-xs text-slate-400">/ 100</span>
                         </div>
                         <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                          <div className="h-full bg-amber-500" style={{ width: `${advancedHouseResult.scores.safetyScore}%` }} />
+                          <div className="h-full bg-amber-500" style={{ width: `${advancedHouseResult.scores?.safetyScore || 90}%` }} />
                         </div>
                       </div>
                     </div>
 
-                    {/* Astrological Vastu Predictions */}
-                    <div className="space-y-2">
-                      <h5 className="font-playfair text-sm font-bold text-slate-800 flex items-center gap-1">
-                        <Compass className="w-4 h-4 text-emerald-600" /> Complete Address Environmental Audit
-                      </h5>
-                      <p className="text-xs text-slate-600 leading-relaxed font-sans">{advancedHouseResult.predictions}</p>
+                    {/* Navigation Tabs for results */}
+                    <div className="flex flex-wrap border-b border-[#F2E8DC] gap-1 pb-1">
+                      {[
+                        { id: 'OVERVIEW', label: '1-3. Overview & Numerology' },
+                        { id: 'ROOMS', label: '4. Room recommendations' },
+                        { id: 'DIRECTIONS', label: '5. Directional Analysis' },
+                        { id: 'REMEDIES', label: '6-10. Remedies & Optimization' },
+                        { id: 'TIMING', label: '11-13. Timing & Future' }
+                      ].map(tab => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setActiveVastuTab(tab.id as any)}
+                          className={`px-3 py-2 text-xs font-mono rounded-lg transition-all border ${
+                            activeVastuTab === tab.id
+                              ? 'bg-[#1E3A8A] text-white border-[#1E3A8A] font-bold shadow-sm'
+                              : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
                     </div>
 
-                    {/* Grid of Custom Vastu Remedies */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
-                        <h6 className="font-bold text-xs uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-indigo-500" /> Auspicious Vastu Colors
-                        </h6>
-                        <div className="flex flex-wrap gap-2">
-                          {advancedHouseResult.remedies.wallColors.map((color: string, cIdx: number) => (
-                            <span key={cIdx} className="bg-white px-3 py-1 border rounded-lg text-xs text-slate-700 font-medium">
-                              {color}
+                    {/* Tab 1: Overview, Numerology & Compatibility */}
+                    {activeVastuTab === 'OVERVIEW' && (
+                      <div className="space-y-6 animate-in fade-in duration-300 text-xs">
+                        {/* Section 1: House Number Numerology */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
+                            1. House Number Numerology (Root: {advancedHouseResult.houseNumerology?.reducedDigit || advancedHouseResult.reducedTotal})
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Calculation Path</span>
+                              <p className="text-slate-700 bg-white p-2.5 rounded-lg border font-mono">{advancedHouseResult.houseNumerology?.calculation || `Flat ${flatNumberInput || '1'} (${advancedHouseResult.addressBreakdown?.flatSum || 0}) + Street (${advancedHouseResult.addressBreakdown?.streetSum || 0}) = Single Root ${advancedHouseResult.reducedTotal || 0}`}</p>
+                            </div>
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Core Planetary Energy</span>
+                              <p className="text-slate-700 leading-relaxed">{advancedHouseResult.houseNumerology?.coreEnergy || advancedHouseResult.predictions}</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-emerald-600 uppercase font-bold">What This Space Attracts</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.houseNumerology?.whatItAttracts || 'Attracts strong creative networking, luxury decor upgrades, and collaborative team operations.'}</p>
+                            </div>
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-indigo-600 uppercase font-bold">Favorable For</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.houseNumerology?.favorableFor || 'Highly aligned for business professionals, entrepreneurs, remote team leads, and creative designers.'}</p>
+                            </div>
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-amber-600 uppercase font-bold">Challenges & Obstacles</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.houseNumerology?.challenges || 'Prone to mental overstimulation, restless schedules, and minor domestic spending spikes if not cured.'}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Section 2: Compatibility with Occupant */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                            <User className="w-4 h-4 text-[#1E3A8A]" />
+                            2. Primary Occupant Harmony & Compatibility
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                            <div className="p-3 bg-white rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">Life Path Match</span>
+                              <p className="text-xl font-bold font-mono text-indigo-600 mt-1">{advancedHouseResult.occupantCompatibility?.lifePathMatch || 8}/10</p>
+                            </div>
+                            <div className="p-3 bg-white rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">Destiny Harmony</span>
+                              <p className="text-xl font-bold font-mono text-emerald-600 mt-1">{advancedHouseResult.occupantCompatibility?.destinyHarmony || 8}/10</p>
+                            </div>
+                            <div className="p-3 bg-white rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">Overall Compatibility</span>
+                              <p className="text-xl font-bold font-mono text-[#1E3A8A] mt-1">{advancedHouseResult.occupantCompatibility?.overallScore || 9}/10</p>
+                            </div>
+                          </div>
+                          <p className="text-slate-600 leading-relaxed bg-white p-3 rounded-xl border">{advancedHouseResult.occupantCompatibility?.explanation || 'Your personal driver coordinates and the residence compound value represent a solid and fertile match. This alignment ensures that the space acts as an emotional trampoline, reducing sleep restlessness and accelerating commercial achievements.'}</p>
+                        </div>
+
+                        {/* Section 3: Property Vibration Analysis */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                            <Activity className="w-4 h-4 text-rose-500" />
+                            3. Property Vibration Analysis
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center bg-white p-2.5 rounded-lg border">
+                                <span className="font-bold text-slate-700">🧠 Mental Environment</span>
+                                <span className="text-slate-500 italic text-[11px] text-right">{advancedHouseResult.propertyVibrations?.mental || 'Highly structured, low clutter, quiet thought flow'}</span>
+                              </div>
+                              <div className="flex justify-between items-center bg-white p-2.5 rounded-lg border">
+                                <span className="font-bold text-slate-700">❤️ Emotional Atmosphere</span>
+                                <span className="text-slate-500 italic text-[11px] text-right">{advancedHouseResult.propertyVibrations?.emotional || 'Encourages deep familial bonding, verbal sweetness'}</span>
+                              </div>
+                              <div className="flex justify-between items-center bg-white p-2.5 rounded-lg border">
+                                <span className="font-bold text-slate-700">💰 Material & Financial Energy</span>
+                                <span className="text-slate-500 italic text-[11px] text-right">{advancedHouseResult.propertyVibrations?.material || 'Stable cash cycles, supports premium investment ideas'}</span>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center bg-white p-2.5 rounded-lg border">
+                                <span className="font-bold text-slate-700">⚡ Physical Health & Vitality</span>
+                                <span className="text-slate-500 italic text-[11px] text-right">{advancedHouseResult.propertyVibrations?.health || 'Strong baseline defense, high immune resilience'}</span>
+                              </div>
+                              <div className="flex justify-between items-center bg-white p-2.5 rounded-lg border">
+                                <span className="font-bold text-slate-700">🤝 Relationship Harmony</span>
+                                <span className="text-slate-500 italic text-[11px] text-right">{advancedHouseResult.propertyVibrations?.relationship || 'Fosters long-term loyalty and reduces mutual disputes'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 2: Room recommendations */}
+                    {activeVastuTab === 'ROOMS' && (
+                      <div className="space-y-4 animate-in fade-in duration-300 text-xs">
+                        <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                          <Home className="w-4 h-4 text-[#1E3A8A]" />
+                          4. Room-Wise Recommendations & Grid coordinates
+                        </h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 bg-white border rounded-xl space-y-1.5 shadow-sm">
+                            <span className="text-[10px] font-mono text-[#1E3A8A] font-bold block uppercase">👑 Master Bedroom (South-West)</span>
+                            <p className="text-slate-600 leading-relaxed">{advancedHouseResult.roomRecommendations?.masterBedroom || 'South-West Nairutya is optimal. Ground with heavy wooden bed frame, ensuring sleep head is strictly pointed towards South.'}</p>
+                          </div>
+                          <div className="p-4 bg-white border rounded-xl space-y-1.5 shadow-sm">
+                            <span className="text-[10px] font-mono text-indigo-600 font-bold block uppercase">🧒 Children's Room (West / North-West)</span>
+                            <p className="text-slate-600 leading-relaxed">{advancedHouseResult.roomRecommendations?.childrenRoom || 'West zone or North-West (Vayu) zone ensures active cognitive retention, high logical growth, and healthy study rhythms.'}</p>
+                          </div>
+                          <div className="p-4 bg-white border rounded-xl space-y-1.5 shadow-sm">
+                            <span className="text-[10px] font-mono text-emerald-600 font-bold block uppercase">💼 Home Office / Study (North / West)</span>
+                            <p className="text-slate-600 leading-relaxed">{advancedHouseResult.roomRecommendations?.homeOffice || 'Place office desk in the North or West. Face East or North while working to maximize creative focus and opportunities.'}</p>
+                          </div>
+                          <div className="p-4 bg-white border rounded-xl space-y-1.5 shadow-sm">
+                            <span className="text-[10px] font-mono text-rose-600 font-bold block uppercase">🔥 Kitchen & Burner (South-East)</span>
+                            <p className="text-slate-600 leading-relaxed">{advancedHouseResult.roomRecommendations?.kitchen || 'South-East (Agneya) is highly optimal for the Fire element. Ensure the cook faces East while cooking; keep sink/water separate.'}</p>
+                          </div>
+                          <div className="p-4 bg-white border rounded-xl space-y-1.5 shadow-sm">
+                            <span className="text-[10px] font-mono text-amber-600 font-bold block uppercase">🛋️ Living Room (East / North-East)</span>
+                            <p className="text-slate-600 leading-relaxed">{advancedHouseResult.roomRecommendations?.livingRoom || 'East or North-East ensures positive solar energy intake. Keep seating furniture lightweight and center of space entirely open.'}</p>
+                          </div>
+                          <div className="p-4 bg-white border rounded-xl space-y-1.5 shadow-sm border-amber-200">
+                            <span className="text-[10px] font-mono text-amber-700 font-bold block uppercase flex items-center gap-1">
+                              <Sparkles className="w-3.5 h-3.5" /> 🧘 Prayer & Meditation Room (North-East)
                             </span>
-                          ))}
+                            <p className="text-slate-600 leading-relaxed">{advancedHouseResult.roomRecommendations?.meditationSpace || 'Keep North-East Ishan zone completely clean and free of heavy machinery. Ideal for family altar or quiet yoga session.'}</p>
+                          </div>
                         </div>
-                        <p className="text-[11px] text-slate-400 italic">Painting core rooms in these vibrations balances stagnant element lines.</p>
                       </div>
+                    )}
 
-                      <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
-                        <h6 className="font-bold text-xs uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500" /> Entrance Protective Crystals
-                        </h6>
-                        <ul className="space-y-1.5 text-xs text-slate-600">
-                          {advancedHouseResult.remedies.thresholdCrystals.map((crystal: string, crIdx: number) => (
-                            <li key={crIdx} className="flex gap-1.5 items-start">
-                              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                              <span>{crystal}</span>
-                            </li>
-                          ))}
-                        </ul>
+                    {/* Tab 3: Directional Color Scheme */}
+                    {activeVastuTab === 'DIRECTIONS' && (
+                      <div className="space-y-4 animate-in fade-in duration-300 text-xs">
+                        <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                          <Compass className="w-4 h-4 text-[#1E3A8A]" />
+                          5. Directional Color Scheme & Element Mapping
+                        </h5>
+                        <p className="text-slate-500 text-xs">An exhaustive coordinate grid detailing color solutions, associated elements, and custom decor objects to enhance localized magnetic waves.</p>
+                        
+                        <div className="overflow-x-auto border rounded-2xl">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                              <tr className="bg-slate-50 border-b">
+                                <th className="p-3 font-mono uppercase text-[9px] text-slate-500 font-bold">Direction</th>
+                                <th className="p-3 font-mono uppercase text-[9px] text-slate-500 font-bold">Element</th>
+                                <th className="p-3 font-mono uppercase text-[9px] text-slate-500 font-bold">Recommended Colors</th>
+                                <th className="p-3 font-mono uppercase text-[9px] text-slate-500 font-bold">Hex Codes</th>
+                                <th className="p-3 font-mono uppercase text-[9px] text-slate-500 font-bold">Decor suggestions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(advancedHouseResult.directionalAnalysis || []).map((dir: any, idx: number) => (
+                                <tr key={idx} className="border-b hover:bg-slate-50/50">
+                                  <td className="p-3 font-bold text-[#1E3A8A]">{dir.direction}</td>
+                                  <td className="p-3 font-mono text-[11px] text-slate-600">{dir.element}</td>
+                                  <td className="p-3 font-sans">
+                                    <div className="flex flex-wrap gap-1">
+                                      {(dir.colors || []).map((color: string, cIdx: number) => (
+                                        <span key={cIdx} className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px]">
+                                          {color}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="p-3 font-mono text-[11px]">
+                                    <div className="flex flex-col gap-1">
+                                      {(dir.hexCodes || []).map((hex: string, hIdx: number) => (
+                                        <div key={hIdx} className="flex items-center gap-1">
+                                          <div className="w-3.5 h-3.5 border rounded-sm shrink-0" style={{ backgroundColor: hex }} />
+                                          <span>{hex}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="p-3 text-slate-600 font-sans leading-relaxed">{dir.decor}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
+                    )}
 
-                      <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3 col-span-1 md:col-span-2">
-                        <h6 className="font-bold text-xs uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-amber-500" /> Elemental Placements & Structural Adjustments
-                        </h6>
-                        <ul className="space-y-2 text-xs text-slate-600">
-                          {advancedHouseResult.remedies.elementalRemedies.map((remedy: string, remIdx: number) => (
-                            <li key={remIdx} className="flex gap-2 items-start">
-                              <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                              <span>{remedy}</span>
-                            </li>
-                          ))}
-                        </ul>
+                    {/* Tab 4: Remedies & Energy Optimization */}
+                    {activeVastuTab === 'REMEDIES' && (
+                      <div className="space-y-6 animate-in fade-in duration-300 text-xs">
+                        {/* Section 6: Entrance Analysis */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                            <Compass className="w-4 h-4 text-emerald-600" />
+                            6. Main Entrance & Door Aesthetics Analysis (Favorability: {advancedHouseResult.entranceAnalysis?.currentFavorability || 8}/10)
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Best Entrance Direction</span>
+                              <p className="text-slate-700 leading-relaxed font-bold">{advancedHouseResult.entranceAnalysis?.bestEntranceDirection || 'East (Indra) or North (Kubera)'}</p>
+                            </div>
+                            <div className="space-y-2 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Ideal Door Shade</span>
+                              <p className="text-slate-700 leading-relaxed font-mono flex items-center gap-1.5">
+                                <div className="w-4 h-4 border rounded-sm" style={{ backgroundColor: advancedHouseResult.entranceAnalysis?.doorColor?.match(/#([0-9a-fA-F]{3,6})/)?.[0] || '#FFFFF0' }} />
+                                {advancedHouseResult.entranceAnalysis?.doorColor || 'Ivory Cream (#FFFFF0)'}
+                              </p>
+                            </div>
+                            <div className="space-y-2 bg-white p-3 rounded-xl border md:col-span-2">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Auspicious Nameplate Design</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.entranceAnalysis?.nameplateDesign || 'Rectangular heavy teak nameplate with gold brass lettering, positioned right of main threshold.'}</p>
+                            </div>
+                            <div className="space-y-2 bg-white p-3 rounded-xl border md:col-span-2">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Threshold Protection Remedies</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.entranceAnalysis?.thresholdRemedies || 'Embed a solid brass string beneath marble doorway threshold plate to filter static grounding streams.'}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Section 8: Vastu Corrections & Dosha remedies */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-slate-800 flex items-center gap-1.5 border-b pb-2">
+                            <ShieldAlert className="w-4 h-4 text-rose-500" />
+                            8. Critical Vastu Corrections & Non-Structural Remedies
+                          </h5>
+                          <div className="space-y-3">
+                            {(advancedHouseResult.vastuCorrections?.doshas || []).map((dosha: any, dIdx: number) => (
+                              <div key={dIdx} className="bg-white border rounded-xl p-4 space-y-2">
+                                <div className="flex justify-between items-center border-b pb-1">
+                                  <span className="font-bold text-slate-800 uppercase tracking-wide text-[11px] text-rose-600 flex items-center gap-1">
+                                    <AlertTriangle className="w-3.5 h-3.5" /> {dosha.name}
+                                  </span>
+                                </div>
+                                <p className="text-slate-600"><strong className="text-slate-700">Impact:</strong> {dosha.impact}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 text-[11px]">
+                                  <div className="p-2.5 bg-emerald-50/40 rounded-lg border border-emerald-100">
+                                    <strong className="text-emerald-700 block uppercase font-mono tracking-wider text-[9px] mb-0.5">Non-Structural remedy</strong>
+                                    <p className="text-slate-600">{dosha.nonStructuralRemedy}</p>
+                                  </div>
+                                  <div className="p-2.5 bg-blue-50/40 rounded-lg border border-blue-100">
+                                    <strong className="text-blue-700 block uppercase font-mono tracking-wider text-[9px] mb-0.5">Structural correction</strong>
+                                    <p className="text-slate-600">{dosha.structuralRemedy}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Section 9: Element Balancing */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                            <Sparkles className="w-4 h-4 text-amber-500" />
+                            9. Element Balancing Analysis
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Current Element Distribution</span>
+                              <p className="text-slate-700 leading-relaxed">{advancedHouseResult.elementBalancing?.currentDistribution || 'Earth: 30%, Fire: 15% (Deficient), Water: 25%, Air: 15% (Low), Space: 15%'}</p>
+                            </div>
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-rose-600 uppercase font-bold block">Deficient Element & Enhancement Method</span>
+                              <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                                {(advancedHouseResult.elementBalancing?.deficientElements || []).map((el: string, eIdx: number) => (
+                                  <span key={eIdx} className="bg-rose-50 text-rose-600 border border-rose-100 px-2 py-0.5 rounded font-mono text-[10px] font-bold">
+                                    {el}
+                                  </span>
+                                ))}
+                              </div>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.elementBalancing?.enhancementMethods || 'Enhance deficient Fire using copper lighting in SE zone; burn aromatic camphors weekly.'}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Section 10: Energy Optimization */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                            <Activity className="w-4 h-4 text-[#1E3A8A]" />
+                            10. Home Energy Optimization Guidelines
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-white p-3.5 rounded-xl border space-y-1">
+                              <span className="font-mono text-[10px] uppercase font-bold text-slate-700">🪞 Mirror Placement</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.energyOptimization?.mirrors || 'Place mirrors strictly on North or East walls of the living room to double flow. Avoid reflecting the master bed.'}</p>
+                            </div>
+                            <div className="bg-white p-3.5 rounded-xl border space-y-1">
+                              <span className="font-mono text-[10px] uppercase font-bold text-slate-700">⛲ Water features</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.energyOptimization?.waterFeatures || 'Place a table-top flowing fountain in the North-East zone of living room, ensuring flow is directed inward.'}</p>
+                            </div>
+                            <div className="bg-white p-3.5 rounded-xl border space-y-1">
+                              <span className="font-mono text-[10px] uppercase font-bold text-slate-700">🪴 Beneficial Flora</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.energyOptimization?.plants || 'Cultivate Snake Plants, Money Plants, and Holy Basil (Tulsi) in East and North windows. Avoid thorny plants.'}</p>
+                            </div>
+                            <div className="bg-white p-3.5 rounded-xl border space-y-1">
+                              <span className="font-mono text-[10px] uppercase font-bold text-slate-700">💡 Light & Brightness</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.energyOptimization?.lighting || 'Ensure Brahmasthan is highly lit. Use warm white bulbs in South-East/South and cool white in North-West study room.'}</p>
+                            </div>
+                            <div className="bg-white p-3.5 rounded-xl border space-y-1 md:col-span-2">
+                              <span className="font-mono text-[10px] uppercase font-bold text-slate-700">💎 Aura Crystal Matrix</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.energyOptimization?.crystals || 'Set raw black tourmaline at door threshold to neutralize static waves, and clear amethyst clusters in the study zone.'}</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* Auspicious Move-In Dates */}
-                    <div className="bg-indigo-50/40 border border-indigo-200/30 p-5 rounded-3xl space-y-3 text-xs">
-                      <h6 className="font-bold text-[#1E3A8A] font-mono uppercase flex items-center gap-1.5">
-                        <Calendar className="w-4 h-4 text-[#1E3A8A]" /> Custom Auspicious Move-In Dates (Griha Pravesh)
-                      </h6>
-                      <ul className="space-y-2 text-slate-700">
-                        {advancedHouseResult.auspiciousMoveInDates.map((dateStr: string, dIdx: number) => (
-                          <li key={dIdx} className="flex gap-2 items-center">
-                            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>{dateStr}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="text-[11px] text-slate-400 italic mt-1">Calculated based on your Birth Driver {houseOwnerDriver} alignment with daily solar transits.</p>
-                    </div>
+                    {/* Tab 5: Timing, Future & Recommendations */}
+                    {activeVastuTab === 'TIMING' && (
+                      <div className="space-y-6 animate-in fade-in duration-300 text-xs">
+                        {/* Section 7: Auspicious Timing */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                            <Calendar className="w-4 h-4 text-[#1E3A8A]" />
+                            7. Auspicious Move-In Timing & Muhurats (90 days window)
+                          </h5>
+                          <div className="space-y-2">
+                            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Top 5 Griha Pravesh Move-In Dates</span>
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                              {((advancedHouseResult.auspiciousTiming?.moveInDates || advancedHouseResult.auspiciousMoveInDates || [])).map((item: any, idx: number) => {
+                                const hasReason = typeof item === 'object' && item !== null;
+                                return (
+                                  <div key={idx} className="bg-white border rounded-xl p-3 space-y-1 shadow-sm">
+                                    <span className="font-mono font-bold text-[#1E3A8A] block border-b pb-0.5">{hasReason ? item.date : `Auspicious Date ${idx + 1}`}</span>
+                                    <p className="text-[10px] text-slate-500 leading-relaxed pt-1">{hasReason ? item.reason : item}</p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Gruhapravesh Muhurat Time</span>
+                              <p className="text-slate-700 font-bold">{advancedHouseResult.auspiciousTiming?.gruhapravesh || '11th of next month, 08:30 AM to 10:15 AM'}</p>
+                            </div>
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Renovation & Repairs Window</span>
+                              <p className="text-slate-700">{advancedHouseResult.auspiciousTiming?.renovation || 'Initiate corrective breaking wall tasks strictly on Wednesdays or Thursdays'}</p>
+                            </div>
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Asset & Furniture Purchase Days</span>
+                              <p className="text-slate-700">{advancedHouseResult.auspiciousTiming?.majorPurchases || 'Best days are Fridays (Venus comfort) and Sundays (Sun power)'}</p>
+                            </div>
+                          </div>
+                        </div>
 
+                        {/* Section 11: Tenant/Ownership Analysis */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                            <TrendingUp className="w-4 h-4 text-emerald-600" />
+                            11. Tenant Suitability & Ownership Investment Analysis
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+                            <div className="p-3 bg-white rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">Ownership Suitability</span>
+                              <p className="text-xl font-bold font-mono text-[#1E3A8A] mt-1">{advancedHouseResult.tenantOwnership?.ownershipScore || 8}/10</p>
+                            </div>
+                            <div className="p-3 bg-white rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">Rental Suitability</span>
+                              <p className="text-xl font-bold font-mono text-emerald-600 mt-1">{advancedHouseResult.tenantOwnership?.rentalScore || 7}/10</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Ideal Tenant Profile</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.tenantOwnership?.idealTenantProfile || 'Ideal for individuals with Life Path or Destiny numbers 1, 5, or 6. Suited for corporate employees or contractors.'}</p>
+                            </div>
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Investment & Appreciation Potential</span>
+                              <p className="text-slate-600 leading-relaxed">{advancedHouseResult.tenantOwnership?.investmentPotential || 'Strong future appreciation indicators due to robust protective geomagnetism and active local grid lines.'}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Section 12: Annual Property Energy */}
+                        <div className="p-5 border bg-slate-50/30 rounded-2xl space-y-3">
+                          <h5 className="font-playfair text-sm font-bold text-[#1E3A8A] flex items-center gap-1.5 border-b pb-2">
+                            <Activity className="w-4 h-4 text-indigo-500" />
+                            12. Annual Property Energy Forecast ({new Date().getFullYear()})
+                          </h5>
+                          <p className="text-slate-600 leading-relaxed bg-white p-3 rounded-xl border">{advancedHouseResult.annualEnergy?.currentYear || 'This year offers immense opportunity for asset development, sudden luxury updates, and steady commercial income.'}</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-emerald-600 uppercase font-bold block">Best Prosperous Phases</span>
+                              <p className="text-slate-600">{advancedHouseResult.annualEnergy?.bestPhases || 'September to December are highly optimal months to establish businesses.'}</p>
+                            </div>
+                            <div className="space-y-1 bg-white p-3 rounded-xl border">
+                              <span className="text-[10px] font-mono text-rose-600 uppercase font-bold block">Challenging Periods & Precautions</span>
+                              <p className="text-slate-600">{advancedHouseResult.annualEnergy?.challengingPeriods || 'Minor low energy phase in November; cured by weekly rock-salt water mopping.'}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Section 13: Final Recommendation & Highlighted Action Items */}
+                        <div className="p-6 border-2 border-amber-300 bg-amber-50/25 rounded-3xl space-y-4">
+                          <div className="flex justify-between items-center border-b border-amber-200 pb-2">
+                            <h5 className="font-playfair text-base font-bold text-[#1E3A8A] flex items-center gap-1.5">
+                              <Award className="w-5 h-5 text-amber-500 fill-amber-500" />
+                              13. Final Recommendation & Action Plan
+                            </h5>
+                            <span className="text-lg font-mono font-extrabold text-[#1E3A8A]">
+                              Vastu Score: {advancedHouseResult.finalRecommendation?.overallScore || advancedHouseResult.scores?.prosperityScore || 85}/100
+                            </span>
+                          </div>
+                          
+                          <div className="space-y-1.5">
+                            <span className="text-[10px] font-mono text-[#D97706] uppercase font-bold block">Primary Resolution</span>
+                            <p className="text-slate-800 font-bold text-sm leading-relaxed">{advancedHouseResult.finalRecommendation?.stayMoveBuy || 'Highly Recommended to Stay, Align threshold elements, and proceed with asset additions.'}</p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <span className="text-[10px] font-mono text-indigo-700 uppercase font-bold block">Top 5 Priority Action Items (Clear Highlights)</span>
+                            <ul className="space-y-2.5">
+                              {(advancedHouseResult.finalRecommendation?.topPriorities || advancedHouseResult.remedies?.elementalRemedies || []).slice(0, 5).map((item: string, idx: number) => (
+                                <li key={idx} className="flex gap-2.5 items-start bg-white p-2 rounded-xl border shadow-sm">
+                                  <span className="w-5 h-5 bg-[#1E3A8A] text-white rounded-full flex items-center justify-center font-mono text-[10px] font-bold shrink-0 mt-0.5">
+                                    {idx + 1}
+                                  </span>
+                                  <span className="text-xs text-slate-700 font-medium leading-relaxed">{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1384,7 +2388,7 @@ export default function PremiumConsultations() {
                 <h3 className="font-playfair text-xl font-bold text-[#1E3A8A]">Pro Business Firm Name Suite</h3>
                 <p className="text-xs text-slate-500 font-sans">Evaluate existing corporate brand names or generate AI-powered options aligned with your driver frequency.</p>
               </div>
-              <div className="flex bg-[#F2E8DC]/40 p-1 rounded-xl shrink-0 self-start sm:self-auto">
+              <div className="flex bg-[#F2E8DC]/40 p-1 rounded-xl shrink-0 self-start sm:self-auto gap-1">
                 <button
                   type="button"
                   onClick={() => setBusinessMode('CHECK')}
@@ -1402,6 +2406,15 @@ export default function PremiumConsultations() {
                   }`}
                 >
                   AI Generator
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBusinessMode('OPTIMAL')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
+                    businessMode === 'OPTIMAL' ? 'bg-[#1E3A8A] text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Optimal Suggestions
                 </button>
               </div>
             </div>
@@ -1525,7 +2538,7 @@ export default function PremiumConsultations() {
                   </div>
                 )}
               </div>
-            ) : (
+            ) : businessMode === 'GENERATE' ? (
               <div className="space-y-6">
                 <form onSubmit={handleGenerateBusinessNames} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
@@ -1655,6 +2668,501 @@ export default function PremiumConsultations() {
                   </div>
                 )}
               </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Form and Results Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Left Column: Form Questionnaire */}
+                  <div className="lg:col-span-1 bg-[#F2E8DC]/15 p-6 rounded-3xl border border-[#F2E8DC] space-y-6 h-fit">
+                    <div className="space-y-1 border-b border-[#F2E8DC]/60 pb-3">
+                      <h4 className="font-playfair text-base font-bold text-slate-800 flex items-center gap-1.5">
+                        <FileText className="w-4 h-4 text-[#D97706]" />
+                        Optimal Naming Form
+                      </h4>
+                      <p className="text-[11px] text-slate-500">Provide details about your venture and target market to feed the Chaldean corporate naming algorithm.</p>
+                    </div>
+
+                    <form onSubmit={handleGenerateOptimalNames} className="space-y-4">
+                      {/* Owner's Name */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-550 uppercase tracking-wider block font-bold">Owner's Full Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Alexander Mercer"
+                          value={optOwnerName}
+                          onChange={(e) => setOptOwnerName(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+
+                      {/* Owner's DOB */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-550 uppercase tracking-wider block font-bold">Owner's Date of Birth</label>
+                        <input
+                          type="date"
+                          required
+                          value={optOwnerDob}
+                          onChange={(e) => setOptOwnerDob(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+
+                      {/* Industry / Niche */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-550 uppercase tracking-wider block font-bold">Industry / Niche</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. E-commerce Cosmetics, AI SaaS"
+                          value={optIndustry}
+                          onChange={(e) => setOptIndustry(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+
+                      {/* Business Type */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-550 uppercase tracking-wider block font-bold">Business Type</label>
+                        <select
+                          value={optBusinessType}
+                          onChange={(e) => setOptBusinessType(e.target.value as any)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        >
+                          <option value="Product">Product Focused</option>
+                          <option value="Service">Service Focused</option>
+                          <option value="Both">Hybrid (Both Product & Service)</option>
+                        </select>
+                      </div>
+
+                      {/* Target Audience */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-550 uppercase tracking-wider block font-bold">Target Audience</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Gen-Z Techies, Young Parents"
+                          value={optTargetAudience}
+                          onChange={(e) => setOptTargetAudience(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+
+                      {/* Keywords to Include */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <label className="text-[10px] font-mono text-slate-550 uppercase tracking-wider block font-bold">Keywords to Include</label>
+                          <span className="text-[9px] font-sans text-slate-400">Optional</span>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="e.g. Zen, Sol, Tech"
+                          value={optKeywordsInclude}
+                          onChange={(e) => setOptKeywordsInclude(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+
+                      {/* Keywords to Avoid */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <label className="text-[10px] font-mono text-slate-550 uppercase tracking-wider block font-bold">Keywords to Avoid</label>
+                          <span className="text-[9px] font-sans text-slate-400">Optional</span>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="e.g. Cheap, Cold, Bad"
+                          value={optKeywordsAvoid}
+                          onChange={(e) => setOptKeywordsAvoid(e.target.value)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        />
+                      </div>
+
+                      {/* Preferred Name Length */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-550 uppercase tracking-wider block font-bold">Preferred Name Length</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {(['Short', 'Medium', 'Long'] as const).map((len) => (
+                            <button
+                              key={len}
+                              type="button"
+                              onClick={() => setOptNameLength(len)}
+                              className={`py-1.5 px-2 rounded-lg text-[10px] font-mono border transition-all cursor-pointer ${
+                                optNameLength === len 
+                                  ? 'bg-[#1E3A8A] border-[#1E3A8A] text-white font-bold shadow-sm' 
+                                  : 'bg-white border-[#E5E7EB] text-slate-600 hover:bg-slate-50'
+                              }`}
+                            >
+                              {len === 'Short' ? 'Short' : len === 'Medium' ? 'Medium' : 'Long'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Tone Preference */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono text-slate-550 uppercase tracking-wider block font-bold">Tone Preference</label>
+                        <select
+                          value={optTonePreference}
+                          onChange={(e) => setOptTonePreference(e.target.value as any)}
+                          className="w-full bg-white border border-[#E5E7EB] py-2 px-3 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                        >
+                          <option value="Modern">Modern / Clean</option>
+                          <option value="Traditional">Traditional / Sanskrit-Vedic</option>
+                          <option value="Creative">Creative / Whimsical</option>
+                          <option value="Professional">Professional / Corporate</option>
+                          <option value="Fun">Fun / Playful</option>
+                        </select>
+                      </div>
+
+                      {/* Generate Button */}
+                      <button
+                        type="submit"
+                        disabled={isGeneratingOpt}
+                        className="w-full mt-2 bg-[#1E3A8A] hover:bg-[#152A66] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-mono uppercase font-bold text-xs tracking-wider py-3 px-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        {isGeneratingOpt ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            Calculating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400 animate-pulse" />
+                            Generate 15 Names
+                          </>
+                        )}
+                      </button>
+                    </form>
+
+                    {optError && (
+                      <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-xs flex gap-2 items-center">
+                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                        <span>{optError}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column: Loading State / Results View / Empty State */}
+                  <div className="lg:col-span-2 space-y-6">
+                    {isGeneratingOpt ? (
+                      <div className="bg-white border rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-6 shadow-sm min-h-[450px]">
+                        <div className="relative">
+                          <div className="w-16 h-16 border-4 border-[#1E3A8A]/10 border-t-[#1E3A8A] rounded-full animate-spin" />
+                          <Sparkles className="w-6 h-6 text-amber-500 fill-amber-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+                        </div>
+                        <div className="space-y-2 max-w-md">
+                          <h4 className="font-playfair text-lg font-bold text-slate-800">Calibrating Brand Synastry Matrices</h4>
+                          <p className="text-xs text-slate-500 leading-relaxed font-sans">
+                            The corporate Astro-Naming engine is presently generating 15 detailed name profiles, calculating Chaldean and Pythagorean sound frequencies, mapping owner's driver/conductor friendly nodes, and identifying auspicious launching Muhurthas...
+                          </p>
+                        </div>
+                        <div className="w-full max-w-xs bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-amber-500 to-[#1E3A8A] w-full animate-[shimmer_1.5s_infinite]" style={{ backgroundSize: '200% 100%' }} />
+                        </div>
+                      </div>
+                    ) : optResult ? (
+                      <div className="space-y-6 animate-in fade-in duration-500">
+                        {/* Results Header Stats Panel */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          <div className="bg-[#1E3A8A]/5 border border-[#1E3A8A]/10 p-4 rounded-2xl text-center">
+                            <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Suggestions</span>
+                            <span className="text-sm font-mono font-extrabold text-[#1E3A8A]">15 Profiles</span>
+                          </div>
+                          <div className="bg-[#1E3A8A]/5 border border-[#1E3A8A]/10 p-4 rounded-2xl text-center">
+                            <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Owner Mulank</span>
+                            <span className="text-sm font-mono font-extrabold text-[#1E3A8A]">Driver {getDriverAndConductor(optOwnerDob).driver}</span>
+                          </div>
+                          <div className="bg-[#1E3A8A]/5 border border-[#1E3A8A]/10 p-4 rounded-2xl text-center">
+                            <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Owner Bhagyank</span>
+                            <span className="text-sm font-mono font-extrabold text-[#1E3A8A]">Conductor {getDriverAndConductor(optOwnerDob).conductor}</span>
+                          </div>
+                          <div className="bg-[#1E3A8A]/5 border border-[#1E3A8A]/10 p-4 rounded-2xl text-center">
+                            <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Key Harmony</span>
+                            <span className="text-sm font-mono font-extrabold text-amber-600">Venus & Jupiter</span>
+                          </div>
+                        </div>
+
+                        {/* Interactive Suggestions Split View */}
+                        <div className="bg-white border rounded-3xl p-6 shadow-sm space-y-4">
+                          <div className="flex items-center justify-between border-b pb-3">
+                            <div>
+                              <h4 className="font-playfair text-base font-bold text-slate-800">15 Optimal Corporate Suggestions</h4>
+                              <p className="text-[10px] text-slate-400">Click any name on the left to reveal its deep numerology & brand asset dossier.</p>
+                            </div>
+                            <span className="text-[10px] font-mono bg-emerald-50 text-emerald-600 font-extrabold px-2 py-0.5 rounded-full uppercase">
+                              100% Calibrated
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-2">
+                            {/* Left: Button List */}
+                            <div className="md:col-span-5 border-r pr-2 md:pr-4 space-y-2 max-h-[460px] overflow-y-auto scrollbar-thin">
+                              {optResult.names.map((n: any, idx: number) => {
+                                const isSelected = selectedResultIndex === idx;
+                                return (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => setSelectedResultIndex(idx)}
+                                    className={`w-full text-left p-3 rounded-xl transition-all border flex items-center justify-between group cursor-pointer ${
+                                      isSelected 
+                                        ? 'bg-[#1E3A8A]/5 border-[#1E3A8A] shadow-sm' 
+                                        : 'bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200'
+                                    }`}
+                                  >
+                                    <div className="space-y-1">
+                                      <span className="text-[9px] font-mono text-slate-400 uppercase block">Rank #{idx + 1}</span>
+                                      <span className={`text-xs font-bold font-playfair transition-colors ${
+                                        isSelected ? 'text-[#1E3A8A]' : 'text-slate-800'
+                                      }`}>
+                                        {n.name}
+                                      </span>
+                                    </div>
+                                    <div className="text-right">
+                                      <span className="text-[10px] font-mono font-bold bg-amber-50 text-[#D97706] py-0.5 px-1.5 rounded-full">
+                                        {n.ownerCompatibility.toFixed(1)}/10
+                                      </span>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Right: Master Dossier Sheet */}
+                            <div className="md:col-span-7 space-y-5 animate-in fade-in duration-300">
+                              {(() => {
+                                const n = optResult.names[selectedResultIndex] || optResult.names[0];
+                                if (!n) return null;
+                                return (
+                                  <>
+                                    {/* Name & Tagline Banner */}
+                                    <div className="bg-[#1E3A8A]/5 p-5 rounded-2xl border border-[#1E3A8A]/10 relative overflow-hidden">
+                                      <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-[#1E3A8A]/5 rounded-bl-full pointer-events-none" />
+                                      <span className="text-[9px] font-mono text-amber-600 uppercase tracking-widest font-bold">SUGGESTION #{selectedResultIndex + 1}</span>
+                                      <h3 className="font-playfair text-2xl font-extrabold text-[#1E3A8A] mt-1">{n.name}</h3>
+                                      <p className="text-xs text-slate-500 font-sans italic mt-1 font-medium">"{n.taglineIdea}"</p>
+                                    </div>
+
+                                    {/* Numerological Formula */}
+                                    <div className="bg-slate-50 p-4 rounded-xl border space-y-1.5">
+                                      <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Authentic Numerical Calculation</span>
+                                      <code className="text-[11px] font-mono text-[#1E3A8A] block break-all font-bold">
+                                        {n.calculation}
+                                      </code>
+                                      <p className="text-[10px] text-slate-500 font-sans mt-1 leading-relaxed">
+                                        <strong>Chaldean Vibration Power:</strong> {n.meaning}
+                                      </p>
+                                    </div>
+
+                                    {/* Score Metrics */}
+                                    <div className="space-y-3">
+                                      <h5 className="text-[10px] font-mono text-slate-450 uppercase font-bold">Alignment Calibration Scores</h5>
+                                      <div className="grid grid-cols-3 gap-3">
+                                        <div className="p-3 bg-slate-50 border rounded-xl text-center">
+                                          <span className="text-[8px] font-mono text-slate-400 uppercase block">Owner Affinity</span>
+                                          <span className="text-sm font-bold font-mono text-[#1E3A8A] block mt-0.5">{n.ownerCompatibility}/10</span>
+                                        </div>
+                                        <div className="p-3 bg-slate-50 border rounded-xl text-center">
+                                          <span className="text-[8px] font-mono text-slate-400 uppercase block">Industry Fit</span>
+                                          <span className="text-sm font-bold font-mono text-emerald-600 block mt-0.5">{n.industryRelevanceScore}/10</span>
+                                        </div>
+                                        <div className="p-3 bg-slate-50 border rounded-xl text-center">
+                                          <span className="text-[8px] font-mono text-slate-400 uppercase block">Market Appeal</span>
+                                          <span className="text-sm font-bold font-mono text-indigo-600 block mt-0.5">{n.marketAppealScore}/10</span>
+                                        </div>
+                                      </div>
+                                      <p className="text-[10px] text-slate-500 leading-relaxed font-sans italic mt-1.5">
+                                        <strong>Affinity Insight:</strong> {n.ownerCompatibilityExplanation}
+                                      </p>
+                                    </div>
+
+                                    {/* Energetics */}
+                                    <div className="space-y-1.5">
+                                      <span className="text-[10px] font-mono text-slate-455 uppercase font-bold block">Aura & Magnetism</span>
+                                      <p className="text-xs text-slate-600 leading-relaxed font-sans bg-amber-50/10 p-3.5 border border-amber-500/10 rounded-xl">
+                                        {n.vibrationEnergy}
+                                      </p>
+                                    </div>
+
+                                    {/* Pros & Cons */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                      <div className="space-y-1.5">
+                                        <span className="text-[10px] font-mono text-emerald-600 uppercase font-bold block">Brand Advantages</span>
+                                        <ul className="space-y-1 text-slate-600 text-[11px] font-sans">
+                                          {n.pros?.map((pro: string, pIdx: number) => (
+                                            <li key={pIdx} className="flex gap-1.5 items-start">
+                                              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                                              <span>{pro}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                      <div className="space-y-1.5">
+                                        <span className="text-[10px] font-mono text-amber-600 uppercase font-bold block">Potential Hurdles</span>
+                                        <ul className="space-y-1 text-slate-600 text-[11px] font-sans">
+                                          {n.cons?.map((con: string, cIdx: number) => (
+                                            <li key={cIdx} className="flex gap-1.5 items-start">
+                                              <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                                              <span>{con}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    </div>
+
+                                    {/* Logo & Domain */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
+                                      <div className="space-y-1.5">
+                                        <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Corporate Color Palette</span>
+                                        <div className="flex gap-2">
+                                          {n.logoColors?.map((col: any, colIdx: number) => (
+                                            <div key={colIdx} className="flex flex-col items-center space-y-1 bg-slate-50 p-1.5 rounded-lg border w-full">
+                                              <div className="w-6 h-6 rounded-full border shadow-inner" style={{ backgroundColor: col.hex }} />
+                                              <span className="text-[8px] font-mono text-slate-500 block truncate max-w-[60px]">{col.name}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <div className="space-y-1.5">
+                                        <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Web Domain Guidance</span>
+                                        <div className="bg-indigo-50/40 p-2.5 border border-indigo-500/10 rounded-xl flex items-center justify-between">
+                                          <span className="text-[11px] font-mono font-bold text-[#1E3A8A] break-all">{n.domainSuggestion}</span>
+                                          <span className="text-[8px] font-mono bg-indigo-100 text-indigo-700 py-0.5 px-1.5 rounded uppercase shrink-0 font-extrabold ml-1">Secure</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Best Launch Date */}
+                                    <div className="border-t pt-4 p-4 bg-emerald-50/10 border border-emerald-500/10 rounded-2xl">
+                                      <span className="text-[9px] font-mono text-emerald-600 uppercase font-bold block">Auspicious Launch Muhurtha</span>
+                                      <div className="flex items-start gap-2.5 mt-1.5">
+                                        <Calendar className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                        <div className="space-y-0.5">
+                                          <span className="text-xs font-mono font-extrabold text-slate-800">{new Date(n.bestLaunchDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                          <p className="text-[10px] text-slate-500 leading-relaxed font-sans">{n.bestLaunchDateReason}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Top 3 deep dives */}
+                        {optResult.deepDives && optResult.deepDives.length > 0 && (
+                          <div className="bg-white border rounded-3xl p-6 shadow-sm space-y-4">
+                            <div className="border-b pb-3">
+                              <h4 className="font-playfair text-base font-bold text-slate-800">Top 3 Deep-Dive Market Consultations</h4>
+                              <p className="text-[10px] text-slate-400">Exclusive forward-looking astro-growth prediction portfolios for the elite brand candidates.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              {optResult.deepDives.map((d: any, idx: number) => (
+                                <div key={idx} className="bg-gradient-to-b from-slate-50 to-white border hover:border-amber-500/40 transition-all rounded-2xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
+                                  <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-[9px] font-mono bg-amber-50 text-[#D97706] font-bold py-0.5 px-2 rounded-full">GOLD PRIORITY #{idx + 1}</span>
+                                      <span className="text-xs font-mono font-bold text-[#1E3A8A]">Root {rToSingle(calcChaldean(d.name))}</span>
+                                    </div>
+                                    <h5 className="font-playfair text-base font-extrabold text-slate-900 border-b pb-1.5">{d.name}</h5>
+                                    
+                                    <div className="space-y-2 text-xs">
+                                      <div className="space-y-1">
+                                        <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">6-Month Growth Trajectory</span>
+                                        <p className="text-slate-600 leading-relaxed font-sans text-[11px]">{d.sixMonthGrowth}</p>
+                                      </div>
+                                      <div className="space-y-1 pt-1.5 border-t border-slate-100">
+                                        <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">1st Year Scale Challenge</span>
+                                        <p className="text-slate-600 leading-relaxed font-sans text-[11px]">{d.firstYearChallenges}</p>
+                                      </div>
+                                      <div className="space-y-1 pt-1.5 border-t border-slate-100">
+                                        <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Planetary Marketing Engine</span>
+                                        <p className="text-slate-600 leading-relaxed font-sans text-[11px]">{d.marketingStrategy}</p>
+                                      </div>
+                                      <div className="space-y-1 pt-1.5 border-t border-slate-100">
+                                        <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Audience Psychological Blueprint</span>
+                                        <p className="text-slate-600 leading-relaxed font-sans text-[11px]">{d.customerPerception}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Full Rankings Table */}
+                        {optResult.finalRanking && optResult.finalRanking.length > 0 && (
+                          <div className="bg-white border rounded-3xl p-6 shadow-sm space-y-4">
+                            <div className="border-b pb-3">
+                              <h4 className="font-playfair text-base font-bold text-slate-800">Definitive Venture Naming Index</h4>
+                              <p className="text-[10px] text-slate-400">All 15 generated name alternatives mathematically evaluated and ranked from most favorable to least favorable.</p>
+                            </div>
+
+                            <div className="overflow-x-auto rounded-xl border scrollbar-thin">
+                              <table className="w-full text-left border-collapse text-xs">
+                                <thead>
+                                  <tr className="bg-slate-50 font-mono text-[10px] text-slate-455 uppercase border-b">
+                                    <th className="py-3 px-4 font-bold text-center">Rank</th>
+                                    <th className="py-3 px-4 font-bold">Corporate Name</th>
+                                    <th className="py-3 px-4 font-bold text-center">Chaldean Total</th>
+                                    <th className="py-3 px-4 font-bold text-center">Affinity Score</th>
+                                    <th className="py-3 px-4 font-bold text-center">Overall Index Score</th>
+                                    <th className="py-3 px-4 font-bold text-center">Aura Grade</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y font-sans">
+                                  {optResult.finalRanking.map((rk: any, rIdx: number) => {
+                                    const matchingDetails = optResult.names.find((x: any) => x.name === rk.name) || {};
+                                    return (
+                                      <tr key={rIdx} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="py-3 px-4 text-center font-mono font-extrabold text-[#1E3A8A]">#{rk.rank}</td>
+                                        <td className="py-3 px-4 font-playfair font-bold text-slate-900">{rk.name}</td>
+                                        <td className="py-3 px-4 text-center font-mono text-slate-600">{matchingDetails.numerologicalValue || "N/A"}</td>
+                                        <td className="py-3 px-4 text-center font-mono text-[#D97706] font-bold">{matchingDetails.ownerCompatibility ? `${matchingDetails.ownerCompatibility}/10` : "N/A"}</td>
+                                        <td className="py-3 px-4 text-center font-mono text-indigo-600 font-extrabold">{rk.score}/10</td>
+                                        <td className="py-3 px-4 text-center font-mono">
+                                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
+                                            rk.score >= 9.0 
+                                              ? 'bg-emerald-50 text-emerald-600' 
+                                              : rk.score >= 8.0 
+                                                ? 'bg-blue-50 text-blue-600' 
+                                                : 'bg-amber-50 text-amber-600'
+                                          }`}>
+                                            {rk.score >= 9.0 ? 'A+ Elite' : rk.score >= 8.5 ? 'A High' : rk.score >= 8.0 ? 'B+ Stable' : 'B Standard'}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-white border rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-4 shadow-sm min-h-[450px]">
+                        <div className="w-12 h-12 bg-[#F2E8DC]/40 rounded-full flex items-center justify-center text-[#1E3A8A]">
+                          <Compass className="w-6 h-6 animate-pulse" />
+                        </div>
+                        <div className="space-y-2 max-w-sm">
+                          <h4 className="font-playfair text-base font-bold text-slate-800">Astro-Corporate Corporate Naming Oracle</h4>
+                          <p className="text-xs text-slate-500 leading-relaxed font-sans">
+                            Fill out the business profile details, seed keywords, and preference options in the questionnaire panel. 
+                          </p>
+                          <p className="text-xs text-slate-400 font-sans italic">
+                            The system will instantly generate 15 highly optimized suggested profiles, map out owner alignment grades, logo palette advice, auspicious launching dates, and build top-tier deep dives.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
           </motion.div>
         )}
@@ -1691,7 +3199,7 @@ export default function PremiumConsultations() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Subject's Full Name</label>
                   <input
@@ -1714,6 +3222,18 @@ export default function PremiumConsultations() {
                       setSigDob(e.target.value);
                       setSelectedProfileIndex(-1);
                     }}
+                    className="w-full bg-white border border-slate-200 text-xs px-4 py-2.5 rounded-xl text-slate-800 font-sans focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A]"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Profession / Industry</label>
+                  <input
+                    type="text"
+                    value={sigProfession}
+                    onChange={(e) => {
+                      setSigProfession(e.target.value);
+                    }}
+                    placeholder="e.g. Software, Finance, Art"
                     className="w-full bg-white border border-slate-200 text-xs px-4 py-2.5 rounded-xl text-slate-800 font-sans focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A]"
                   />
                 </div>
@@ -1900,10 +3420,199 @@ export default function PremiumConsultations() {
                         <span className="text-xs font-bold text-slate-700">{s.label}</span>
                         {signatureStyle === s.id && <Check className="w-4 h-4 text-[#1E3A8A]" />}
                       </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{s.desc}</p>
+                      <p className="text-[10px] text-slate-500 mt-1 font-sans">{s.desc}</p>
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+
+            {/* 3. SIGNATURE STRUCTURAL QUESTIONNAIRE */}
+            <div className="bg-slate-50 border rounded-3xl p-6 space-y-4">
+              <div>
+                <h4 className="font-playfair text-base font-bold text-slate-800">3. Signature Handwriting Structural Questionnaire</h4>
+                <p className="text-[11px] text-slate-500">Provide precise structural descriptions of your handwriting. These coordinates calibrate the AI Vastu Engine to analyze hidden psychological and financial archetypes with masterclass precision.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Name signed */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Name Signed</label>
+                  <input
+                    type="text"
+                    value={sigDescNameSigned}
+                    onChange={(e) => setSigDescNameSigned(e.target.value)}
+                    placeholder={sigName || "e.g. R. Singh / Raajeev"}
+                    className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-850 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                  />
+                  <p className="text-[9px] text-slate-400">Exact letters or initials as written.</p>
+                </div>
+
+                {/* Size */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Signature Size</label>
+                  <select
+                    value={sigDescSize}
+                    onChange={(e) => setSigDescSize(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                  >
+                    <option value="Small">Small (Compared to standard text)</option>
+                    <option value="Medium">Medium (Balanced & standard)</option>
+                    <option value="Large">Large (Bold & prominent)</option>
+                  </select>
+                  <p className="text-[9px] text-slate-400">Physical height of the letters.</p>
+                </div>
+
+                {/* Slant */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Handwriting Slant</label>
+                  <select
+                    value={sigDescSlant}
+                    onChange={(e) => setSigDescSlant(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                  >
+                    <option value="Forward">Forward Slant (Right leaning)</option>
+                    <option value="Backward">Backward Slant (Left leaning)</option>
+                    <option value="Straight">Straight (Vertical / Upright)</option>
+                    <option value="Mixed">Mixed Slant (Inconsistent)</option>
+                  </select>
+                  <p className="text-[9px] text-slate-400">Directional angle of characters.</p>
+                </div>
+
+                {/* Legibility */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Letter Legibility</label>
+                  <select
+                    value={sigDescLegibility}
+                    onChange={(e) => setSigDescLegibility(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                  >
+                    <option value="Very Clear">Very Clear (Easily readable)</option>
+                    <option value="Moderately Clear">Moderately Clear (Some parts stylized)</option>
+                    <option value="Stylized">Stylized (Artistic flow)</option>
+                    <option value="Illegible">Illegible (Abstract / Scribble)</option>
+                  </select>
+                  <p className="text-[9px] text-slate-400">How readable the name is to others.</p>
+                </div>
+
+                {/* Pressure */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Pen Pressure</label>
+                  <select
+                    value={sigDescPressure}
+                    onChange={(e) => setSigDescPressure(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                  >
+                    <option value="Light">Light Pressure (Soft & fine lines)</option>
+                    <option value="Medium">Medium Pressure (Standard & steady)</option>
+                    <option value="Heavy">Heavy Pressure (Deep impressions)</option>
+                  </select>
+                  <p className="text-[9px] text-slate-400">Force applied onto the paper.</p>
+                </div>
+
+                {/* Speed */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Writing Speed</label>
+                  <select
+                    value={sigDescSpeed}
+                    onChange={(e) => setSigDescSpeed(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                  >
+                    <option value="Slow and careful">Slow and careful</option>
+                    <option value="Quick and flowing">Quick and flowing</option>
+                  </select>
+                  <p className="text-[9px] text-slate-400">Flow velocity of writing hand.</p>
+                </div>
+
+                {/* Name Prominence */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Name Prominence Treatment</label>
+                  <select
+                    value={sigDescFirstVsLast}
+                    onChange={(e) => setSigDescFirstVsLast(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                  >
+                    <option value="First name more prominent">First name more prominent</option>
+                    <option value="Last name more prominent">Last name more prominent (Family heritage)</option>
+                    <option value="Equally balanced">Equally balanced / Merged</option>
+                    <option value="Initials only">Initials only</option>
+                  </select>
+                  <p className="text-[9px] text-slate-400">Vastu prominence ratio between first/last name.</p>
+                </div>
+
+                {/* Underline Toggle */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Underline Foundation</label>
+                  <select
+                    value={sigDescUnderline}
+                    onChange={(e) => setSigDescUnderline(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                  >
+                    <option value="No">No Underline</option>
+                    <option value="Yes">Yes, Has Underline</option>
+                  </select>
+                  <p className="text-[9px] text-slate-400">Whether there is a line drawn underneath.</p>
+                </div>
+
+                {/* Flourishes Toggle */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Flourishes & Loops</label>
+                  <select
+                    value={sigDescFlourishes}
+                    onChange={(e) => setSigDescFlourishes(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                  >
+                    <option value="No">No Flourishes</option>
+                    <option value="Yes">Yes, Has Decorative Elements</option>
+                  </select>
+                  <p className="text-[9px] text-slate-400">Loops, enclosing circles, or art swirls.</p>
+                </div>
+              </div>
+
+              {/* Conditional Inputs for Underline and Flourishes */}
+              {(sigDescUnderline === 'Yes' || sigDescFlourishes === 'Yes') && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  {sigDescUnderline === 'Yes' && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Underline Description</label>
+                      <input
+                        type="text"
+                        value={sigDescUnderlineDesc}
+                        onChange={(e) => setSigDescUnderlineDesc(e.target.value)}
+                        placeholder="e.g. Simple single line / Double underline / Elaborate upward-flick"
+                        className="w-full bg-white border border-slate-200 text-xs px-3 py-2.5 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                      />
+                      <p className="text-[9px] text-slate-400">Describe the line style underneath.</p>
+                    </div>
+                  )}
+
+                  {sigDescFlourishes === 'Yes' && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Flourishes Description</label>
+                      <input
+                        type="text"
+                        value={sigDescFlourishesDesc}
+                        onChange={(e) => setSigDescFlourishesDesc(e.target.value)}
+                        placeholder="e.g. Loop in the first letter / Enclosing circle / Trailing dot below"
+                        className="w-full bg-white border border-slate-200 text-xs px-3 py-2.5 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A]"
+                      />
+                      <p className="text-[9px] text-slate-400">Describe any loops, curves, dots or circles.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Special Characteristics */}
+              <div className="space-y-1.5 pt-2">
+                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Special Characteristics & Unique Features</label>
+                <textarea
+                  value={sigDescSpecial}
+                  onChange={(e) => setSigDescSpecial(e.target.value)}
+                  placeholder="e.g. Signature rises at a steep 30-degree angle, starts with a massive decorative initial, the last letter is crossed back to the left, or ends with an upward flick..."
+                  rows={2}
+                  className="w-full bg-white border border-slate-200 text-xs px-3 py-2 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1E3A8A] font-sans"
+                />
+                <p className="text-[9px] text-slate-400">Any other specific features, angles, pens or traits you want the AI Vastu Astrologer to know.</p>
               </div>
             </div>
 
@@ -1971,7 +3680,7 @@ export default function PremiumConsultations() {
                   </div>
                 </div>
 
-                {/* SCORES AND RADIAL DASHBOARD */}
+                {/* SECTION 1: COMPATIBILITY DASHBOARD & NUMEROLOGY SYNASTRY */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   {/* Circular Score Gauge */}
                   <div className="lg:col-span-4 bg-gradient-to-br from-indigo-50/50 to-slate-50 border rounded-3xl p-6 flex flex-col items-center justify-center text-center">
@@ -1994,21 +3703,21 @@ export default function PremiumConsultations() {
                           strokeWidth="8"
                           fill="transparent"
                           strokeDasharray={2 * Math.PI * 60}
-                          strokeDashoffset={2 * Math.PI * 60 * (1 - (sigAuditResult.scores?.overallSignatureScore || 50) / 100)}
+                          strokeDashoffset={2 * Math.PI * 60 * (1 - ((sigAuditResult.compatibilityScore?.score || 8) * 10) / 100)}
                           strokeLinecap="round"
                         />
                       </svg>
                       <div className="flex flex-col items-center">
-                        <span className="font-playfair text-4xl font-black text-slate-800">{sigAuditResult.scores?.overallSignatureScore}</span>
-                        <span className="text-[10px] text-slate-400 font-mono mt-0.5">/ 100 Points</span>
+                        <span className="font-playfair text-4xl font-black text-slate-800">{(sigAuditResult.compatibilityScore?.score || 8) * 10}%</span>
+                        <span className="text-[10px] text-slate-400 font-mono mt-0.5">Vastu Synastry</span>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-650 mt-4 font-medium leading-relaxed text-center">
-                      {(sigAuditResult.scores?.overallSignatureScore || 50) >= 80 ? (
+                    <p className="text-xs text-slate-655 mt-4 font-medium leading-relaxed text-center">
+                      {(sigAuditResult.compatibilityScore?.score || 8) >= 8 ? (
                         <span className="text-emerald-700 font-bold flex items-center justify-center gap-1">
                           <CheckCircle className="w-4 h-4" /> Highly Auspicious Vastu Alignment
                         </span>
-                      ) : (sigAuditResult.scores?.overallSignatureScore || 50) >= 60 ? (
+                      ) : (sigAuditResult.compatibilityScore?.score || 8) >= 6 ? (
                         <span className="text-[#D97706] font-bold flex items-center justify-center gap-1">
                           <Info className="w-4 h-4" /> Moderate Karmic Blockages Found
                         </span>
@@ -2020,54 +3729,141 @@ export default function PremiumConsultations() {
                     </p>
                   </div>
 
-                  {/* Astro-Numerology Alignment Bento Box */}
-                  <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {[
-                      { label: 'Career & Authority', val: sigAuditResult.scores?.careerScore || 65, desc: 'Fame & hierarchical growth' },
-                      { label: 'Wealth Protection', val: sigAuditResult.scores?.financialFlowScore || 60, desc: 'Locks leakage, preserves savings' },
-                      { label: 'Public Recognition', val: sigAuditResult.scores?.recognitionScore || 70, desc: 'Social brand & circle status' },
-                      { label: 'Leadership Flow', val: sigAuditResult.scores?.leadershipScore || 65, desc: 'Command & team compliance' },
-                      { label: 'Enterprise Suitability', val: sigAuditResult.scores?.businessSuccessScore || 60, desc: 'Corporate expansion & deeds' },
-                      { label: 'Relationship Harmony', val: sigAuditResult.scores?.relationshipHarmonyScore || 75, desc: 'Vocal composure & household vibes' },
-                    ].map((item, idx) => (
-                      <div key={idx} className="bg-white border rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                          <span className="text-[10px] font-bold text-slate-700 block">{item.label}</span>
-                          <span className="text-[9px] text-slate-400 block mt-0.5 leading-tight">{item.desc}</span>
-                        </div>
-                        <div className="mt-4 flex items-baseline gap-1">
-                          <span className="font-playfair text-xl font-bold text-slate-800">{item.val}</span>
-                          <span className="text-[9px] text-slate-400">/100</span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden mt-1.5">
-                          <div
-                            className={`h-full rounded-full ${
-                              item.val >= 85 ? 'bg-emerald-500' : item.val >= 65 ? 'bg-indigo-500' : 'bg-amber-500'
-                            }`}
-                            style={{ width: `${item.val}%` }}
-                          />
-                        </div>
+                  {/* Numerological Synastry explanation */}
+                  <div className="lg:col-span-8 bg-white border rounded-3xl p-6 flex flex-col justify-between space-y-4">
+                    <div>
+                      <span className="text-[9px] font-mono bg-indigo-50 text-indigo-700 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        Planetary Name Synastry
+                      </span>
+                      <h4 className="font-playfair text-base font-bold text-slate-800 mt-2">1. Astro-Chaldean Sound Vibrations</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed font-sans mt-2">
+                        {sigAuditResult.compatibilityScore?.detailedExplanation || sigAuditResult.numerologicalCompatibility?.explanation}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+                      <div className="bg-slate-50 p-3 rounded-xl text-center">
+                        <span className="text-[9px] font-mono text-slate-400 uppercase">Birth Name Value</span>
+                        <span className="block font-playfair text-lg font-bold text-slate-805 mt-0.5">{sigAuditResult.numerologicalCompatibility?.birthNameValue || getChaldeanNameNumber(sigName)}</span>
                       </div>
-                    ))}
+                      <div className="bg-slate-50 p-3 rounded-xl text-center">
+                        <span className="text-[9px] font-mono text-slate-400 uppercase">Signed Name Value</span>
+                        <span className="block font-playfair text-lg font-bold text-indigo-805 mt-0.5">{sigAuditResult.numerologicalCompatibility?.signatureNameValue || getChaldeanNameNumber(sigName)}</span>
+                      </div>
+                      <div className="bg-slate-50 p-3 rounded-xl text-center col-span-2 md:col-span-1">
+                        <span className="text-[9px] font-mono text-slate-400 uppercase">Synastry Match</span>
+                        <span className="block font-playfair text-lg font-bold text-[#D97706] mt-0.5">{sigAuditResult.numerologicalCompatibility?.compatibilityScore || sigAuditResult.compatibilityScore?.score || 8}/10</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* 9 PARAMETERS VASTU AUDIT DETAIL */}
+                {/* SECTION 2: PSYCHOLOGICAL INTERPRETATION */}
                 <div className="space-y-4">
-                  <h4 className="font-playfair text-base font-bold text-slate-800">3. Vastu Handwriting Audit Breakdown</h4>
-                  <p className="text-[11px] text-slate-500">A rigorous evaluation of 9 structural handwriting coordinates detected in your signature.</p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <h4 className="font-playfair text-base font-bold text-slate-800">2. Psychological & Personality Interpretation</h4>
+                  <p className="text-[11px] text-slate-500">Deconstructs subconscious personality traits, ego projections, and behavioral patterns hidden within the pen movements.</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    {/* Confidence */}
+                    <div className="bg-slate-50/60 border rounded-2xl p-4 space-y-2 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1.5 text-slate-700 font-bold text-xs">
+                          <Shield className="w-4 h-4 text-indigo-700" />
+                          <span>Confidence Level</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                          {sigAuditResult.psychologicalInterpretation?.confidenceLevel}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Ego */}
+                    <div className="bg-slate-50/60 border rounded-2xl p-4 space-y-2 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1.5 text-slate-700 font-bold text-xs">
+                          <User className="w-4 h-4 text-emerald-700" />
+                          <span>Ego & Self-Image</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                          {sigAuditResult.psychologicalInterpretation?.egoSelfImage}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Public vs Private */}
+                    <div className="bg-slate-50/60 border rounded-2xl p-4 space-y-2 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1.5 text-slate-700 font-bold text-xs">
+                          <Eye className="w-4 h-4 text-amber-700" />
+                          <span>Public vs Private Persona</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                          {sigAuditResult.psychologicalInterpretation?.publicPrivateGap}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Emotional Style */}
+                    <div className="bg-slate-50/60 border rounded-2xl p-4 space-y-2 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1.5 text-slate-700 font-bold text-xs">
+                          <Heart className="w-4 h-4 text-rose-700" />
+                          <span>Emotional Expression</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                          {sigAuditResult.psychologicalInterpretation?.emotionalStyle}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Ambition */}
+                    <div className="bg-slate-50/60 border rounded-2xl p-4 space-y-2 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1.5 text-slate-700 font-bold text-xs">
+                          <TrendingUp className="w-4 h-4 text-orange-700" />
+                          <span>Ambition & Drive</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                          {sigAuditResult.psychologicalInterpretation?.ambitionDrive}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 3: PROFESSIONAL IMPACT */}
+                <div className="space-y-4">
+                  <h4 className="font-playfair text-base font-bold text-slate-800">3. Professional & Executive Impact Assessment</h4>
+                  <p className="text-[11px] text-slate-500">How your signature acts as a cosmic brand, influencing career authority and industry suitability.</p>
+
+                  <div className="bg-gradient-to-r from-[#1E3A8A]/5 to-[#1E3A8A]/10 border rounded-3xl p-6 grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
+                    <div className="bg-white/80 backdrop-blur border p-4 rounded-2xl space-y-1">
+                      <span className="text-[9px] font-mono text-[#1E3A8A] uppercase font-bold tracking-wider">First Impression</span>
+                      <p className="text-[11px] text-slate-700 leading-relaxed">{sigAuditResult.professionalImpact?.firstImpression}</p>
+                    </div>
+                    <div className="bg-white/80 backdrop-blur border p-4 rounded-2xl space-y-1">
+                      <span className="text-[9px] font-mono text-[#1E3A8A] uppercase font-bold tracking-wider">Authority & Credibility</span>
+                      <p className="text-[11px] text-slate-700 leading-relaxed">{sigAuditResult.professionalImpact?.authorityCredibility}</p>
+                    </div>
+                    <div className="bg-white/80 backdrop-blur border p-4 rounded-2xl space-y-1">
+                      <span className="text-[9px] font-mono text-[#D97706] uppercase font-bold tracking-wider">Industry Suitability</span>
+                      <p className="text-[11px] text-slate-700 leading-relaxed">{sigAuditResult.professionalImpact?.industrySuitability}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 4: SPECIFIC TRAIT INDICATORS */}
+                <div className="space-y-4">
+                  <h4 className="font-playfair text-base font-bold text-slate-800">4. Structural Graphology Trait Breakdown</h4>
+                  <p className="text-[11px] text-slate-500">Analysis of the physical coordinates mapped from your handwriting sample.</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                     {[
-                      { title: 'Signature Direction', val: sigAuditResult.analysis?.direction, icon: TrendingUp },
-                      { title: 'Physical Size', val: sigAuditResult.analysis?.size, icon: Compass },
-                      { title: 'First Letter Size', val: sigAuditResult.analysis?.firstLetterSize, icon: Award },
-                      { title: 'Underline Style', val: sigAuditResult.analysis?.underlineStyle, icon: Activity },
-                      { title: 'End Stroke Angle', val: sigAuditResult.analysis?.endStroke, icon: ArrowRight },
-                      { title: 'Dot Placement', val: sigAuditResult.analysis?.dotPlacement, icon: Star },
-                      { title: 'Letter Legibility', val: sigAuditResult.analysis?.letterLegibility, icon: Eye },
-                      { title: 'Name Completion', val: sigAuditResult.analysis?.nameCompletion, icon: User },
-                      { title: 'Subconscious Flow', val: sigAuditResult.analysis?.overallFlow, icon: Sparkles },
+                      { title: 'Physical Size', val: sigAuditResult.specificTraitIndicators?.size, icon: Compass },
+                      { title: 'Handwriting Slant', val: sigAuditResult.specificTraitIndicators?.slant, icon: Activity },
+                      { title: 'Letter Legibility', val: sigAuditResult.specificTraitIndicators?.legibility, icon: Eye },
+                      { title: 'Underline Style', val: sigAuditResult.specificTraitIndicators?.underline, icon: ArrowRight },
+                      { title: 'Flourishes & Loops', val: sigAuditResult.specificTraitIndicators?.flourishes, icon: Sparkles }
                     ].map((param, idx) => {
                       const IconComp = param.icon;
                       return (
@@ -2076,132 +3872,107 @@ export default function PremiumConsultations() {
                             <IconComp className="w-4 h-4 text-[#1E3A8A]" />
                             <span>{param.title}</span>
                           </div>
-                          <p className="text-[11px] text-slate-600 leading-relaxed font-sans">{param.val}</p>
+                          <p className="text-[11px] text-slate-650 leading-relaxed font-sans">{param.val}</p>
                         </div>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* EXECUTIVE CLINICAL REPORT */}
-                <div className="bg-slate-50 border rounded-3xl p-6 space-y-6">
-                  <div>
-                    <h4 className="font-playfair text-base font-bold text-slate-800">4. Astro-Vastu Diagnostic Assessment</h4>
-                    <p className="text-[11px] text-slate-500">Executive diagnostic summary prepared by the AI master astrologer.</p>
-                  </div>
-
-                  <div className="text-xs text-slate-700 leading-relaxed font-sans bg-white border rounded-2xl p-4">
-                    <p className="font-bold text-[#1E3A8A] mb-1">Current State Analysis:</p>
-                    {sigAuditResult.assessment?.currentSignatureAssessment}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Strengths */}
-                    <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-4 space-y-2">
-                      <span className="text-[10px] font-mono text-emerald-800 uppercase tracking-wider font-extrabold flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" /> Present Strengths
-                      </span>
-                      <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-650 font-sans">
-                        {sigAuditResult.assessment?.strengths?.map((item: string, idx: number) => <li key={idx}>{item}</li>)}
-                      </ul>
-                    </div>
-
-                    {/* Weaknesses */}
-                    <div className="bg-amber-50/40 border border-amber-100 rounded-2xl p-4 space-y-2">
-                      <span className="text-[10px] font-mono text-amber-800 uppercase tracking-wider font-extrabold flex items-center gap-1">
-                        <Info className="w-3.5 h-3.5" /> Energy Blockages
-                      </span>
-                      <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-650 font-sans">
-                        {sigAuditResult.assessment?.weaknesses?.map((item: string, idx: number) => <li key={idx}>{item}</li>)}
-                      </ul>
-                    </div>
-
-                    {/* Risk Areas */}
-                    <div className="bg-rose-50/40 border border-rose-100 rounded-2xl p-4 space-y-2">
-                      <span className="text-[10px] font-mono text-rose-800 uppercase tracking-wider font-extrabold flex items-center gap-1">
-                        <ShieldAlert className="w-3.5 h-3.5" /> Critical Risk Traps
-                      </span>
-                      <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-650 font-sans">
-                        {sigAuditResult.assessment?.riskAreas?.map((item: string, idx: number) => <li key={idx}>{item}</li>)}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* BEFORE VS AFTER REDESIGN VIEW */}
-                <div className="space-y-4">
-                  <h4 className="font-playfair text-base font-bold text-slate-800">5. Before vs After Vastu Recommendations</h4>
-                  <p className="text-[11px] text-slate-500">Visual comparison of energy traps in current style versus redesigned cosmic blueprint.</p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Before */}
-                    <div className="bg-rose-50/30 border border-rose-100 rounded-3xl p-5 space-y-3">
-                      <div className="flex items-center gap-2 border-b border-rose-100 pb-2">
-                        <span className="p-1 rounded-lg bg-rose-100 text-rose-700">
-                          <X className="w-4 h-4" />
-                        </span>
-                        <div>
-                          <h5 className="text-xs font-bold text-slate-800">Current Handwriting Traps (Before)</h5>
-                          <p className="text-[10px] text-rose-700">Blocks, leakages, and planetary delays.</p>
-                        </div>
-                      </div>
-                      <div className="space-y-2 text-[11px]">
-                        <p className="text-slate-700"><strong>Visual Blueprint:</strong> {sigAuditResult.beforeAfter?.before?.visualDescription}</p>
-                        <p className="text-slate-600 bg-white border border-rose-50 p-2.5 rounded-xl"><strong>Energy Drag:</strong> {sigAuditResult.beforeAfter?.before?.impact}</p>
-                      </div>
-                    </div>
-
-                    {/* After */}
-                    <div className="bg-emerald-50/30 border border-emerald-100 rounded-3xl p-5 space-y-3">
-                      <div className="flex items-center gap-2 border-b border-emerald-100 pb-2">
-                        <span className="p-1 rounded-lg bg-emerald-100 text-emerald-700">
-                          <Check className="w-4 h-4" />
-                        </span>
-                        <div>
-                          <h5 className="text-xs font-bold text-slate-800">Cosmic Shielded Script (After)</h5>
-                          <p className="text-[10px] text-emerald-700">Unlocks wealth vaults & public status.</p>
-                        </div>
-                      </div>
-                      <div className="space-y-2 text-[11px]">
-                        <p className="text-slate-700"><strong>Corrected Blueprint:</strong> {sigAuditResult.beforeAfter?.after?.visualDescription}</p>
-                        <p className="text-slate-600 bg-white border border-emerald-50 p-2.5 rounded-xl"><strong>Vibrational Flow:</strong> {sigAuditResult.beforeAfter?.after?.impact}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* THE REMEDIAL FORMULA & EXECUTION BLUEPRINT */}
-                <div className="bg-[#1E3A8A]/5 border border-[#1E3A8A]/10 rounded-3xl p-6 space-y-4">
+                {/* SECTION 5: RECOMMENDATIONS & REMEDIAL BLUEPRINT */}
+                <div className="bg-[#1E3A8A]/5 border border-[#1E3A8A]/10 rounded-3xl p-6 space-y-6">
                   <div className="flex items-center gap-2 border-b border-[#1E3A8A]/10 pb-3">
                     <Shield className="w-5 h-5 text-[#1E3A8A]" />
                     <div>
-                      <h4 className="font-playfair text-base font-bold text-[#1E3A8A]">6. Ideal Redesigned Execution & Formula</h4>
-                      <p className="text-[11px] text-slate-500">Exact handwriting modifications prescribed for daily practice.</p>
+                      <h4 className="font-playfair text-base font-bold text-[#1E3A8A]">5. Actionable Remedial Redesign Formula</h4>
+                      <p className="text-[11px] text-slate-500">Astrological and graphological adjustments prescribed for immediate daily practice.</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-700 font-sans">
-                    <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-700 font-sans">
+                    {/* Modification assessment & variants */}
+                    <div className="md:col-span-2 space-y-4">
                       <div className="bg-white p-4 rounded-2xl border">
-                        <span className="text-[9px] font-mono text-[#D97706] uppercase tracking-wider block font-bold mb-1">Your Lucky Redesigned Vastu Style</span>
-                        <p className="font-medium text-slate-800 leading-relaxed">{sigAuditResult.assessment?.idealSignatureStyle}</p>
+                        <span className="text-[9px] font-mono text-[#D97706] uppercase tracking-wider block font-bold mb-1">Should You Modify Your Signature?</span>
+                        <p className="font-medium text-slate-800 leading-relaxed">{sigAuditResult.recommendations?.shouldModify}</p>
                       </div>
-                      <div className="bg-white p-4 rounded-2xl border">
-                        <span className="text-[9px] font-mono text-indigo-700 uppercase tracking-wider block font-bold mb-1">Physical Execution Guidelines</span>
-                        <p className="text-slate-600 leading-relaxed font-sans">{sigAuditResult.assessment?.personalizedSignatureBlueprint}</p>
+
+                      <div className="bg-white p-4 rounded-2xl border space-y-3">
+                        <span className="text-[9px] font-mono text-indigo-700 uppercase tracking-wider block font-bold">Custom Redesigned Vastu Style Alternatives</span>
+                        <div className="space-y-2">
+                          {sigAuditResult.recommendations?.variants?.map((variant: string, idx: number) => (
+                            <div key={idx} className="flex gap-2 items-start text-[11px]">
+                              <span className="w-4 h-4 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center text-[9px] flex-shrink-0 mt-0.5">{idx + 1}</span>
+                              <p className="text-slate-650 leading-relaxed">{variant}</p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="bg-white border rounded-2xl p-4 space-y-3">
-                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Step-by-Step Handwriting Remediation</span>
-                      <ol className="space-y-2 text-[11px] text-slate-650">
-                        {sigAuditResult.assessment?.recommendedCorrections?.map((step: string, idx: number) => (
-                          <li key={idx} className="flex gap-2 items-start font-sans">
-                            <span className="w-4 h-4 rounded-full bg-slate-100 text-[#1E3A8A] font-extrabold flex items-center justify-center text-[9px] flex-shrink-0 mt-0.5">{idx + 1}</span>
-                            <span className="leading-relaxed">{step}</span>
-                          </li>
-                        ))}
-                      </ol>
+                    {/* Ink Colors & Tools */}
+                    <div className="bg-white border rounded-2xl p-4 space-y-4">
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Auspicious Ink & Tools</span>
+                      
+                      <div className="space-y-3">
+                        <span className="text-[9px] font-mono text-slate-400 uppercase font-bold tracking-wider block">Astrological Ink Tones</span>
+                        <div className="space-y-2">
+                          {sigAuditResult.recommendations?.colors?.map((item: any, idx: number) => (
+                            <div key={idx} className="flex gap-2 items-start text-[10px] leading-tight">
+                              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5" style={{
+                                backgroundColor: item.color.toLowerCase().includes('blue') ? '#1D4ED8' : item.color.toLowerCase().includes('green') ? '#047857' : '#111827'
+                              }} />
+                              <div>
+                                <span className="font-bold block text-slate-800">{item.color}</span>
+                                <span className="text-[9px] text-slate-500 font-sans block mt-0.5">{item.reason}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="border-t pt-3 space-y-2">
+                        <div className="text-[10px]">
+                          <strong className="text-slate-500 uppercase block font-mono text-[8px]">Recommended Pen Type</strong>
+                          <span className="text-slate-700 font-medium">{sigAuditResult.recommendations?.penType}</span>
+                        </div>
+                        <div className="text-[10px]">
+                          <strong className="text-slate-500 uppercase block font-mono text-[8px]">Ideal Writing Direction</strong>
+                          <span className="text-slate-700 font-medium">{sigAuditResult.recommendations?.signingDirection}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 6: DIFFERENT PURPOSE BLUEPRINTS */}
+                <div className="space-y-4">
+                  <h4 className="font-playfair text-base font-bold text-slate-800">6. Contextual Blueprints for Different Purposes</h4>
+                  <p className="text-[11px] text-slate-500">Fine-tune your signature style to evoke specific energetic frequencies depending on the context of use.</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {/* Legal */}
+                    <div className="bg-slate-50 border rounded-2xl p-4 space-y-1.5">
+                      <span className="text-[10px] font-mono text-[#1E3A8A] uppercase tracking-wider block font-bold">Legal Documents & Deeds</span>
+                      <p className="text-[11px] text-slate-650 leading-relaxed font-sans">{sigAuditResult.differentPurposes?.legal}</p>
+                    </div>
+
+                    {/* Creative */}
+                    <div className="bg-slate-50 border rounded-2xl p-4 space-y-1.5">
+                      <span className="text-[10px] font-mono text-emerald-800 uppercase tracking-wider block font-bold">Creative & Business Deeds</span>
+                      <p className="text-[11px] text-slate-655 leading-relaxed font-sans">{sigAuditResult.differentPurposes?.creative}</p>
+                    </div>
+
+                    {/* Financial */}
+                    <div className="bg-slate-50 border rounded-2xl p-4 space-y-1.5">
+                      <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-wider block font-bold">Financial & Bank Accounts</span>
+                      <p className="text-[11px] text-slate-655 leading-relaxed font-sans">{sigAuditResult.differentPurposes?.financial}</p>
+                    </div>
+
+                    {/* Personal */}
+                    <div className="bg-slate-50 border rounded-2xl p-4 space-y-1.5">
+                      <span className="text-[10px] font-mono text-indigo-800 uppercase tracking-wider block font-bold">Personal & Informal Letters</span>
+                      <p className="text-[11px] text-slate-655 leading-relaxed font-sans">{sigAuditResult.differentPurposes?.personal}</p>
                     </div>
                   </div>
                 </div>

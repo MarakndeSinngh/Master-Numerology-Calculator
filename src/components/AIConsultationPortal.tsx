@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import Markdown from 'react-markdown';
 import { 
   Sparkles, User, Calendar, TrendingUp, Heart, Shield, Award, Phone, Compass, 
   HelpCircle, Send, FileText, Lock, CreditCard, MessageCircle, CheckCircle, 
@@ -45,7 +46,7 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
   const [formEmail, setFormEmail] = useState('');
 
   // Tab views within the Hub
-  const [activeSubTab, setActiveSubTab] = useState<'COUNSEL' | 'SCORES' | 'ACTION' | 'PROBABILITY' | 'NAME_CORRECT' | 'RECOMMEND' | 'TIMELINE' | 'GROWTH' | 'MONETIZE'>('COUNSEL');
+  const [activeSubTab, setActiveSubTab] = useState<'COUNSEL' | 'SCORES' | 'ACTION' | 'PROBABILITY' | 'NAME_CORRECT' | 'RECOMMEND' | 'TIMELINE' | 'GROWTH' | 'MONETIZE' | 'GRAND_REPORT'>('COUNSEL');
 
   // Interactive states
   const [selectedScoreExplain, setSelectedScoreExplain] = useState<string | null>(null);
@@ -74,6 +75,21 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
   const [compareProfileA, setCompareProfileA] = useState<PersonalDetails | null>(null);
   const [compareProfileB, setCompareProfileB] = useState<PersonalDetails | null>(null);
   const [isComparing, setIsComparing] = useState(false);
+
+  // AI Grand Report state variables
+  const [grFullName, setGrFullName] = useState('');
+  const [grPreferredName, setGrPreferredName] = useState('');
+  const [grDob, setGrDob] = useState('');
+  const [grTimeOfBirth, setGrTimeOfBirth] = useState('');
+  const [grPlaceOfBirth, setGrPlaceOfBirth] = useState('');
+  const [grGender, setGrGender] = useState<'MALE' | 'FEMALE' | 'OTHER'>('MALE');
+  const [grCurrentAge, setGrCurrentAge] = useState('');
+  const [grCurrentLocation, setGrCurrentLocation] = useState('');
+  const [grProfession, setGrProfession] = useState('');
+  const [grMaritalStatus, setGrMaritalStatus] = useState('Single');
+  const [grLifeAreas, setGrLifeAreas] = useState('Career, Finance, Relationships');
+  const [grReportContent, setGrReportContent] = useState('');
+  const [grLoading, setGrLoading] = useState(false);
 
   // Load saved profiles from localStorage on mount
   useEffect(() => {
@@ -130,6 +146,20 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
       // Compute initial name correction
       const initCorrection = generateNameCorrections(activeProfile.name, activeProfile.dob);
       setCorrectionResult(initCorrection);
+
+      // Initialize Grand Report inputs
+      setGrFullName(activeProfile.name);
+      setGrPreferredName(activeProfile.name);
+      setGrDob(activeProfile.dob);
+      setGrGender(activeProfile.gender || 'MALE');
+      setGrTimeOfBirth('');
+      setGrPlaceOfBirth('');
+      setGrCurrentAge('35');
+      setGrCurrentLocation('Delhi, India');
+      setGrProfession('Business Owner');
+      setGrMaritalStatus('Single');
+      setGrLifeAreas('Career, Finance, Relationships');
+      setGrReportContent('');
     }
   }, [activeProfile]);
 
@@ -169,6 +199,49 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
     localStorage.setItem('leo_saved_consultation_profiles', JSON.stringify(updated));
     if (activeProfile?.name === profileToDelete.name && activeProfile?.dob === profileToDelete.dob) {
       setActiveProfile(updated.length > 0 ? updated[0] : null);
+    }
+  };
+
+  const handleGenerateGrandReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!grFullName || !grDob) return;
+    setGrLoading(true);
+
+    try {
+      const response = await fetch('/api/generate-grand-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fullName: grFullName,
+          preferredName: grPreferredName,
+          dob: grDob,
+          timeOfBirth: grTimeOfBirth,
+          placeOfBirth: grPlaceOfBirth,
+          gender: grGender,
+          currentAge: grCurrentAge,
+          currentLocation: grCurrentLocation,
+          profession: grProfession,
+          maritalStatus: grMaritalStatus,
+          lifeAreas: grLifeAreas,
+          driver: masterGrid?.personal.driver || 1,
+          conductor: masterGrid?.personal.conductor || 1,
+          nameNumber: nameAnalysis?.chaldeanNumber || 1
+        })
+      });
+
+      const resData = await response.json();
+      if (resData && resData.report) {
+        setGrReportContent(resData.report);
+      } else {
+        setGrReportContent("Failed to generate report from the cosmos. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error generating report: ", err);
+      setGrReportContent("Planetary connectivity issue. Please retry.");
+    } finally {
+      setGrLoading(false);
     }
   };
 
@@ -458,6 +531,7 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
               
               {[
                 { id: 'COUNSEL', label: 'Grand Master Board', icon: Sparkles },
+                { id: 'GRAND_REPORT', label: 'AI Grand Life Blueprint', icon: FileText },
                 { id: 'SCORES', label: 'Why This Result?', icon: Info },
                 { id: 'ACTION', label: 'Dynamic Growth Plans', icon: CheckSquare },
                 { id: 'PROBABILITY', label: 'Success Probabilities', icon: TrendingUp },
@@ -510,7 +584,314 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
           <div className="lg:col-span-3 space-y-8">
             
             {/* SUB-TAB CONTENTS */}
-            
+
+            {/* TAB 0: COMPLETE LIFE BLUEPRINT REPORT */}
+            {activeSubTab === 'GRAND_REPORT' && (
+              <div className="space-y-8 animate-in fade-in duration-400 text-left">
+                {grLoading ? (
+                  <div className="bg-white border border-[#EADCC6] rounded-[40px] p-12 md:p-16 text-center space-y-8 shadow-xl relative overflow-hidden flex flex-col items-center justify-center min-h-[500px]">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-400 via-amber-600 to-indigo-800 animate-pulse"></div>
+                    
+                    {/* Floating cosmos rings */}
+                    <div className="relative w-28 h-28 flex items-center justify-center">
+                      <div className="absolute inset-0 border-4 border-amber-500/10 rounded-full animate-ping"></div>
+                      <div className="absolute inset-2 border-2 border-amber-500/20 border-t-amber-600 rounded-full animate-spin duration-1000"></div>
+                      <div className="absolute inset-4 border border-indigo-500/10 border-b-indigo-700 rounded-full animate-spin duration-3000"></div>
+                      <span className="text-4xl animate-bounce">🕉️</span>
+                    </div>
+
+                    <div className="space-y-3 max-w-md">
+                      <h3 className="font-playfair text-2xl font-black text-slate-800">Compiling Planetary Grid...</h3>
+                      <p className="text-xs text-[#6B7280] font-mono tracking-wider uppercase animate-pulse">
+                        Rajiv Ji AI Master Consciousness is active
+                      </p>
+                      <p className="text-sm text-slate-600 leading-relaxed font-lora italic pt-2">
+                        We are aligning your psychic Driver, divine destiny Conductor, and name vibration compound against the 81 authentic cosmic transition matrices to draft your 4,500-word blueprint.
+                      </p>
+                    </div>
+
+                    {/* Staggered text sequence */}
+                    <div className="w-full max-w-xs bg-slate-50 border border-slate-100 rounded-2xl p-4 text-xs space-y-2 text-left font-mono text-slate-600">
+                      <div className="flex items-center gap-2 text-emerald-600">
+                        <span className="animate-pulse">✓</span>
+                        <span>Natal date vector initialized...</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-emerald-600">
+                        <span className="animate-pulse">✓</span>
+                        <span>Loshu Elemental planes mapped...</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-amber-600">
+                        <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                        <span>Generating exhaustive 12-Month Transit Forecast...</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-400">
+                        <span className="w-2 h-2 rounded-full bg-slate-300"></span>
+                        <span>Structuring 90-Day Tactical Vastu Action Plan...</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : grReportContent ? (
+                  <div className="space-y-8 animate-in fade-in duration-400">
+                    
+                    {/* Header Controls */}
+                    <div className="bg-white p-6 md:p-8 rounded-[35px] border border-[#E5E7EB] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
+                      <div className="space-y-1">
+                        <span className="text-xs font-mono font-black text-[#D97706] uppercase tracking-widest block">
+                          ♛ AI Grand Life Report Ready
+                        </span>
+                        <h3 className="font-playfair text-xl md:text-2xl font-black text-slate-900">
+                          Comprehensive 4,500 Word Life Blueprint
+                        </h3>
+                        <p className="text-xs text-[#6B7280]">
+                          Formulated via Chaldean Gematria & Vedic Astrological Systems.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2.5">
+                        <button
+                          onClick={() => setGrReportContent('')}
+                          className="bg-slate-50 hover:bg-slate-100 text-[#4B5563] text-xs font-bold px-4 py-3 rounded-2xl border border-[#E5E7EB] transition cursor-pointer"
+                        >
+                          Modify Parameters
+                        </button>
+                        <button
+                          onClick={() => window.print()}
+                          className="bg-[#D97706] hover:bg-amber-700 text-white text-xs font-bold px-4 py-3 rounded-2xl transition flex items-center gap-2 cursor-pointer shadow-md"
+                        >
+                          <Printer className="w-4 h-4" /> Save as PDF / Print
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Meta summary block */}
+                    <div className="bg-[#FAF8F5] border border-[#EADCC6]/60 rounded-3xl p-6 grid grid-cols-2 md:grid-cols-4 gap-4 print:hidden">
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">Seeker Name</span>
+                        <strong className="text-sm font-semibold text-slate-800">{grFullName}</strong>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">Vedic Coordinates</span>
+                        <strong className="text-sm font-semibold text-slate-800">DOB: {grDob} ({grGender})</strong>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">Temporal Focus</span>
+                        <strong className="text-sm font-semibold text-slate-800">{grTimeOfBirth || "Daytime"} / {grPlaceOfBirth || "India"}</strong>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">Profession & Marital</span>
+                        <strong className="text-sm font-semibold text-slate-800">{grProfession} ({grMaritalStatus})</strong>
+                      </div>
+                    </div>
+
+                    {/* Markdown Report Container */}
+                    <div id="grand-life-blueprint-report" className="bg-[#FCFAF6] border border-[#EADCC6] rounded-[35px] p-8 md:p-12 shadow-md text-left font-serif text-slate-900 overflow-hidden leading-relaxed print:bg-white print:border-none print:shadow-none print:p-0">
+                      
+                      {/* Vedic Border Watermark */}
+                      <div className="absolute inset-0 bg-[#D97706]/[0.01] pointer-events-none rounded-[35px] print:hidden"></div>
+
+                      {/* Header emblem on first page */}
+                      <div className="text-center pb-8 border-b-2 border-double border-[#EADCC6] space-y-3 mb-8">
+                        <span className="text-3xl">🏵️</span>
+                        <h1 className="font-playfair text-3xl md:text-5xl font-black tracking-tight text-slate-900">
+                          VEDIC LIFE COMPENDIUM
+                        </h1>
+                        <p className="text-xs font-mono uppercase tracking-[0.2em] text-[#D97706]">
+                          AI-Powered Astro-Numerology Deep-Dive Consultation Dossier
+                        </p>
+                      </div>
+
+                      <div className="prose prose-slate prose-amber max-w-none prose-headings:font-playfair prose-headings:font-black prose-headings:text-slate-900 prose-p:font-lora prose-p:text-slate-700 prose-p:text-base prose-strong:text-slate-900 prose-table:border-collapse prose-table:w-full prose-table:my-6 prose-th:bg-amber-500/10 prose-th:p-3 prose-th:text-xs prose-th:font-mono prose-th:uppercase prose-th:text-slate-800 prose-td:p-3 prose-td:text-sm prose-td:border-b prose-td:border-slate-100">
+                        <Markdown>{grReportContent}</Markdown>
+                      </div>
+
+                      <div className="border-t-2 border-double border-[#EADCC6] pt-6 mt-12 flex justify-between items-center text-xs font-mono text-slate-500">
+                        <span>Grand Master AI System Core</span>
+                        <span>Page 1 of 12 (Comprehensive Lifecycle Compendium)</span>
+                        <span>Approved Signature: R.S.C.</span>
+                      </div>
+                    </div>
+
+                    {/* Secondary Print Button */}
+                    <div className="flex justify-center print:hidden">
+                      <button
+                        onClick={() => window.print()}
+                        className="bg-[#1E3A8A] hover:bg-slate-800 text-white font-bold px-8 py-4 rounded-2xl text-xs tracking-wider uppercase transition flex items-center gap-2 cursor-pointer shadow-md"
+                      >
+                        <Printer className="w-5 h-5" /> Download Full Printable Dossier PDF
+                      </button>
+                    </div>
+
+                  </div>
+                ) : (
+                  <div className="bg-white border border-[#E5E7EB] rounded-[40px] p-8 md:p-10 shadow-sm space-y-6">
+                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                      <div className="p-3 bg-[#D97706]/10 text-[#D97706] rounded-2xl">
+                        <FileText className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-playfair text-2xl font-black text-slate-900">Generate Life Blueprint</h3>
+                        <p className="text-xs text-[#6B7280]">
+                          Enter detailed birth-time parameters to formulate a highly targeted 4,500-word numerology dossier.
+                        </p>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleGenerateGrandReport} className="space-y-6 font-sans">
+                      
+                      {/* Primary identity parameters */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Full Name (as on birth certificate)</label>
+                          <input
+                            type="text"
+                            required
+                            value={grFullName}
+                            onChange={e => setGrFullName(e.target.value)}
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Preferred / resonating name</label>
+                          <input
+                            type="text"
+                            value={grPreferredName}
+                            onChange={e => setGrPreferredName(e.target.value)}
+                            placeholder="e.g., Spelling variations or daily call name"
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Birth date and time details */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Date of Birth</label>
+                          <input
+                            type="date"
+                            required
+                            value={grDob}
+                            onChange={e => setGrDob(e.target.value)}
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Time of Birth (known/approx)</label>
+                          <input
+                            type="text"
+                            value={grTimeOfBirth}
+                            onChange={e => setGrTimeOfBirth(e.target.value)}
+                            placeholder="e.g. 14:35 or 02:45 PM"
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Place of Birth (City, Country)</label>
+                          <input
+                            type="text"
+                            value={grPlaceOfBirth}
+                            onChange={e => setGrPlaceOfBirth(e.target.value)}
+                            placeholder="e.g. New Delhi, India"
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Demography and Profession details */}
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Gender</label>
+                          <select
+                            value={grGender}
+                            onChange={e => setGrGender(e.target.value as any)}
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          >
+                            <option value="MALE">Male (पुरुष)</option>
+                            <option value="FEMALE">Female (स्त्री)</option>
+                            <option value="OTHER">Other (अन्य)</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Current Age</label>
+                          <input
+                            type="number"
+                            value={grCurrentAge}
+                            onChange={e => setGrCurrentAge(e.target.value)}
+                            placeholder="e.g. 34"
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Profession/Occupation</label>
+                          <input
+                            type="text"
+                            value={grProfession}
+                            onChange={e => setGrProfession(e.target.value)}
+                            placeholder="e.g. Consultant, Merchant"
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Marital Status</label>
+                          <select
+                            value={grMaritalStatus}
+                            onChange={e => setGrMaritalStatus(e.target.value)}
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          >
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Divorced">Divorced</option>
+                            <option value="Widowed">Widowed</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Current location and focus areas */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Current Location (City)</label>
+                          <input
+                            type="text"
+                            value={grCurrentLocation}
+                            onChange={e => setGrCurrentLocation(e.target.value)}
+                            placeholder="e.g. Mumbai, Maharashtra"
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase font-bold text-[#6B7280] tracking-wide block">Specific Life Areas for Focus</label>
+                          <input
+                            type="text"
+                            value={grLifeAreas}
+                            onChange={e => setGrLifeAreas(e.target.value)}
+                            placeholder="e.g. Career stability, financial growth, marital health"
+                            className="w-full bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl px-4 py-3 text-xs text-[#1F2937] focus:outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Submit */}
+                      <div className="pt-4 flex justify-center">
+                        <button
+                          type="submit"
+                          className="w-full md:w-auto bg-[#D97706] hover:bg-amber-700 text-white text-xs font-bold py-4 px-10 rounded-2xl tracking-widest uppercase transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          Generate Complete Life Blueprint <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                    </form>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* TAB 1: GRAND COUNSEL BOARD & CHAT */}
             {activeSubTab === 'COUNSEL' && reportData && (
               <div className="space-y-8 animate-in fade-in duration-400 print:block">
