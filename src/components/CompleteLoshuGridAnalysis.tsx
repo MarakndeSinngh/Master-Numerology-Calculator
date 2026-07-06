@@ -99,7 +99,7 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
   const [calcDob, setCalcDob] = useState('05-08-1983');
   
   // Tab control inside Loshu Analysis
-  const [activeSubTab, setActiveSubTab] = useState<'MASTER_CONSULTATION' | 'GRID' | 'PLANES' | 'REMEDIES' | 'PERIODS' | 'COMPATIBILITY' | 'AI_REPORT' | 'HISTORY'>('MASTER_CONSULTATION');
+  const [activeSubTab, setActiveSubTab] = useState<'MASTER_CONSULTATION' | 'IN_DEPTH_REPORT' | 'GRID' | 'PLANES' | 'REMEDIES' | 'PERIODS' | 'COMPATIBILITY' | 'AI_REPORT' | 'HISTORY'>('MASTER_CONSULTATION');
   
   // History list
   const [history, setHistory] = useState<{ id: string; name: string; dob: string; date: string }[]>([]);
@@ -502,6 +502,7 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
           <div className="border-b border-[#E5E7EB] pt-2 flex flex-wrap gap-2 print:hidden">
             {[
               { id: 'MASTER_CONSULTATION', label: 'Master Consultation 5.0 🏆' },
+              { id: 'IN_DEPTH_REPORT', label: 'In-Depth Loshu Report 📑' },
               { id: 'GRID', label: 'Loshu Magic Grid' },
               { id: 'PLANES', label: 'Planes & Arrows' },
               { id: 'REMEDIES', label: 'Lal Kitab remedies' },
@@ -523,6 +524,7 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
                 }`}
               >
                 {subTab.id === 'MASTER_CONSULTATION' && <Award className="w-4 h-4 text-[#D97706] animate-pulse" />}
+                {subTab.id === 'IN_DEPTH_REPORT' && <FileText className="w-4 h-4 text-emerald-600 animate-pulse" />}
                 {subTab.id === 'GRID' && <Compass className="w-4 h-4" />}
                 {subTab.id === 'PLANES' && <Layers className="w-4 h-4" />}
                 {subTab.id === 'REMEDIES' && <Shield className="w-4 h-4" />}
@@ -1698,6 +1700,715 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
                     </button>
                   </div>
                 </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB 0.5: IN-DEPTH LO SHU REPORT (800+ WORDS) */}
+          {activeSubTab === 'IN_DEPTH_REPORT' && analysisResult && masterReport && (
+            <div className="space-y-12 animate-in fade-in duration-500 text-left print:p-0 select-all">
+              
+              {/* Premium Report Header & Print Controller */}
+              <div className="bg-gradient-to-br from-[#1E293B] to-[#0F172A] text-white p-8 md:p-10 rounded-[40px] border border-slate-800 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="relative z-10 space-y-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-2">
+                    <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest">
+                      ★ ULTIMATE IN-DEPTH ADVISORY BLUEPRINT
+                    </span>
+                    <h3 className="font-cinzel text-2xl md:text-3xl font-black tracking-widest text-[#FDFCF7] uppercase leading-tight">
+                      Comprehensive Loshu Analysis
+                    </h3>
+                    <p className="text-slate-300 text-xs md:text-sm font-lora italic leading-relaxed max-w-2xl">
+                      An exhaustive client-side diagnostic report containing core planetary frequencies, element balances, plane and arrow formations, and targeted karmic remedies.
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={handlePrint}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3.5 rounded-2xl text-xs font-bold tracking-wider uppercase transition shadow-md flex items-center gap-2 cursor-pointer border border-emerald-500/20"
+                    >
+                      <Printer className="w-4 h-4 animate-pulse" /> Print / Export PDF
+                    </button>
+                    <button
+                      onClick={() => {
+                        const blob = new Blob([JSON.stringify({
+                          subject: masterReport.personal,
+                          scores: masterReport.scores,
+                          grid: analysisResult.loshuGrid,
+                          missingNumbers: analysisResult.missingNumbers,
+                          repeatedNumbers: analysisResult.repeatedNumbers,
+                          mahadashas: analysisResult.mahadashas
+                        }, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `InDepth_Loshu_Report_${masterReport.personal.name.replace(/\s+/g,'_')}.json`;
+                        a.click();
+                      }}
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-5 py-3.5 rounded-2xl text-xs font-semibold tracking-wider uppercase transition"
+                    >
+                      Export JSON Schema
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-slate-800/80 mt-6 relative z-10 text-xs">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">Subject Name</span>
+                    <p className="font-bold text-white text-sm">{masterReport.personal.name}</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">Birth Coordinates</span>
+                    <p className="font-bold text-white text-sm font-mono">{dob}</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">Psychic / Mulank</span>
+                    <p className="font-bold text-amber-400 text-sm font-mono"># {masterReport.personal.driver} (Ruler: {masterReport.personal.driver === 1 ? 'Sun' : masterReport.personal.driver === 2 ? 'Moon' : masterReport.personal.driver === 3 ? 'Jupiter' : masterReport.personal.driver === 4 ? 'Rahu' : masterReport.personal.driver === 5 ? 'Mercury' : masterReport.personal.driver === 6 ? 'Venus' : masterReport.personal.driver === 7 ? 'Ketu' : masterReport.personal.driver === 8 ? 'Saturn' : 'Mars'})</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">Conductor / Bhagyank</span>
+                    <p className="font-bold text-blue-400 text-sm font-mono"># {masterReport.personal.conductor}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 1: VISUAL GRID */}
+              <div className="bg-white p-8 md:p-10 rounded-[40px] border border-[#E5E7EB] shadow-sm space-y-6">
+                <div className="flex gap-2.5 items-center pb-2 border-b border-[#E5E7EB]">
+                  <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-mono font-bold text-xs border border-emerald-200">01</span>
+                  <h4 className="font-cinzel text-xl font-bold text-slate-850 uppercase tracking-widest">1. Visual Loshu Grid Magic Square</h4>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2">
+                  <div className="lg:col-span-5 flex justify-center">
+                    <div className="grid grid-cols-3 gap-3 w-full max-w-[320px] aspect-square p-3 bg-slate-50 rounded-[35px] border border-slate-200 shadow-inner">
+                      {loshuGridOrder.map((digit) => {
+                        const box = analysisResult.loshuGrid[digit];
+                        const count = box.count || 0;
+                        const style = getBoxElementStyle(box.element, count);
+                        const isDriver = analysisResult.mulank === digit;
+                        const isDestiny = analysisResult.bhagyank === digit;
+
+                        return (
+                          <div
+                            key={digit}
+                            className={`rounded-2xl border-2 flex flex-col justify-between p-3 select-none transition-all duration-300 relative overflow-hidden group ${style}`}
+                          >
+                            <span className="absolute -bottom-2 -left-2 text-2xl font-mono font-black opacity-10">
+                              {digit}
+                            </span>
+                            
+                            <div className="flex flex-col gap-1 text-left">
+                              <div className="flex flex-wrap gap-1">
+                                {box.dobCount && box.dobCount > 0 ? (
+                                  Array.from({ length: Math.min(box.dobCount, 3) }).map((_, i) => (
+                                    <span key={i} className="w-4 h-4 rounded-full bg-white border border-slate-300 flex items-center justify-center text-[9px] font-mono font-black text-slate-800 shadow-sm">
+                                      {digit}
+                                    </span>
+                                  ))
+                                ) : null}
+                              </div>
+                              <div className="flex flex-col gap-0.5 mt-0.5">
+                                {isDriver && (
+                                  <span className="px-1 py-0.2 rounded bg-amber-500 text-white text-[7px] font-mono font-bold uppercase w-max">
+                                    Dr
+                                  </span>
+                                )}
+                                {isDestiny && (
+                                  <span className="px-1 py-0.2 rounded bg-blue-600 text-white text-[7px] font-mono font-bold uppercase w-max">
+                                    Dest
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="text-right mt-auto">
+                              <span className="block text-[8px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                                {count > 0 ? box.element : 'Empty'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-7 space-y-4 text-xs leading-relaxed text-slate-600 text-left">
+                    <p className="font-serif italic text-slate-800 text-sm">
+                      "The Lo Shu Grid is an ancient 3x3 mathematical matrix where any row, column, or diagonal sums to exactly 15. Known as the Sacred Magic Square, it acts as a cosmic mirror reflecting your elemental constitution at birth."
+                    </p>
+                    <div className="space-y-3 pt-2">
+                      <p>
+                        Your DOB grid above maps the active digits present in your birth date <strong>{dob}</strong> along with cosmic support layers from your <strong>Psychic (Mulank: {analysisResult.mulank})</strong> and <strong>Conductor (Bhagyank: {analysisResult.bhagyank})</strong> vectors.
+                      </p>
+                      <ul className="list-disc list-inside space-y-1.5 text-slate-600">
+                        <li><strong>Birth Layers (White Badges)</strong>: Innate traits naturally gifted to you at birth.</li>
+                        <li><strong>Driver / Psychic Layer (Dr)</strong>: Personal actions and conscious motivations driving your daily choices.</li>
+                        <li><strong>Destiny / Conductor Layer (Dest)</strong>: Opportunities and life paths naturally orchestrated by cosmic timing.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: NUMBER FREQUENCY MATRIX */}
+              <div className="bg-white p-8 md:p-10 rounded-[40px] border border-[#E5E7EB] shadow-sm space-y-8">
+                <div className="flex gap-2.5 items-center pb-2 border-b border-[#E5E7EB]">
+                  <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-mono font-bold text-xs border border-emerald-200">02</span>
+                  <h4 className="font-cinzel text-xl font-bold text-slate-850 uppercase tracking-widest">2. Complete Number Frequency Analysis</h4>
+                </div>
+
+                <div className="overflow-x-auto rounded-3xl border border-slate-200">
+                  <table className="w-full text-left text-xs min-w-[650px]">
+                    <thead className="bg-slate-50 font-mono text-slate-500 uppercase tracking-wider text-[9px] border-b border-slate-200">
+                      <tr>
+                        <th className="p-4 font-black">Digit</th>
+                        <th className="p-4 font-black">Ruler & Element</th>
+                        <th className="p-4 font-black">Frequency</th>
+                        <th className="p-4 font-black">Strength Rating</th>
+                        <th className="p-4 font-black">Core Trait Mapping</th>
+                        <th className="p-4 font-black">Life Influence Zone</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-sans text-slate-700">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => {
+                        const box = analysisResult.loshuGrid[digit];
+                        const count = box.count || 0;
+                        const ruler = digit === 1 ? 'Sun (सूर्य)' : digit === 2 ? 'Moon (चन्द्र)' : digit === 3 ? 'Jupiter (गुरु)' : digit === 4 ? 'Rahu (राहू)' : digit === 5 ? 'Mercury (बुध)' : digit === 6 ? 'Venus (शुक्र)' : digit === 7 ? 'Ketu (केतु)' : digit === 8 ? 'Saturn (शनि)' : 'Mars (मंगल)';
+                        const element = box.element;
+                        const strength = count === 0 ? 'Missing / Baseline Void' : count === 1 ? 'Optimal Balanced' : count === 2 ? 'Highly Amplified' : 'Overly Congested';
+                        const traits = digit === 1 ? 'Communication & Career Flow' : digit === 2 ? 'Intuition & Mutual Partnerships' : digit === 3 ? 'Knowledge, Growth & Academic Wisdom' : digit === 4 ? 'Wealth, Structure & Disciplined Focus' : digit === 5 ? 'Nervous Equilibrium & Trade Mind' : digit === 6 ? 'Luxury Comforts, Family & Friends' : digit === 7 ? 'Analytical Skill & Spiritual Deep Auditing' : digit === 8 ? 'Laborious Assets & Persistent Patience' : 'Fiery Courage, Enthusiastic Fame';
+
+                        return (
+                          <tr key={digit} className={`hover:bg-slate-50/50 transition ${count === 0 ? 'text-slate-400 bg-slate-50/20' : ''}`}>
+                            <td className="p-4 font-mono font-black text-slate-800 text-sm">#{digit}</td>
+                            <td className="p-4 font-medium">{ruler} — <span className="font-mono text-[10px] text-slate-500 uppercase font-black">{element}</span></td>
+                            <td className="p-4 font-mono font-semibold">{count} Occurrences</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                                count === 0 ? 'bg-red-50 text-red-700 border border-red-150' : count === 1 ? 'bg-emerald-50 text-emerald-800 border border-emerald-150' : count === 2 ? 'bg-blue-50 text-blue-800 border border-blue-150' : 'bg-amber-50 text-amber-800 border border-amber-150'
+                              }`}>
+                                {strength}
+                              </span>
+                            </td>
+                            <td className="p-4 font-lora italic text-[11px] text-slate-600">{traits}</td>
+                            <td className="p-4 text-slate-500">{box.direction} — {box.lifeArea}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Missing & Repeated Deep Interpretations */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs text-slate-600 pt-4 leading-relaxed text-left">
+                  {/* Missing Elements Impact */}
+                  <div className="p-6 md:p-8 bg-red-50/20 border border-red-200/50 rounded-[35px] space-y-4">
+                    <span className="text-xl">⚠️</span>
+                    <h5 className="font-playfair text-base font-bold text-red-950">Baseline Voids: Missing Digits Analysis</h5>
+                    <div className="space-y-4 text-slate-700">
+                      {analysisResult.missingNumbers.length > 0 ? (
+                        analysisResult.missingNumbers.map(m => (
+                          <div key={m.digit} className="space-y-1">
+                            <strong className="text-slate-900 font-sans block text-[11px] uppercase tracking-wider font-black">Missing Digit #{m.digit} ({m.element} Element)</strong>
+                            <p className="font-lora italic text-[11px] text-slate-600">"{m.meaning}"</p>
+                            <p className="text-slate-500 text-[11px] leading-relaxed">
+                              {m.digit === 1 && "This baseline void makes it difficult to anchor career targets, leading to frequent changes in professional focus. You may find it difficult to voice unique thoughts in crowded rooms."}
+                              {m.digit === 2 && "A lack of digit 2 disrupts the balance of the Southwest marital sector, introducing emotional vulnerability, mutual misunderstandings in partnerships, and sensitivity to criticism."}
+                              {m.digit === 3 && "Without Jupiter's code, academic goals may experience delays. You struggle to visualize structured plans, often relying on impromptu actions rather than seasoned wisdom."}
+                              {m.digit === 4 && "Missing 4 impacts raw wealth preservation. Money flows in, but saving or anchoring long-term physical assets requires immense deliberate discipline."}
+                              {m.digit === 5 && "No digit 5 removes the stabilizing central earth grid. This can cause erratic shifts in career, restlessness, and difficulty staying focused on one specific project."}
+                              {m.digit === 6 && "A void in 6 delays luxury comforts, causing feelings of isolation or lack of supportive patrons, making self-reliance a compulsory pathway."}
+                              {m.digit === 7 && "Missing 7 reduces analytical introspection. You may repeat past mistakes because of a lack of retrospective auditing, making research and deep logic a learned skill."}
+                              {m.digit === 8 && "Without 8, patience runs thin under delayed circumstances. Creating material real estate assets or scaling steady corporations requires extra labor and effort."}
+                              {m.digit === 9 && "Missing 9 drains enthusiasm, courage, and fame. You might struggle to take ownership of projects, preferring to work quietly behind the scenes."}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="italic text-slate-400">Divine alignment! No missing digits. All elemental nodes are active in your birth matrix.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Repeated Elements Impact */}
+                  <div className="p-6 md:p-8 bg-emerald-50/20 border border-emerald-200/40 rounded-[35px] space-y-4">
+                    <span className="text-xl">✨</span>
+                    <h5 className="font-playfair text-base font-bold text-emerald-950">Energy Congestions: Repeated Digits Interpretation</h5>
+                    <div className="space-y-4 text-slate-700">
+                      {analysisResult.repeatedNumbers.length > 0 ? (
+                        analysisResult.repeatedNumbers.map(r => {
+                          const customMeaning = PLANETARY_REPETITION_MEANINGS[r.digit]?.[r.count] || r.meaning;
+                          return (
+                            <div key={r.digit} className="space-y-1">
+                              <strong className="text-slate-900 font-sans block text-[11px] uppercase tracking-wider font-black">Repeated Digit #{r.digit} ({r.count}x Occurrences)</strong>
+                              <p className="font-lora italic text-[11px] text-slate-600">"{customMeaning}"</p>
+                              <p className="text-slate-500 text-[11px] leading-relaxed">
+                                {r.digit === 1 && "The excess Sun energy creates a highly communicative but sometimes highly opinionated mindset. Daily meditation on active listening is required."}
+                                {r.digit === 2 && "Ample Lunar force heightens creative intuition, but makes you prone to mental anxiety, sudden mood shifts, and taking general feedback too personally."}
+                                {r.digit === 3 && "Superb creative planning, but a risk of over-analyzing and not taking physical action. Academic vanity can block learning from simple people."}
+                                {r.digit === 4 && "Extreme focus on minute details. This perfectionist work ethic can lead to workaholism, structural obsession, and administrative stress."}
+                                {r.digit === 5 && "Powerful trading instincts, but errant swings in risk-taking and erratic spending. Grounding techniques are highly recommended."}
+                                {r.digit === 6 && "Deep creative and aesthetic talents. However, you can become easily burdened by family responsibilities or luxury debts."}
+                                {r.digit === 7 && "Highly intellectual, but prone to over-thinking, feeling betrayed by close associates, and experiencing emotional roller-coasters."}
+                                {r.digit === 8 && "Exceptional patience but slow material realizations, requiring laborious effort and persistent devotion before final triumphs."}
+                                {r.digit === 9 && "Intense physical competitive drive, but high risks of verbal outbursts, quick impatience, and burning out your batteries too fast."}
+                              </p>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p className="italic text-slate-400">Balanced matrix! No repeated digits. Every active node holds single, highly balanced planetary frequencies.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: PLANE ANALYSIS */}
+              <div className="bg-white p-8 md:p-10 rounded-[40px] border border-[#E5E7EB] shadow-sm space-y-8 text-left">
+                <div className="flex gap-2.5 items-center pb-2 border-b border-[#E5E7EB]">
+                  <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-mono font-bold text-xs border border-emerald-200">03</span>
+                  <h4 className="font-cinzel text-xl font-bold text-slate-850 uppercase tracking-widest">3. Core Plane Dynamic Analysis</h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2 text-xs">
+                  {/* Mental Plane */}
+                  {(() => {
+                    const present = [4, 9, 2].filter(d => (analysisResult.loshuGrid[d]?.count || 0) > 0);
+                    const lvl = present.length === 3 ? 'HIGH' : present.length === 2 ? 'MEDIUM' : present.length === 1 ? 'LOW-MEDIUM' : 'INACTIVE';
+                    return (
+                      <div className="p-6 bg-purple-50/10 border border-purple-100 rounded-3xl space-y-4">
+                        <span className="text-xl">🧠</span>
+                        <h5 className="font-playfair text-base font-bold text-purple-950">Mental Plane (4-9-2)</h5>
+                        <div className="flex justify-between items-center text-[10px] font-mono">
+                          <span className="text-purple-600 font-bold">Development: {lvl}</span>
+                          <span className="text-slate-400">{present.length}/3 Present</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-1.5">
+                          <div className="bg-purple-600 h-1.5 rounded-full" style={{ width: `${(present.length / 3) * 100}%` }} />
+                        </div>
+                        <p className="text-slate-600 font-sans leading-relaxed">
+                          The Mental Plane represents memory, analytical power, intelligence, and active thought processes. 
+                          {lvl === 'HIGH' && " All coordinates (4, 9, 2) are present, reflecting a highly analytical, sharp, and structured memory structure capable of handling intense mental labor and deep research tasks."}
+                          {lvl === 'MEDIUM' && " With 2 coordinates present, your mental capacity is highly capable but fluctuates. You perform exceptionally when motivated but can experience moments of brain fatigue."}
+                          {lvl === 'LOW-MEDIUM' && " Holding 1 coordinate, your mental expression is highly intuitive rather than heavily analytical. You rely on sudden flashes of realization and gut-feeling."}
+                          {lvl === 'INACTIVE' && " Lacking 4, 9, and 2, your cognitive flow works on abstract, unconventional levels, requiring structured planners, checklists, and daily brain exercises to anchor focus."}
+                        </p>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Emotional Plane */}
+                  {(() => {
+                    const present = [3, 5, 7].filter(d => (analysisResult.loshuGrid[d]?.count || 0) > 0);
+                    const lvl = present.length === 3 ? 'HIGH' : present.length === 2 ? 'MEDIUM' : present.length === 1 ? 'LOW-MEDIUM' : 'INACTIVE';
+                    return (
+                      <div className="p-6 bg-rose-50/10 border border-rose-100 rounded-3xl space-y-4">
+                        <span className="text-xl">💖</span>
+                        <h5 className="font-playfair text-base font-bold text-rose-950">Emotional Plane (3-5-7)</h5>
+                        <div className="flex justify-between items-center text-[10px] font-mono">
+                          <span className="text-rose-600 font-bold">Development: {lvl}</span>
+                          <span className="text-slate-400">{present.length}/3 Present</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-1.5">
+                          <div className="bg-rose-500 h-1.5 rounded-full" style={{ width: `${(present.length / 3) * 100}%` }} />
+                        </div>
+                        <p className="text-slate-600 font-sans leading-relaxed">
+                          The Emotional or Intuitive Plane governs empathy, artistic expression, mutual trust, and heart connections.
+                          {lvl === 'HIGH' && " Full activation (3, 5, 7) creates an outstanding healer archetype—highly intuitive, deeply empathetic, with rich artistic inclinations, but prone to taking other people's problems onto themselves."}
+                          {lvl === 'MEDIUM' && " With 2 active numbers, you balance heart and head well. You are deeply supportive of loved ones, maintaining healthy personal boundaries."}
+                          {lvl === 'LOW-MEDIUM' && " Holding 1 active number, you express emotions selectively. You prefer logical processing over emotional exposure, keeping feelings safe behind mental walls."}
+                          {lvl === 'INACTIVE' && " With no active numbers in the center row, emotional expression is highly detached, and trusting others takes time. This represents a core lessons field in self-validation."}
+                        </p>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Practical Plane */}
+                  {(() => {
+                    const present = [8, 1, 6].filter(d => (analysisResult.loshuGrid[d]?.count || 0) > 0);
+                    const lvl = present.length === 3 ? 'HIGH' : present.length === 2 ? 'MEDIUM' : present.length === 1 ? 'LOW-MEDIUM' : 'INACTIVE';
+                    return (
+                      <div className="p-6 bg-indigo-50/10 border border-indigo-100 rounded-3xl space-y-4">
+                        <span className="text-xl">🛠️</span>
+                        <h5 className="font-playfair text-base font-bold text-indigo-950">Practical Plane (8-1-6)</h5>
+                        <div className="flex justify-between items-center text-[10px] font-mono">
+                          <span className="text-indigo-600 font-bold">Development: {lvl}</span>
+                          <span className="text-slate-400">{present.length}/3 Present</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-1.5">
+                          <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${(present.length / 3) * 100}%` }} />
+                        </div>
+                        <p className="text-slate-600 font-sans leading-relaxed">
+                          The Practical Plane represents execute capacity, structural work ethic, cash management, and real-world results.
+                          {lvl === 'HIGH' && " Fully active (8, 1, 6) reflects superb executive capability—highly organized, extremely industrious, with solid money sense, transforming thoughts into material successes."}
+                          {lvl === 'MEDIUM' && " With 2 active digits, you are highly capable in execution, but need a quiet, supportive workspace to perform at peak material capacity."}
+                          {lvl === 'LOW-MEDIUM' && " Holding 1 active coordinate, physical execution is irregular. You are highly creative but struggle with routine manual work, needing partners to handle micro-tasks."}
+                          {lvl === 'INACTIVE' && " Lacking 8, 1, and 6, anchoring focus on manual work and routine tasks is a primary block. You work best in pure advisory, abstract, or highly creative positions."}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* SECTION 4: ARROWS FORMATION */}
+              <div className="bg-white p-8 md:p-10 rounded-[40px] border border-[#E5E7EB] shadow-sm space-y-8 text-left">
+                <div className="flex gap-2.5 items-center pb-2 border-b border-[#E5E7EB]">
+                  <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-mono font-bold text-xs border border-emerald-200">04</span>
+                  <h4 className="font-cinzel text-xl font-bold text-slate-850 uppercase tracking-widest">4. Arrows of Strength and Weakness</h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs">
+                  {/* Strength Arrows */}
+                  <div className="space-y-4">
+                    <h5 className="font-playfair text-base font-bold text-[#1E3A8A] flex items-center gap-1.5">
+                      <span>🏆</span> Present Arrows of Strength (राजयोग)
+                    </h5>
+                    <div className="space-y-4">
+                      {analysisResult.strengthArrows.length > 0 ? (
+                        analysisResult.strengthArrows.map((arrow, idx) => (
+                          <div key={idx} className="p-4 bg-emerald-50/20 border border-emerald-200 rounded-2xl space-y-1">
+                            <div className="flex justify-between items-center font-bold text-emerald-950">
+                              <span>{arrow.name} ({arrow.title})</span>
+                              <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded uppercase font-mono">Active</span>
+                            </div>
+                            <p className="text-slate-600 mt-1 leading-relaxed">{arrow.description} Coordinates: {arrow.digits.join(', ')}.</p>
+                            <span className="block text-[10px] text-emerald-800 font-semibold mt-1">
+                              👉 Manifestation: Holds auspicious energy representing high willpower, financial ease, or structural dominance.
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl text-slate-400 italic text-center">
+                          No full strength arrows present in the base grid. Your paths expand step-by-step through local dasha timing and remedies.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Weakness Arrows */}
+                  <div className="space-y-4">
+                    <h5 className="font-playfair text-base font-bold text-red-900 flex items-center gap-1.5">
+                      <span>⚠️</span> Active Arrows of Weakness / Voids (दुर्बलता)
+                    </h5>
+                    <div className="space-y-4">
+                      {analysisResult.weaknessArrows.length > 0 ? (
+                        analysisResult.weaknessArrows.map((arrow, idx) => (
+                          <div key={idx} className="p-4 bg-red-50/20 border border-red-200 rounded-2xl space-y-1">
+                            <div className="flex justify-between items-center font-bold text-red-950">
+                              <span>Arrow of {arrow.name}</span>
+                              <span className="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded uppercase font-mono">Present</span>
+                            </div>
+                            <p className="text-slate-600 mt-1 leading-relaxed">Coordinates {arrow.digits.join(', ')} are totally absent. {arrow.description}</p>
+                            <span className="block text-[10px] text-red-800 font-semibold mt-1">
+                              👉 Remedy: "{arrow.remedy?.split('|')[0] || 'Observe element remedies'}"
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-6 bg-emerald-50/10 border border-emerald-100 rounded-2xl text-emerald-800 italic text-center">
+                          Auspicious alignment! No complete weakness arrows (completely empty planes) present in your grid.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 5: ELEMENT DISTRIBUTION */}
+              {(() => {
+                const totalElCount = el9 + el2 + el5 + el8 + el3 + el4 + el6 + el7 + el1;
+                const fPct = totalElCount > 0 ? Math.round((el9 / totalElCount) * 100) : 25;
+                const ePct = totalElCount > 0 ? Math.round(((el2 + el5 + el8) / totalElCount) * 100) : 25;
+                const aPct = totalElCount > 0 ? Math.round(((el3 + el4 + el6 + el7) / totalElCount) * 100) : 25;
+                const wPct = totalElCount > 0 ? Math.round((el1 / totalElCount) * 100) : 25;
+
+                return (
+                  <div className="bg-white p-8 md:p-10 rounded-[40px] border border-[#E5E7EB] shadow-sm space-y-8 text-left">
+                    <div className="flex gap-2.5 items-center pb-2 border-b border-[#E5E7EB]">
+                      <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-mono font-bold text-xs border border-emerald-200">05</span>
+                      <h4 className="font-cinzel text-xl font-bold text-slate-850 uppercase tracking-widest">5. Element Distribution & Balance</h4>
+                    </div>
+
+                    <div className="space-y-6 pt-2">
+                      {/* Percentages bar stacked visual */}
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-mono text-slate-400 uppercase block font-black">Visual Element Spectrum</span>
+                        <div className="w-full h-8 rounded-2xl overflow-hidden flex shadow-sm border border-slate-200">
+                          <div className="bg-red-500 text-white flex items-center justify-center text-[10px] font-mono font-bold" style={{ width: `${fPct}%` }} title="Fire Element">
+                            {fPct > 8 && `Fire ${fPct}%`}
+                          </div>
+                          <div className="bg-amber-500 text-white flex items-center justify-center text-[10px] font-mono font-bold" style={{ width: `${ePct}%` }} title="Earth Element">
+                            {ePct > 8 && `Earth ${ePct}%`}
+                          </div>
+                          <div className="bg-emerald-500 text-white flex items-center justify-center text-[10px] font-mono font-bold" style={{ width: `${aPct}%` }} title="Air / Wood Element">
+                            {aPct > 8 && `Air/Wood ${aPct}%`}
+                          </div>
+                          <div className="bg-blue-600 text-white flex items-center justify-center text-[10px] font-mono font-bold" style={{ width: `${wPct}%` }} title="Water Element">
+                            {wPct > 8 && `Water ${wPct}%`}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Elemental breakdown details */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-xs text-slate-600 leading-relaxed">
+                        <div className="p-4 bg-red-50/10 border border-red-100 rounded-2xl">
+                          <strong className="text-red-900 block font-sans uppercase font-bold text-[10px] mb-1 flex items-center gap-1">
+                            <Flame className="w-3.5 h-3.5 text-red-500" /> Fire (Fiery Courage — 9)
+                          </strong>
+                          <p>Presence: {fPct}%. Rulers fame, willpower, reputation, and public recognition.</p>
+                          <span className="block mt-2 font-semibold text-slate-700">Balance Act:</span>
+                          <span className="block text-[11px] text-slate-500">Practice candle meditation (Trataki) during Mercury hours.</span>
+                        </div>
+
+                        <div className="p-4 bg-amber-50/10 border border-amber-100 rounded-2xl">
+                          <strong className="text-amber-900 block font-sans uppercase font-bold text-[10px] mb-1 flex items-center gap-1">
+                            <Landmark className="w-3.5 h-3.5 text-amber-500" /> Earth (Stability — 2, 5, 8)
+                          </strong>
+                          <p>Presence: {ePct}%. Manages physical assets, stability, family, and steady finances.</p>
+                          <span className="block mt-2 font-semibold text-slate-700">Balance Act:</span>
+                          <span className="block text-[11px] text-slate-500">Walk barefoot on clean grass; carry unheated smoky quartz.</span>
+                        </div>
+
+                        <div className="p-4 bg-emerald-50/10 border border-emerald-100 rounded-2xl">
+                          <strong className="text-emerald-950 block font-sans uppercase font-bold text-[10px] mb-1 flex items-center gap-1">
+                            <Trees className="w-3.5 h-3.5 text-emerald-500" /> Air / Wood (Foresight — 3, 4, 6, 7)
+                          </strong>
+                          <p>Presence: {aPct}%. Governs intelligence, flexibility, social connections, and creativity.</p>
+                          <span className="block mt-2 font-semibold text-slate-700">Balance Act:</span>
+                          <span className="block text-[11px] text-slate-500">Pranayama; grow small green leafy plants in East zone.</span>
+                        </div>
+
+                        <div className="p-4 bg-blue-50/10 border border-blue-100 rounded-2xl">
+                          <strong className="text-blue-900 block font-sans uppercase font-bold text-[10px] mb-1 flex items-center gap-1">
+                            <Droplet className="w-3.5 h-3.5 text-blue-500" /> Water (Career — 1)
+                          </strong>
+                          <p>Presence: {wPct}%. Directs career paths, verbal expression, and fluid adaptability.</p>
+                          <span className="block mt-2 font-semibold text-slate-700">Balance Act:</span>
+                          <span className="block text-[11px] text-slate-500">Drink from silver tumblers; keep water features in North.</span>
+                        </div>
+                      </div>
+
+                      {/* Element Imbalance Explanations */}
+                      <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 text-slate-700 space-y-2">
+                        <strong className="font-sans text-[11px] uppercase tracking-wider block font-bold text-slate-900">Element Imbalance Audit</strong>
+                        <p className="font-lora italic text-xs leading-relaxed text-slate-600">
+                          {(() => {
+                            let audits = [];
+                            if (fPct > 35) audits.push("Your Fire element is highly active. This can elevate impatience and sudden temper, requiring cooling activities like moon-gazing.");
+                            if (fPct < 15) audits.push("Your Fire element is low. This may lead to struggles in claiming credit or initiating large tasks; wear copper bracelets.");
+                            if (ePct > 35) audits.push("High Earth configuration can anchor you too deeply, causing rigidity to lifestyle changes. Learn to let go.");
+                            if (ePct < 15) audits.push("Low Earth element can trigger spatial and material restlessness. Carry a small earthy rock in your pocket.");
+                            if (aPct > 35) audits.push("Excessive Air/Wood element fuels overthinking and restlessness, complicating execution. Practice slow breathing.");
+                            if (aPct < 15) audits.push("Low Air element restricts creative visualization and long-term planning. Practice writing ideas down.");
+                            if (wPct > 35) audits.push("High Water element triggers hypersensitivity and emotional volatility. Ground yourself with daily walks.");
+                            if (wPct < 15) audits.push("Low Water element blocks fluid communications and career transition clarity. Carry a silver coin.");
+                            
+                            return audits.length > 0 ? audits.join(" • ") : "Congratulations! Your elemental distribution is in an exceptionally stable and harmonious equilibrium.";
+                          })()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* SECTION 6: KARMIC LESSONS */}
+              <div className="bg-white p-8 md:p-10 rounded-[40px] border border-[#E5E7EB] shadow-sm space-y-8 text-left">
+                <div className="flex gap-2.5 items-center pb-2 border-b border-[#E5E7EB]">
+                  <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-mono font-bold text-xs border border-emerald-200">06</span>
+                  <h4 className="font-cinzel text-xl font-bold text-slate-850 uppercase tracking-widest">6. Karmic Lessons & Evolution Strategies</h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-600 leading-relaxed">
+                  {analysisResult.missingNumbers.length > 0 ? (
+                    analysisResult.missingNumbers.map((m) => (
+                      <div key={m.digit} className="p-6 bg-slate-50 border border-slate-200 rounded-[30px] space-y-3 hover:border-red-500/20 transition duration-300">
+                        <div className="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                          <strong className="text-slate-900 text-sm font-black">Digit #{m.digit} Lesson ({m.element})</strong>
+                          <span className="bg-red-50 text-red-700 font-mono text-[9px] font-black px-2 py-0.5 rounded uppercase border border-red-200/50">Missing Coordinate</span>
+                        </div>
+                        
+                        <div className="space-y-2.5 text-slate-700 font-sans">
+                          <p>
+                            <strong className="text-slate-800 block mb-0.5">Core Karmic Challenge:</strong> 
+                            {m.digit === 1 && "Struggles to anchor career independence, leading to feeling lost in other people's plans."}
+                            {m.digit === 2 && "Vulnerability to relationship friction and feeling overly defensive under simple feedback."}
+                            {m.digit === 3 && "Difficulty organizing thoughts and family bonds, often feeling intellectually misunderstood."}
+                            {m.digit === 4 && "Financial instability and poor wealth preservation guidelines, creating routine fatigue."}
+                            {m.digit === 5 && "Lack of grounding and stability, leading to midway project dropouts."}
+                            {m.digit === 6 && "Delayed domestic comfort or feeling isolated without helpful mentors or friends."}
+                            {m.digit === 7 && "Repeating past operational errors without analyzing core causes."}
+                            {m.digit === 8 && "Delayed asset realization, creating labor fatigue under Saturnian dasha timings."}
+                            {m.digit === 9 && "Low enthusiasm and courage, preferring to operate passively behind the scenes."}
+                          </p>
+
+                          <p>
+                            <strong className="text-slate-800 block mb-0.5">Manifestation Scenarios:</strong>
+                            {m.digit === 1 && "Experiencing career roadblocks or finding it hard to secure fair recognition for work."}
+                            {m.digit === 2 && "Entanglements in relationship arguments or overreacting to simple remarks from loved ones."}
+                            {m.digit === 3 && "Procrastinating on educational goals or experiencing frequent miscommunications with family."}
+                            {m.digit === 4 && "Unexpected expenses draining cash reserves or struggling to stick to a daily budget."}
+                            {m.digit === 5 && "Constantly changing jobs or moving locations, seeking an elusive sense of peace."}
+                            {m.digit === 6 && "Feeling unsupported in times of crisis, or facing delays in buying a dream property."}
+                            {m.digit === 7 && "Trusting untrustworthy associates or repeating painful relationship cycles."}
+                            {m.digit === 8 && "Feeling that despite immense hard work, financial progress is slow and blocked."}
+                            {m.digit === 9 && "Struggling to express anger healthily or staying quiet when boundary lines are crossed."}
+                          </p>
+
+                          <p>
+                            <strong className="text-slate-800 block mb-0.5">Evolution Strategy:</strong>
+                            {m.digit === 1 && "Practice daily mirror confidence affirmations; journal clear professional goals each Sunday."}
+                            {m.digit === 2 && "Learn emotional boundary-setting; meditate on a full moon night; practice deep empathy."}
+                            {m.digit === 3 && "Read biographies of visionaries; plan projects on paper first; heal generational family disputes."}
+                            {m.digit === 4 && "Use budgeting apps strictly; maintain a strict morning routine; organize your workstation."}
+                            {m.digit === 5 && "Commit to a single long-term project for at least 180 days without planning changes."}
+                            {m.digit === 6 && "Decorate your bedroom with pleasant colors; practice self-love; serve as a mentor to juniors."}
+                            {m.digit === 7 && "Keep an active retrospective journal; write down lessons learned after every project."}
+                            {m.digit === 8 && "Maintain patience through regular spiritual routines; invest in land or safe blue-chip assets."}
+                            {m.digit === 9 && "Engage in physical exercises; speak up firmly but politely when boundaries are tested."}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-2 p-12 bg-emerald-50/10 border border-emerald-200 rounded-[30px] text-center text-slate-500">
+                      Excellent alignment! No missing digits mean no severe karmic baseline voids exist in this lifetime. Concentrate on grid optimization remedies instead.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* SECTION 7: REMEDIES & OPTIMIZATION */}
+              <div className="bg-white p-8 md:p-10 rounded-[40px] border border-[#E5E7EB] shadow-sm space-y-8 text-left">
+                <div className="flex gap-2.5 items-center pb-2 border-b border-[#E5E7EB]">
+                  <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-mono font-bold text-xs border border-emerald-200">07</span>
+                  <h4 className="font-cinzel text-xl font-bold text-slate-850 uppercase tracking-widest">7. Actionable Remedies Altar</h4>
+                </div>
+
+                <div className="space-y-8 text-xs text-slate-600">
+                  {/* Missing digits remedies */}
+                  <div className="space-y-4">
+                    <h5 className="font-playfair text-base font-bold text-slate-800">Planetary Remedies for Missing Coordinates</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {analysisResult.missingNumbers.map(m => (
+                        <div key={m.digit} className="p-5 bg-amber-50/10 border border-amber-200/50 rounded-2xl space-y-2">
+                          <strong className="text-[#B45309] block uppercase tracking-wider font-mono">Digit #{m.digit} (Ruler: {m.digit === 1 ? 'Sun' : m.digit === 2 ? 'Moon' : m.digit === 3 ? 'Jupiter' : m.digit === 4 ? 'Rahu' : m.digit === 5 ? 'Mercury' : m.digit === 6 ? 'Venus' : m.digit === 7 ? 'Ketu' : m.digit === 8 ? 'Saturn' : 'Mars'})</strong>
+                          <p className="italic text-slate-800 font-medium">"{m.remedy}"</p>
+                          <ul className="list-decimal list-inside space-y-1 text-[11px] text-slate-500 pt-1">
+                            {m.digit === 1 && (
+                              <>
+                                <li>Offer fresh copper-pot water to the morning Sun daily at sunrise.</li>
+                                <li>Wear a simple, unadorned copper ring on your right ring finger.</li>
+                                <li>Use bright royal blue signature inks to write important files.</li>
+                              </>
+                            )}
+                            {m.digit === 2 && (
+                              <>
+                                <li>Keep a clean white crystal sphere in the Southwest corner of your room.</li>
+                                <li>Fast on Mondays, or consume milk/water from silver cups exclusively.</li>
+                                <li>Carry a pure silver square coin in your wallet at all times.</li>
+                              </>
+                            )}
+                            {m.digit === 3 && (
+                              <>
+                                <li>Wear a yellow sapphire gemstone or a small gold ring on your index finger.</li>
+                                <li>Chant the guru mantra (Om Brim Brihaspataye Namah) on Thursdays.</li>
+                                <li>Donate fresh yellow sweets or yellow fabrics to elders or teachers.</li>
+                              </>
+                            )}
+                            {m.digit === 4 && (
+                              <>
+                                <li>Feed stray dogs or birds with multi-grain seeds every Wednesday evening.</li>
+                                <li>Place a small wooden money plant in the Southeast sector of your space.</li>
+                                <li>Avoid speculative stock trading or gambling; wear a clear quartz bracelet.</li>
+                              </>
+                            )}
+                            {m.digit === 5 && (
+                              <>
+                                <li>Place a green jade pyramid or crystal in the exact center of your home.</li>
+                                <li>Feed green grass or green leafy spinach to cows on Wednesday mornings.</li>
+                                <li>Use emerald green colors in your primary workstation backdrop.</li>
+                              </>
+                            )}
+                            {m.digit === 6 && (
+                              <>
+                                <li>Wear white zircon or diamond jewelry on Venus days (Fridays).</li>
+                                <li>Donate fresh white flowers or white rice to under-privileged girls.</li>
+                                <li>Sprinkle high-quality rose water in your bedroom before sleeping.</li>
+                              </>
+                            )}
+                            {m.digit === 7 && (
+                              <>
+                                <li>Keep a multi-colored thread bracelet tied on your left wrist.</li>
+                                <li>Chant Ketu Mantras on Saturday evenings; feed black-and-white stray dogs.</li>
+                                <li>Donate old warm blankets to elderly shelters during transit months.</li>
+                              </>
+                            )}
+                            {m.digit === 8 && (
+                              <>
+                                <li>Light a sesame oil lamp under a Peepal tree on Saturday evenings.</li>
+                                <li>Wear a black obsidian bracelet or an iron ring on your middle finger.</li>
+                                <li>Donate black mustard seeds, black clothes, or iron utensils on Saturdays.</li>
+                              </>
+                            )}
+                            {m.digit === 9 && (
+                              <>
+                                <li>Recite Hanuman Chalisa or chant Mars Mantras on Tuesdays.</li>
+                                <li>Wear a copper bracelet or a red coral gemstone on your ring finger.</li>
+                                <li>Donate red lentils (masoor dal) to spiritual centers on Tuesday mornings.</li>
+                              </>
+                            )}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Repeated digits remedies */}
+                  <div className="space-y-4">
+                    <h5 className="font-playfair text-base font-bold text-slate-800">Planetary Soothing for Repeated Coordinates</h5>
+                    <div className="p-5 bg-slate-50 border border-slate-200 rounded-3xl text-[11px] leading-relaxed">
+                      <p className="font-lora italic text-slate-600 mb-3">
+                        When a single number is repeated multiple times, its planetary frequency dominates the grid, causing energy congestion. Apply these soothing methods to ground and balance this excess force:
+                      </p>
+                      <ul className="list-disc list-inside space-y-2 text-slate-600">
+                        <li><strong>Excessive Sun Energy (1s repeated)</strong>: Balance with cooling silver wear; practice active listening and silence for at least 30 minutes daily.</li>
+                        <li><strong>Excessive Moon Energy (2s repeated)</strong>: Ground with barefoot walking; avoid cold foods after sunset; carry a heavy hematite stone.</li>
+                        <li><strong>Excessive Jupiter Energy (3s repeated)</strong>: Focus on practical work instead of just theory; avoid advising others unless they explicitly ask.</li>
+                        <li><strong>Excessive Rahu Energy (4s repeated)</strong>: Walk on soil daily; practice slow meditation; prioritize social laughter and outdoor leisure.</li>
+                        <li><strong>Excessive Mercury Energy (5s repeated)</strong>: Avoid prompt speculative financial transactions; limit screen time; maintain a stable eating routine.</li>
+                        <li><strong>Excessive Venus Energy (6s repeated)</strong>: Drink warm water; restrict high luxury spending; focus on healthy, simple home cooked foods.</li>
+                        <li><strong>Excessive Ketu Energy (7s repeated)</strong>: Maintain a strong retrospective journal; don't isolate yourself; consult trustworthy mentors before major moves.</li>
+                        <li><strong>Excessive Saturn Energy (8s repeated)</strong>: Avoid getting stuck in routine details; take small breaks; practice relaxing breathing exercises.</li>
+                        <li><strong>Excessive Mars Energy (9s repeated)</strong>: Direct excess energy into daily physical workouts; practice cooling breathing (Sheetali Pranayama).</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Overall grid optimization */}
+                  <div className="space-y-3 p-6 bg-emerald-50/10 border border-emerald-200/50 rounded-3xl">
+                    <strong className="text-emerald-950 block font-sans uppercase font-bold text-[10px]">Universal Loshu Grid Optimization Guidelines</strong>
+                    <p className="text-slate-600 leading-relaxed font-sans text-[11px]">
+                      To optimize your overall birth grid, focus on balancing the central coordinate (Node 5 - Earth Element). Place a natural amethyst druse or clear quartz cluster in your workspace center to ground scattered ideas. Keep your North zone (Node 1 - Water) clean and well-lit to maintain career clarity. Ensure your Southeast corner (Node 4 - Wood) is decorated with fresh green plants to secure financial growth.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* End of Report Printable Disclaimer */}
+              <div className="p-8 bg-slate-100 rounded-3xl text-center space-y-2 border border-slate-200">
+                <span className="text-xl">☯️</span>
+                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-mono font-bold">Authenticated Loshu Grid Alignment Cast</p>
+                <p className="text-[10px] text-slate-400 max-w-lg mx-auto">
+                  This report is a direct mathematical translation of the Date of Birth coordinates {dob}. Occult Sciences represent symbolic guidelines for self-realization; self-discipline and conscious effort are the ultimate anchors of human destiny.
+                </p>
               </div>
 
             </div>
