@@ -16,7 +16,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 15 } }
 };
 import { 
   Heart, Sparkles, Calendar, User, Phone, Compass, Award, 

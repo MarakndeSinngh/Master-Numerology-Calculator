@@ -18,13 +18,13 @@ import {
   SignatureReport,
   LuckyDatesSuite
 } from '../services/premiumModules';
-import { generateMedicalNumerologyReport, MedicalNumerologyResult } from '../services/medicalNumerologyEngine';
-import { generateNumeroVaastuReport, NumeroVaastuResult } from '../services/numeroVaastuEngine';
+import { generateMedicalNumerologyReport, MedicalReport } from '../services/medicalNumerologyEngine';
+import { generateNumeroVaastuReport, NumeroVaastuReport } from '../services/numeroVaastuEngine';
 import { calculateDashaAndYearForecast, DashaAnalysisReport } from '../services/dashaEngine';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 15 } }
 };
 
 export default function PremiumConsultations() {
@@ -92,12 +92,12 @@ export default function PremiumConsultations() {
   // New Engines Input States
   const [medicalDob, setMedicalDob] = useState('');
   const [medicalName, setMedicalName] = useState('');
-  const [medicalResult, setMedicalResult] = useState<MedicalNumerologyResult | null>(null);
+  const [medicalResult, setMedicalResult] = useState<MedicalReport | null>(null);
 
   const [vaastuDob, setVaastuDob] = useState('');
   const [vaastuGender, setVaastuGender] = useState<'MALE' | 'FEMALE' | 'OTHER'>('MALE');
   const [vaastuName, setVaastuName] = useState('');
-  const [vaastuResult, setVaastuResult] = useState<NumeroVaastuResult | null>(null);
+  const [vaastuResult, setVaastuResult] = useState<NumeroVaastuReport | null>(null);
 
   const [dashaDob, setDashaDob] = useState('');
   const [dashaYear, setDashaYear] = useState<number>(2026);
@@ -2497,7 +2497,7 @@ export default function PremiumConsultations() {
                 <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-[10px] flex gap-2 font-sans font-medium">
                   <ShieldAlert className="w-4 h-4 shrink-0 text-rose-500" />
                   <div>
-                    <strong>MEDICAL DISCLAIMER:</strong> {medicalResult.disclaimer}
+                    <strong>MEDICAL DISCLAIMER:</strong> This analysis is based strictly on Indian Occult Sciences (Vedic Numerology & Swara Shastra principles). It is intended purely for lifestyle, diet, and spiritual guidance and is NOT a substitute for professional medical advice, diagnosis, or treatment.
                   </div>
                 </div>
 
@@ -2556,11 +2556,11 @@ export default function PremiumConsultations() {
                       </div>
                       <div className="flex justify-between items-center border-b pb-1.5">
                         <span className="text-slate-600 font-medium font-sans">Karmic Stress vulnerability</span>
-                        <span className="font-mono font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">{medicalResult.scores.stressLevel}/100</span>
+                        <span className="font-mono font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">{medicalResult.scores.stressScore}/100</span>
                       </div>
                       <div className="flex justify-between items-center border-b pb-1.5">
                         <span className="text-slate-600 font-medium font-sans">Sleep depth Index</span>
-                        <span className="font-mono font-bold bg-sky-100 text-sky-850 px-2.5 py-0.5 rounded-full">{medicalResult.scores.sleepQuality}/100</span>
+                        <span className="font-mono font-bold bg-sky-100 text-sky-850 px-2.5 py-0.5 rounded-full">{medicalResult.scores.sleepScore}/100</span>
                       </div>
                       <div className="flex justify-between items-center pb-0.5">
                         <span className="text-slate-600 font-medium font-sans">Ojas Immunological Shield</span>
@@ -2640,7 +2640,7 @@ export default function PremiumConsultations() {
                     <div className="space-y-1 col-span-1 sm:col-span-2 border-t pt-3 text-left">
                       <span className="font-bold text-slate-750 uppercase font-mono block">⏰ Custom Sleep Guide & Morning Alarm</span>
                       <p className="text-slate-600 mt-1 leading-relaxed text-xs">
-                        **Sleep Timing:** {medicalResult.ayurvedicLifestyle.sleepHygieneTip}. <br />
+                        **Sleep Timing:** {medicalResult.ayurvedicLifestyle.sleepRecommendations}. <br />
                         **Morning Routine:** {medicalResult.ayurvedicLifestyle.morningRoutine}.
                       </p>
                     </div>
@@ -2727,7 +2727,7 @@ export default function PremiumConsultations() {
                   <div className="space-y-1">
                     <span className="text-[10px] text-[#D97706] uppercase tracking-wider font-mono font-bold block">Your Magnetic Vastu Signature</span>
                     <h4 className="font-playfair text-md font-bold text-slate-800">
-                      Kua Number: <strong className="text-[#D97706] text-xl font-mono">{vaastuResult.kuaNumber}</strong> (Co-ruled by Element: {vaastuResult.rulingElement})
+                      Kua Number: <strong className="text-[#D97706] text-xl font-mono">{vaastuResult.kuaNumber}</strong> (Co-ruled by Element: {([1, 3, 4, 9].includes(vaastuResult.kuaNumber) ? (vaastuResult.kuaNumber === 1 ? 'Water' : vaastuResult.kuaNumber === 9 ? 'Fire' : 'Wood') : ([2, 8].includes(vaastuResult.kuaNumber) ? 'Earth' : 'Metal'))})
                     </h4>
                     <p className="text-[10px] text-slate-500 leading-relaxed font-sans">
                       Your birthday coordinates belong to the **{vaastuResult.groupType === 'EAST_GROUP' ? 'East Mansion Group (पूर्व दिशा समूह)' : 'West Mansion Group (पश्चिम दिशा समूह)'}**. Aligning bed and desks matching this group activates rapid monetary luck.
@@ -2750,7 +2750,7 @@ export default function PremiumConsultations() {
                         🚀 Success Direction (Sheng Chi)
                       </span>
                       <p className="text-sm font-bold text-slate-850 font-mono">{vaastuResult.directions.success.direction}</p>
-                      <p className="text-[10px] text-slate-500 font-medium leading-relaxed font-sans">{vaastuResult.directions.success.description}</p>
+                      <p className="text-[10px] text-slate-500 font-medium leading-relaxed font-sans">{vaastuResult.directions.success.dynamicInfluence}</p>
                     </div>
 
                     <div className="p-4 bg-[#D97706]/5 border border-[#D97706]/10 rounded-2xl space-y-1 text-left">
@@ -2758,7 +2758,7 @@ export default function PremiumConsultations() {
                         ➕ Health Direction (Tien Yi)
                       </span>
                       <p className="text-sm font-bold text-slate-855 font-mono">{vaastuResult.directions.health.direction}</p>
-                      <p className="text-[10px] text-slate-500 font-medium leading-relaxed font-sans">{vaastuResult.directions.health.description}</p>
+                      <p className="text-[10px] text-slate-500 font-medium leading-relaxed font-sans">{vaastuResult.directions.health.dynamicInfluence}</p>
                     </div>
 
                     <div className="p-4 bg-pink-50/20 border border-pink-100/70 rounded-2xl space-y-1 text-left">
@@ -2766,7 +2766,7 @@ export default function PremiumConsultations() {
                         💕 Relationship Direction (Nien Yen)
                       </span>
                       <p className="text-sm font-bold text-slate-850 font-mono">{vaastuResult.directions.family.direction}</p>
-                      <p className="text-[10px] text-slate-500 font-medium leading-relaxed font-sans">{vaastuResult.directions.family.description}</p>
+                      <p className="text-[10px] text-slate-500 font-medium leading-relaxed font-sans">{vaastuResult.directions.family.dynamicInfluence}</p>
                     </div>
 
                     <div className="p-4 bg-blue-50/25 border border-blue-100/70 rounded-2xl space-y-1 text-left">
@@ -2774,7 +2774,7 @@ export default function PremiumConsultations() {
                         🌱 Personal Development (Fu Wei)
                       </span>
                       <p className="text-sm font-bold text-slate-850 font-mono">{vaastuResult.directions.personalDev.direction}</p>
-                      <p className="text-[10px] text-slate-500 font-medium leading-relaxed font-sans">{vaastuResult.directions.personalDev.description}</p>
+                      <p className="text-[10px] text-slate-500 font-medium leading-relaxed font-sans">{vaastuResult.directions.personalDev.dynamicInfluence}</p>
                     </div>
 
                   </div>
@@ -2786,8 +2786,8 @@ export default function PremiumConsultations() {
                     🛏️ Bed Head & Office Desk Facing Guidelines
                   </span>
                   <div className="font-semibold text-slate-700 space-y-1 text-[11px] leading-relaxed">
-                    • **Bedroom & Bed orientation:** Headboard position must project towards the face direction **{vaastuResult.remedies.idealBedFacing}** to promote deeper sleep. <br />
-                    • **Office Desk Facing:** Always sit facing **{vaastuResult.remedies.idealDeskFacing}** to activate rapid sales and prevent communication blockages.
+                    • **Bedroom & Bed orientation:** Headboard position must project towards the face direction **{vaastuResult.directions.health.direction}** to promote deeper sleep. <br />
+                    • **Office Desk Facing:** Always sit facing **{vaastuResult.directions.success.direction}** to activate rapid sales and prevent communication blockages.
                   </div>
                 </div>
 
@@ -2836,10 +2836,11 @@ export default function PremiumConsultations() {
                   <h4 className="font-playfair text-sm uppercase text-[#D97706] tracking-wider font-bold">Vedic Missing Nodes Remedies (Lo Shu Grid Integration)</h4>
                   <p className="text-slate-500 text-[10px] leading-relaxed pb-1 italic font-sans animate-pulse">Based on missing numbers from your date of birth, apply these specific spatial corrections inside your living rooms:</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[11px] leading-relaxed font-sans">
-                    {vaastuResult.loShuVaastuRemedies.map((re, idx) => (
+                    {vaastuResult.remedyPlan.remedyCards.map((re, idx) => (
                       <div key={idx} className="p-3 bg-slate-50 border rounded-xl space-y-1">
-                        <span className="font-bold font-mono text-[10px] text-[#D97706] uppercase block">Node {re.digit} Missing ({re.title})</span>
-                        <p className="text-slate-600 font-semibold text-xs">✨ {re.remedy}</p>
+                        <span className="font-bold font-mono text-[10px] text-[#D97706] uppercase block">Node {re.number} Missing - {re.zoneName}</span>
+                        <p className="text-slate-600 font-medium text-xs leading-relaxed"><strong>Correction:</strong> {re.directionRemedy} {re.placementRemedy}</p>
+                        <p className="text-slate-500 text-[10px] leading-relaxed"><strong>Action Item:</strong> {re.actionItem}</p>
                       </div>
                     ))}
                   </div>

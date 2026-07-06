@@ -121,8 +121,8 @@ export function generateCompleteNumerologyProfile(input: CompleteProfileInput): 
     secondaryDosha: masterReport.healthAnalysis.secondaryDosha || 'Pitta',
     healthScore: masterReport.healthAnalysis.healthScore,
     stressScore: masterReport.healthAnalysis.stressScore,
-    energyScore: masterReport.healthAnalysis.vitalityScore || 75,
-    dietaryAdvice: masterReport.healthAnalysis.dietPlan,
+    energyScore: masterReport.healthAnalysis.energyScore || 75,
+    dietaryAdvice: masterReport.healthAnalysis.lifestyleRecommendations.join(', ') || masterReport.healthAnalysis.healthTendencies,
     organStrengths: 'High kidney and heart coordination based on current water-metal presence.',
     chakraVibrations: 'Manipura (Solar Plexus) and Anahata (Heart) vibrate at primary frequencies.'
   };
@@ -196,7 +196,7 @@ export function generateCompleteNumerologyProfile(input: CompleteProfileInput): 
     consultation,
     explanation,
     scores,
-    annualForecast: masterReport.reasons, // Matches forecasted year reasons
+    annualForecast: masterReport.scores.reasons, // Matches forecasted year reasons
     compatibility,
     pdfData: null, // Populated below
     metadata,

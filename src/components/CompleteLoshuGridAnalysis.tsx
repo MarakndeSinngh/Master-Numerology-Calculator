@@ -81,18 +81,18 @@ const PLANETARY_REPETITION_MEANINGS: Record<number, Record<number, string>> = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 15 } }
 };
 
 interface CompleteLoshuGridAnalysisProps {
-  initialProfile?: { name: string; dob: string; gender: string } | null;
+  initialProfile?: { name: string; dob: string; gender?: string } | null;
 }
 
 export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps> = ({ initialProfile }) => {
   // Main states
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
-  const [gender, setGender] = useState('MALE');
+  const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'OTHER'>('MALE');
   const [analysisResult, setAnalysisResult] = useState<LoshuAnalysisResult | null>(null);
   const [masterReport, setMasterReport] = useState<LoshuMasterReport | null>(null);
   const [mobileNumber, setMobileNumber] = useState('');
@@ -132,9 +132,10 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
     if (initialProfile?.dob) {
       setName(initialProfile.name);
       setDob(initialProfile.dob);
-      setGender(initialProfile.gender || 'MALE');
+      const incomingGender = (initialProfile.gender === 'FEMALE' || initialProfile.gender === 'OTHER') ? initialProfile.gender : 'MALE';
+      setGender(incomingGender);
       
-      const analysis = computeLoshuAnalysis(initialProfile.dob, initialProfile.name, initialProfile.gender);
+      const analysis = computeLoshuAnalysis(initialProfile.dob, initialProfile.name, incomingGender);
       setAnalysisResult(analysis);
 
       // Consume from the unified Core Engine
@@ -142,9 +143,9 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
         dob: initialProfile.dob,
         name: initialProfile.name,
         mobile: mobileNumber,
-        gender: initialProfile.gender || 'MALE'
+        gender: incomingGender
       });
-      const master = computeLoshuMasterReport(initialProfile.dob, initialProfile.name, initialProfile.gender || 'MALE', mobileNumber);
+      const master = computeLoshuMasterReport(initialProfile.dob, initialProfile.name, incomingGender, mobileNumber);
       setMasterReport(master);
     }
   }, [initialProfile]);
@@ -2123,6 +2124,16 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
 
               {/* SECTION 5: ELEMENT DISTRIBUTION */}
               {(() => {
+                const el9 = analysisResult.loshuGrid[9]?.count || 0;
+                const el2 = analysisResult.loshuGrid[2]?.count || 0;
+                const el5 = analysisResult.loshuGrid[5]?.count || 0;
+                const el8 = analysisResult.loshuGrid[8]?.count || 0;
+                const el3 = analysisResult.loshuGrid[3]?.count || 0;
+                const el4 = analysisResult.loshuGrid[4]?.count || 0;
+                const el6 = analysisResult.loshuGrid[6]?.count || 0;
+                const el7 = analysisResult.loshuGrid[7]?.count || 0;
+                const el1 = analysisResult.loshuGrid[1]?.count || 0;
+
                 const totalElCount = el9 + el2 + el5 + el8 + el3 + el4 + el6 + el7 + el1;
                 const fPct = totalElCount > 0 ? Math.round((el9 / totalElCount) * 100) : 25;
                 const ePct = totalElCount > 0 ? Math.round(((el2 + el5 + el8) / totalElCount) * 100) : 25;
@@ -2865,8 +2876,8 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                  {analysisResult.luckyDetails.reremedies ? (
-                    analysisResult.luckyDetails.reremedies.map((rem, idx) => (
+                  {analysisResult.luckyDetails.remedies ? (
+                    analysisResult.luckyDetails.remedies.map((rem, idx) => (
                       <div key={idx} className="p-4 bg-[#FDFCF7] border border-[#E5E7EB] rounded-2xl flex gap-3 text-left">
                         <Check className="w-5 h-5 text-[#D97706] flex-shrink-0 mt-0.5" />
                         <span className="text-xs text-slate-700 font-semibold leading-relaxed select-all">{rem}</span>
