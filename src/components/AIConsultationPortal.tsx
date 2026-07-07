@@ -261,13 +261,70 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
   const nameAnalysis = activeProfile ? analyzeNameSystems(activeProfile.name) : null;
   const mobileAnalysis = activeProfile ? analyzeMobileNumber(activeProfile.mobile) : null;
 
-  const reportData = unifiedProfile ? unifiedProfile.consultation : null;
-  const scoreExplanations = activeProfile ? getScoreExplanations(activeProfile.dob, activeProfile.name, activeProfile.gender || 'MALE', activeProfile.mobile) : null;
-  const masterGrid = activeProfile ? computeLoshuMasterReport(activeProfile.dob, activeProfile.name, activeProfile.gender || 'MALE', activeProfile.mobile) : null;
+  const baseReportData = unifiedProfile ? unifiedProfile.consultation : null;
+  const baseScoreExplanations = activeProfile ? getScoreExplanations(activeProfile.dob, activeProfile.name, activeProfile.gender || 'MALE', activeProfile.mobile) : null;
+  const baseMasterGrid = activeProfile ? computeLoshuMasterReport(activeProfile.dob, activeProfile.name, activeProfile.gender || 'MALE', activeProfile.mobile) : null;
   
-  const advisorActions = activeProfile && dobAnalysis && nameAnalysis && mobileAnalysis
+  const baseAdvisorActions = activeProfile && dobAnalysis && nameAnalysis && mobileAnalysis
     ? generateLeoAdvisorActions(dobAnalysis, nameAnalysis, mobileAnalysis)
     : null;
+
+  const [translatedReportData, setTranslatedReportData] = useState<any>(null);
+  const [translatedScoreExplanations, setTranslatedScoreExplanations] = useState<any>(null);
+  const [translatedMasterGrid, setTranslatedMasterGrid] = useState<any>(null);
+  const [translatedAdvisorActions, setTranslatedAdvisorActions] = useState<any>(null);
+  const [isTranslatingLocal, setIsTranslatingLocal] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Immediately clear old translations when profile or language changes
+    setTranslatedReportData(null);
+    setTranslatedScoreExplanations(null);
+    setTranslatedMasterGrid(null);
+    setTranslatedAdvisorActions(null);
+
+    if (lang === 'en') {
+      return;
+    }
+
+    if (!activeProfile || !baseReportData) return;
+
+    const translatePortalData = async () => {
+      setIsTranslatingLocal(true);
+      try {
+        const payload = {
+          reportData: baseReportData,
+          scoreExplanations: baseScoreExplanations,
+          masterGrid: baseMasterGrid,
+          advisorActions: baseAdvisorActions
+        };
+
+        const response = await fetch('/api/translate-object', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ object: payload, language: lang })
+        });
+        
+        const resData = await response.json();
+        if (resData && resData.translated) {
+          setTranslatedReportData(resData.translated.reportData);
+          setTranslatedScoreExplanations(resData.translated.scoreExplanations);
+          setTranslatedMasterGrid(resData.translated.masterGrid);
+          setTranslatedAdvisorActions(resData.translated.advisorActions);
+        }
+      } catch (err) {
+        console.error("Portal translation error: ", err);
+      } finally {
+        setIsTranslatingLocal(false);
+      }
+    };
+
+    translatePortalData();
+  }, [lang, activeProfile?.name, activeProfile?.dob, baseReportData !== null]);
+
+  const reportData = (translatedReportData || baseReportData) as any;
+  const scoreExplanations = (translatedScoreExplanations || baseScoreExplanations) as any;
+  const masterGrid = (translatedMasterGrid || baseMasterGrid) as any;
+  const advisorActions = (translatedAdvisorActions || baseAdvisorActions) as any;
 
   // Handle Ask Leo AI response (Phase 7)
   const handleSendMessage = () => {
@@ -586,6 +643,27 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
           {/* MAIN STAGE RENDER SECTION */}
           <div className="lg:col-span-3 space-y-8">
             
+            {isTranslatingLocal && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-5 bg-amber-50/80 border border-amber-200 rounded-[24px] flex flex-col sm:flex-row items-center justify-between gap-4 animate-pulse text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <RefreshCw className="w-5 h-5 text-[#D97706] animate-spin shrink-0" />
+                  <div>
+                    <h5 className="text-sm font-extrabold text-amber-900">Translating Cosmic Dashboard...</h5>
+                    <p className="text-xs text-amber-700 font-medium">Gemini 3.5 is translating all ruling planets, emotional keys, growth metrics, and remedies into your selected language.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-md bg-amber-100 text-[#D97706] text-[10px] font-mono font-bold uppercase tracking-wider">
+                    Chaldean AI Active
+                  </span>
+                </div>
+              </motion.div>
+            )}
+
             {/* SUB-TAB CONTENTS */}
 
             {/* TAB 0: COMPLETE LIFE BLUEPRINT REPORT */}
@@ -1263,7 +1341,7 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
 
                 {/* Score grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(scoreExplanations).map(([key, explain]) => (
+                  {Object.entries(scoreExplanations as Record<string, any>).map(([key, explain]: [string, any]) => (
                     <div 
                       key={key} 
                       className={`p-6 rounded-3xl border transition-all cursor-pointer bg-white ${

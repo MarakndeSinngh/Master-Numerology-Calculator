@@ -120,6 +120,55 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
   // Selected Grid box for interactive detail drawer
   const [selectedBoxDigit, setSelectedBoxDigit] = useState<number | null>(5);
 
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Auto-translate masterReport when the language selection changes
+  useEffect(() => {
+    if (!masterReport) return;
+
+    const currentDob = masterReport.personal.dob;
+    const currentName = masterReport.personal.name;
+    const currentGender = masterReport.personal.gender;
+
+    // Reset back to English if requested
+    if (lang === 'en') {
+      if (masterReport.translatedLang && masterReport.translatedLang !== 'en') {
+        const freshEngMaster = computeLoshuMasterReport(currentDob, currentName, currentGender, mobileNumber);
+        setMasterReport(freshEngMaster);
+      }
+      return;
+    }
+
+    // Skip if already translated for the target language
+    if (masterReport.translatedLang === lang) {
+      return;
+    }
+
+    const triggerTranslation = async () => {
+      setIsTranslating(true);
+      try {
+        const response = await fetch('/api/translate-object', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ object: masterReport, language: lang })
+        });
+        const data = await response.json();
+        if (data && data.translated) {
+          setMasterReport({
+            ...data.translated,
+            translatedLang: lang
+          });
+        }
+      } catch (err) {
+        console.error("Translation error for masterReport: ", err);
+      } finally {
+        setIsTranslating(false);
+      }
+    };
+
+    triggerTranslation();
+  }, [lang, masterReport?.personal?.dob, masterReport?.personal?.name, masterReport?.personal?.gender]);
+
   // Load history & initial profile values on mount
   useEffect(() => {
     const saved = localStorage.getItem('leo_loshu_history');
@@ -542,6 +591,27 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
           </div>
 
           {/* TAB AREA STAGE */}
+
+          {isTranslating && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-5 bg-amber-50/80 border border-amber-200 rounded-[24px] flex flex-col sm:flex-row items-center justify-between gap-4 animate-pulse text-left"
+            >
+              <div className="flex items-center gap-3">
+                <RefreshCw className="w-5 h-5 text-[#D97706] animate-spin shrink-0" />
+                <div>
+                  <h5 className="text-sm font-extrabold text-amber-900">Translating Cosmic Grid Details...</h5>
+                  <p className="text-xs text-amber-700 font-medium">Gemini 3.5 is aligning all 81 combinations, character maps, and Vastu directives into your selected language.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-md bg-amber-100 text-[#D97706] text-[10px] font-mono font-bold uppercase tracking-wider">
+                  Chaldean AI Active
+                </span>
+              </div>
+            </motion.div>
+          )}
 
           {/* TAB 0: MASTER CONSULTATION SYSTEM 5.0 */}
           {activeSubTab === 'MASTER_CONSULTATION' && masterReport && (

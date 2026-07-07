@@ -2625,6 +2625,77 @@ CRITICAL TRANSLATION INSTRUCTIONS:
     }
   });
 
+  // 4. Object Translation Endpoint for complete UI localization of computed dashboards
+  app.post("/api/translate-object", async (req, res) => {
+    try {
+      const { object, language } = req.body;
+      if (!object) {
+        return res.status(400).json({ error: "No object provided for translation." });
+      }
+      if (!language || language === 'en') {
+        return res.json({ translated: object });
+      }
+
+      const langNames: Record<string, string> = {
+        en: 'English',
+        hi: 'Hindi',
+        gu: 'Gujarati',
+        mr: 'Marathi',
+        es: 'Spanish',
+        fr: 'French',
+        ar: 'Arabic'
+      };
+      const targetLangName = langNames[language as string] || 'English';
+
+      const apiKey = process.env.GEMINI_API_KEY;
+      const hasValidKey = apiKey && apiKey !== "" && apiKey !== "MOCK_KEY_FOR_TESTING";
+
+      if (!hasValidKey) {
+        return res.json({ translated: object });
+      }
+
+      const client = getGeminiClient();
+      
+      const prompt = `
+You are an expert astro-numerology translator and spiritual linguist.
+Translate all of the string values in the provided JSON object from English into the target language: ${targetLangName}.
+
+CRITICAL INSTRUCTIONS:
+1. Preserve all JSON keys exactly. Do NOT translate, capitalize, or modify keys.
+2. Keep all numbers, boolean values, arrays of numbers, or nulls as they are.
+3. Only translate the string values. Maintain deep, respectful, occult, and spiritual terms (e.g., use correct Hindi/Marathi translations like मूलांक for Driver, भाग्यांक for Conductor, राजयोग for Sovereign plane, and other Vastu/astrological/remedy terminology).
+4. Maintain exactly the same JSON structure. The output must be parsed as valid JSON matching the input structure.
+
+JSON OBJECT TO TRANSLATE:
+${JSON.stringify(object)}
+`;
+
+      const aiResponse = await client.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt,
+        config: {
+          systemInstruction: "You are the Rajiv Ji AI Master Translator. You translate sacred, deep numerology JSON structures with pristine linguistic care and terminology preservation, returning valid parsed JSON only.",
+          responseMimeType: "application/json"
+        }
+      });
+
+      const responseText = aiResponse.text;
+      if (responseText) {
+        try {
+          const translatedObj = JSON.parse(responseText);
+          return res.json({ translated: translatedObj });
+        } catch (jsonErr) {
+          console.error("Failed to parse translated JSON, returning original: ", jsonErr);
+        }
+      }
+
+      return res.json({ translated: object });
+    } catch (err: any) {
+      console.error("Error in object translation endpoint: ", err);
+      return res.json({ translated: req.body.object });
+    }
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },

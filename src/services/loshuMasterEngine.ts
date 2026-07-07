@@ -29,6 +29,7 @@ export interface ArrowMasterResult {
 }
 
 export interface LoshuMasterReport {
+  translatedLang?: string;
   personal: {
     name: string;
     dob: string;
