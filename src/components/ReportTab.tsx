@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../hooks/useLanguage';
 import ReactMarkdown from 'react-markdown';
 import { DOBAnalysis, NameAnalysis, MobileAnalysis, remediesAdvice, PersonalDetails } from '../types';
 import { computeLoshuAnalysis, LoshuAnalysisResult } from '../services/loshuEngine';
@@ -16,6 +17,7 @@ interface ReportTabProps {
 }
 
 const ReportTab: React.FC<ReportTabProps> = ({ personalDetails, dobData, nameData, mobileData, remedies }) => {
+  const { lang } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [reportText, setReportText] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -35,7 +37,8 @@ const ReportTab: React.FC<ReportTabProps> = ({ personalDetails, dobData, nameDat
           dobAnalysis: dobData,
           nameAnalysis: nameData,
           mobileAnalysis: mobileData,
-          remedies
+          remedies,
+          language: lang
         })
       });
       const data = await response.json();

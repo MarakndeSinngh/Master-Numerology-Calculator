@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../hooks/useLanguage';
 import { motion } from 'motion/react';
 import { 
   Car, Home, Briefcase, FileText, UserPlus, TrendingUp, Calendar, ChevronRight, Sparkles, Award, ShieldAlert, CheckCircle, RefreshCw, Star, ArrowRight, Info, Eye, Clock, User, Heart, Compass, Activity,
@@ -28,6 +29,7 @@ const cardVariants = {
 };
 
 export default function PremiumConsultations() {
+  const { lang } = useLanguage();
   const [activeModule, setActiveModule] = useState<'VEHICLE' | 'HOUSE' | 'BUSINESS' | 'SIGNATURE' | 'CHILD' | 'LUCKY_DATES' | 'MEDICAL' | 'VAASTU' | 'DASHA'>('VEHICLE');
 
   React.useEffect(() => {
@@ -311,7 +313,8 @@ export default function PremiumConsultations() {
           occupantDob: occupantDobInput,
           familyCount: familyCountInput,
           familyDobs: familyDobsInput,
-          ownerDriver: houseOwnerDriver
+          ownerDriver: houseOwnerDriver,
+          language: lang
         })
       });
       if (!response.ok) throw new Error('Failed to audit house address vibrations.');
@@ -346,7 +349,8 @@ export default function PremiumConsultations() {
           ownerConductor: 6, // default Venus harmony Conductor
           industry: bizIndustry,
           keywords: bizKeywords,
-          vibePreference: bizVibe
+          vibePreference: bizVibe,
+          language: lang
         })
       });
       if (!response.ok) throw new Error('Failed to generate brand names.');
@@ -377,7 +381,8 @@ export default function PremiumConsultations() {
           ownerName: optOwnerName,
           ownerDob: optOwnerDob,
           nameLength: optNameLength,
-          tonePreference: optTonePreference
+          tonePreference: optTonePreference,
+          language: lang
         })
       });
       if (!response.ok) throw new Error('Failed to generate optimal business names.');
@@ -1184,7 +1189,8 @@ export default function PremiumConsultations() {
             speed: sigDescSpeed,
             firstVsLast: sigDescFirstVsLast,
             specialCharacteristics: sigDescSpecial
-          }
+          },
+          language: lang
         })
       });
 

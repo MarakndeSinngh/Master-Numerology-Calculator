@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../hooks/useLanguage';
 import { motion } from 'motion/react';
 import { 
   computeLoshuAnalysis, 
@@ -89,6 +90,7 @@ interface CompleteLoshuGridAnalysisProps {
 }
 
 export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps> = ({ initialProfile }) => {
+  const { lang } = useLanguage();
   // Main states
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
@@ -248,7 +250,8 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
           weaknessArrows: analysisResult.weaknessArrows,
           personalYear: analysisResult.personalYear,
           currentMahadasha: analysisResult.currentMahadasha,
-          currentAntardasha: analysisResult.currentAntardasha
+          currentAntardasha: analysisResult.currentAntardasha,
+          language: lang
         })
       });
       

@@ -31,10 +31,60 @@ async function startServer() {
     });
   };
 
+  const translateMarkdown = async (text: string, targetLanguage: string): Promise<string> => {
+    if (!targetLanguage || targetLanguage === 'hi') {
+      return text;
+    }
+    const langNames: Record<string, string> = {
+      en: 'English',
+      hi: 'Hindi',
+      gu: 'Gujarati',
+      mr: 'Marathi',
+      es: 'Spanish',
+      fr: 'French',
+      ar: 'Arabic'
+    };
+    const targetLangName = langNames[targetLanguage] || 'English';
+    
+    const client = getGeminiClient();
+    const translationPrompt = `
+You are an expert astro-numerology translator and spiritual linguist. Your task is to translate the following comprehensive numerology consultation report into ${targetLangName}.
+
+ORIGINAL REPORT:
+---
+${text}
+---
+
+CRITICAL TRANSLATION INSTRUCTIONS:
+1. MAINTAIN THE SPIRITUAL AND PROFESSIONAL TONE. It must sound like an authentic Vedic/occult counselor directly speaking to the seeker, preserving warmth, respect, and deep cosmic wisdom.
+2. PRESERVE ACCURATE OCCULT TERMINOLOGY.
+   - Do NOT translate core Sanskrit/planetary/Vedic numerology terms. Keep them in their pristine phonetic state, followed by localized explanations in parentheses if helpful.
+   - For example: Keep terms like "Mulank" (मूलांक), "Bhagyank" (भाग्यांक), "Surya", "Chandra", "Shani", "Guru", "Rahu", "Ketu", "Loshu Grid", "Chaldean Numerology", "Dosha", "Karma", "Yantra" as-is or transliterated phonetically, rather than substituting with literal robotic dictionary words (e.g. do NOT translate "Bhagyank" as "Destiny Number" in local languages).
+3. RTL ALIGNMENT FOR ARABIC: If translating to Arabic, format headings, paragraphs, and lists to read naturally from right-to-left.
+4. DO NOT SUMMARIZE OR SHORTEN. The translation must match the thoroughness of the original report perfectly.
+5. Output the result in beautiful Markdown.
+`;
+
+    try {
+      const translationResponse = await client.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: translationPrompt,
+        config: {
+          systemInstruction: "You are the Rajiv Ji AI Master Translator. You translate sacred, deep numerology reports with pristine linguistic care, spiritual resonance, and terminology preservation.",
+          temperature: 0.30
+        }
+      });
+      return translationResponse.text || text;
+    } catch (err) {
+      console.error("Translation failed, returning original text:", err);
+      return text;
+    }
+  };
+
   // API router for Gemini report generation
   app.post("/api/report", async (req, res) => {
     try {
-      const { personalDetails, dobAnalysis, nameAnalysis, mobileAnalysis, remedies } = req.body;
+      const { personalDetails, dobAnalysis, nameAnalysis, mobileAnalysis, remedies, language } = req.body;
 
       if (!personalDetails?.name) {
         return res.status(400).json({ error: "Missing personal details name" });
@@ -275,7 +325,10 @@ The output should look like a master-class, deeply personalized, premium consult
         }
       });
 
-      const responseText = aiResponse.text || "आपका आध्यात्मिक फलादेश वर्तमान में ग्रहों के पारगमन के कारण उपलब्ध नहीं है। कृपया पुनः प्रयास करें।";
+      let responseText = aiResponse.text || "आपका आध्यात्मिक फलादेश वर्तमान में ग्रहों के पारगमन के कारण उपलब्ध नहीं है। कृपया पुनः प्रयास करें।";
+      if (language && language !== 'hi') {
+        responseText = await translateMarkdown(responseText, language);
+      }
       res.json({ report: responseText });
     } catch (err: any) {
       console.error("Gemini server error: ", err);
@@ -286,7 +339,7 @@ The output should look like a master-class, deeply personalized, premium consult
   // API router for Loshu Grid Report generation
   app.post("/api/loshu-report", async (req, res) => {
     try {
-      const { personalDetails, mulank, bhagyank, loshuGrid, missingNumbers, strengthArrows, weaknessArrows, personalYear, currentMahadasha, currentAntardasha } = req.body;
+      const { personalDetails, mulank, bhagyank, loshuGrid, missingNumbers, strengthArrows, weaknessArrows, personalYear, currentMahadasha, currentAntardasha, language } = req.body;
 
       if (!personalDetails?.name) {
         return res.status(400).json({ error: "Missing personal details name" });
@@ -393,7 +446,10 @@ Structure the report with pristine Markdown layout, neat tables, divider lines, 
         }
       });
 
-      const responseText = aiResponse.text || "ब्रह्मांडीय ऊर्जा संचरण में बाधा के कारण वर्तमान में फलादेश अनुपलब्ध है।";
+      let responseText = aiResponse.text || "ब्रह्मांडीय ऊर्जा संचरण में बाधा के कारण वर्तमान में फलादेश अनुपलब्ध है।";
+      if (language && language !== 'hi') {
+        responseText = await translateMarkdown(responseText, language);
+      }
       res.json({ report: responseText });
     } catch (err: any) {
       console.error("Gemini server error for Loshu: ", err);
@@ -820,7 +876,18 @@ Structure the report with pristine Markdown layout, neat tables, divider lines, 
 
   // API router for AI Signature Audit Pro System
   app.post("/api/signature-audit", async (req, res) => {
-    const { image, personalDetails, manualSelection, driver, conductor, nameNumber, description } = req.body;
+    const { image, personalDetails, manualSelection, driver, conductor, nameNumber, description, language } = req.body;
+
+    const langNames: Record<string, string> = {
+      en: 'English',
+      hi: 'Hindi',
+      gu: 'Gujarati',
+      mr: 'Marathi',
+      es: 'Spanish',
+      fr: 'French',
+      ar: 'Arabic'
+    };
+    const targetLangName = langNames[language as string] || 'English';
 
     // Check if GEMINI_API_KEY is defined and not equal to MOCK placeholder
     const apiKey = process.env.GEMINI_API_KEY;
@@ -896,7 +963,9 @@ Please perform a comprehensive 7-part graphology and handwriting Vastu analysis.
 The total analysis MUST be between 600-800 words, structured into clean, authoritative, consulting-grade paragraphs. Return data in the EXACT JSON format matching the schema properties.
 `;
 
-      parts.push({ text: promptText });
+      const promptTextWithLanguage = promptText + `\n\nCRITICAL LANGUAGE INSTRUCTION:\nGenerate ALL textual descriptions, explanations, recommendations, calculations, names, alternative variants, and purpose blueprints inside the JSON response in the target language: ${targetLangName}. Do NOT use English if the target language is different. Keep the JSON keys exactly as specified in English, but translate the values of those keys into ${targetLangName}. Maintain occult correctness and deep spiritual/Vastu terminology.`;
+
+      parts.push({ text: promptTextWithLanguage });
       const contents = [{ role: "user", parts }];
 
       const signatureAuditSchema = {
@@ -1083,12 +1152,23 @@ The total analysis MUST be between 600-800 words, structured into clean, authori
 
   // 1. AI Business Name Generator Endpoint
   app.post("/api/generate-business-names", async (req, res) => {
-    const { ownerDriver, ownerConductor, industry, keywords, vibePreference } = req.body;
+    const { ownerDriver, ownerConductor, industry, keywords, vibePreference, language } = req.body;
     const driver = parseInt(ownerDriver, 10) || 5;
     const conductor = parseInt(ownerConductor, 10) || 6;
     const ind = industry || "TECH";
     const kw = (keywords || "").trim();
     const vibe = vibePreference || "MODERN";
+
+    const langNames: Record<string, string> = {
+      en: 'English',
+      hi: 'Hindi',
+      gu: 'Gujarati',
+      mr: 'Marathi',
+      es: 'Spanish',
+      fr: 'French',
+      ar: 'Arabic'
+    };
+    const targetLangName = langNames[language as string] || 'English';
 
     const apiKey = process.env.GEMINI_API_KEY;
     const hasValidKey = apiKey && apiKey !== "" && apiKey !== "MOCK_KEY_FOR_TESTING";
@@ -1132,7 +1212,7 @@ You must return the data in the EXACT JSON format with the following schema:
 `;
         const aiResponse = await client.models.generateContent({
           model: "gemini-3.5-flash",
-          contents: promptText,
+          contents: promptText + `\n\nCRITICAL LANGUAGE INSTRUCTION:\nGenerate ALL brand alignment explanations, details, and categories inside the JSON response in the target language: ${targetLangName}. Do NOT use English if the target language is different. Keep the JSON keys exactly as specified in English, but translate the values of those keys into ${targetLangName}. Maintain occult correctness and deep spiritual/branding terminology.`,
           config: {
             systemInstruction: "You are an elite corporate naming strategist, branding expert, and Chaldean numerologist.",
             responseMimeType: "application/json",
@@ -1270,8 +1350,20 @@ You must return the data in the EXACT JSON format with the following schema:
       ownerName, 
       ownerDob, 
       nameLength, 
-      tonePreference 
+      tonePreference,
+      language
     } = req.body;
+
+    const langNames: Record<string, string> = {
+      en: 'English',
+      hi: 'Hindi',
+      gu: 'Gujarati',
+      mr: 'Marathi',
+      es: 'Spanish',
+      fr: 'French',
+      ar: 'Arabic'
+    };
+    const targetLangName = langNames[language as string] || 'English';
 
     // Helper to calculate Driver and Conductor
     const getDriverAndConductor = (dobStr: string) => {
@@ -1396,7 +1488,7 @@ DO NOT ADD ANY EXTRANEOUS TEXT OUTSIDE THE JSON STRUCTURE. ONLY RETURN THE RAW J
 `;
         const aiResponse = await client.models.generateContent({
           model: "gemini-3.5-flash",
-          contents: promptText,
+          contents: promptText + `\n\nCRITICAL LANGUAGE INSTRUCTION:\nGenerate ALL textual descriptions, explanations, recommendations, calculations, names, alternative variants, taglines, customer perceptions, and blueprints inside the JSON response in the target language: ${targetLangName}. Do NOT use English if the target language is different. Keep the JSON keys exactly as specified in English, but translate the values of those keys into ${targetLangName}. Maintain occult correctness and deep spiritual/branding terminology.`,
           config: {
             systemInstruction: "You are an elite corporate naming strategist, brand architect, and professional Chaldean numerologist.",
             responseMimeType: "application/json",
@@ -1589,10 +1681,22 @@ DO NOT ADD ANY EXTRANEOUS TEXT OUTSIDE THE JSON STRUCTURE. ONLY RETURN THE RAW J
       occupantDob,
       familyCount,
       familyDobs,
-      ownerDriver
+      ownerDriver,
+      language
     } = req.body;
 
     const driver = parseInt(ownerDriver, 10) || 1;
+
+    const langNames: Record<string, string> = {
+      en: 'English',
+      hi: 'Hindi',
+      gu: 'Gujarati',
+      mr: 'Marathi',
+      es: 'Spanish',
+      fr: 'French',
+      ar: 'Arabic'
+    };
+    const targetLangName = langNames[language as string] || 'English';
 
     const apiKey = process.env.GEMINI_API_KEY;
     const hasValidKey = apiKey && apiKey !== "" && apiKey !== "MOCK_KEY_FOR_TESTING";
@@ -1754,7 +1858,7 @@ You must return the data in the EXACT JSON format matching this schema:
 `;
         const aiResponse = await client.models.generateContent({
           model: "gemini-3.5-flash",
-          contents: promptText,
+          contents: promptText + `\n\nCRITICAL LANGUAGE INSTRUCTION:\nGenerate ALL textual descriptions, explanations, recommendations, calculations, names, and taglines inside the JSON response in the target language: ${targetLangName}. Do NOT use English if the target language is different. Keep the JSON keys exactly as specified in English, but translate the values of those keys into ${targetLangName}. Maintain occult correctness and deep spiritual/Vastu terminology.`,
           config: {
             systemInstruction: "You are an elite, highly experienced Astro-Numerology and Home Vastu Architect. You deliver exhaustive, non-generic, deep-dive address and occupant audits that blend Chaldean, Vedic, and Elemental principles.",
             responseMimeType: "application/json",
