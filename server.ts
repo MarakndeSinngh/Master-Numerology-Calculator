@@ -7,6 +7,24 @@ import { generateMedicalNumerologyReport } from "./src/services/medicalNumerolog
 import { generateNumeroVaastuReport } from "./src/services/numeroVaastuEngine";
 import { calculateDashaAndYearForecast } from "./src/services/dashaEngine";
 
+const LANG_NAMES: Record<string, string> = {
+  en: 'English',
+  hi: 'Hindi',
+  gu: 'Gujarati',
+  mr: 'Marathi',
+  es: 'Spanish',
+  fr: 'French',
+  ar: 'Arabic',
+  zh: 'Chinese',
+  ja: 'Japanese',
+  pt: 'Portuguese',
+  ta: 'Tamil',
+  te: 'Telugu',
+  bn: 'Bengali',
+  de: 'German',
+  ru: 'Russian'
+};
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -31,20 +49,40 @@ async function startServer() {
     });
   };
 
+  const generateContentWithRetry = async (
+    client: any,
+    options: { model: string; contents: any; config?: any },
+    retries = 3,
+    delayMs = 1500
+  ): Promise<any> => {
+    let attempt = 0;
+    while (true) {
+      try {
+        return await client.models.generateContent(options);
+      } catch (error: any) {
+        attempt++;
+        const errorMsg = error?.message || String(error);
+        const is503 = errorMsg.includes("503") || errorMsg.toLowerCase().includes("unavailable") || errorMsg.includes("high demand");
+        const is429 = errorMsg.includes("429") || errorMsg.toLowerCase().includes("rate limit") || errorMsg.toLowerCase().includes("quota");
+        const isTransient = is503 || is429 || errorMsg.toLowerCase().includes("fetch") || errorMsg.toLowerCase().includes("network");
+
+        if (isTransient && attempt <= retries) {
+          const backoff = delayMs * Math.pow(2, attempt - 1);
+          console.warn(`Gemini API call failed (attempt ${attempt}/${retries}): ${errorMsg}. Retrying in ${backoff}ms...`);
+          await new Promise(resolve => setTimeout(resolve, backoff));
+        } else {
+          console.error(`Gemini API call failed permanently (attempt ${attempt}): ${errorMsg}`);
+          throw error;
+        }
+      }
+    }
+  };
+
   const translateMarkdown = async (text: string, targetLanguage: string): Promise<string> => {
     if (!targetLanguage || targetLanguage === 'hi') {
       return text;
     }
-    const langNames: Record<string, string> = {
-      en: 'English',
-      hi: 'Hindi',
-      gu: 'Gujarati',
-      mr: 'Marathi',
-      es: 'Spanish',
-      fr: 'French',
-      ar: 'Arabic'
-    };
-    const targetLangName = langNames[targetLanguage] || 'English';
+    const targetLangName = LANG_NAMES[targetLanguage] || 'English';
     
     const client = getGeminiClient();
     const translationPrompt = `
@@ -66,7 +104,7 @@ CRITICAL TRANSLATION INSTRUCTIONS:
 `;
 
     try {
-      const translationResponse = await client.models.generateContent({
+      const translationResponse = await generateContentWithRetry(client, {
         model: "gemini-3.5-flash",
         contents: translationPrompt,
         config: {
@@ -136,21 +174,30 @@ Stability/Severity Score: ${item.severity}%`;
 
       const client = getGeminiClient();
 
+      const targetLangName = LANG_NAMES[language as string] || 'English';
+
+      const customSystemInstruction = `You are an elite, compassionate astro-numerologist with 25 years of consulting experience in traditional Indian Vedic, Astro, and Mobile Numerology.
+
+CRITICAL LANGUAGE INSTRUCTION:
+Generate the ENTIRE report in ${targetLangName.toUpperCase()} language ONLY.
+Do NOT use any other language. Every single word, title, section header, key, value, and explanation must be in ${targetLangName}. 
+Do NOT use any English sentences, English-mixed phrases, or corporate hybrid language. Write with deep, traditional, respectful, and authoritative tone of the chosen language.`;
+
       const prompt = `
-Generate an exhaustive, highly detailed, professional, and empathetic traditional Numerology Life Advisory Report in pure, respectful Hindi.
-This must reads like a 15-25 page premium consulting portfolio booklet.
+Generate an exhaustive, highly detailed, professional, and empathetic traditional Numerology Life Advisory Report in pure, respectful ${targetLangName}.
+This must read like a 15-25 page premium consulting portfolio booklet in ${targetLangName}.
 
 Subject Auditable Credentials:
-- Name (नाम): ${personalDetails.name}
-- Date of Birth (जन्म तारीख): ${personalDetails.dob}
-- Gender (लिंग): ${personalDetails.gender || 'निर्दिष्ट नहीं'}
-- Focal Phone Line (मोबाईल नंबर): ${personalDetails.mobile} (সংशोधित कंपन: ${modifiedNumber})
+- Name: ${personalDetails.name}
+- Date of Birth: ${personalDetails.dob}
+- Gender: ${personalDetails.gender || 'Not specified'}
+- Focal Phone Line: ${personalDetails.mobile} (modified vibration: ${modifiedNumber})
 
 Primary Grid Coordinates Calculated by Design Engines (Use these values exactly):
-1. Date of Birth Grid (जन्मांक एवं भाग्यांक विश्लेषण):
-   - Life Path Number (जीवन पथ संख्या / भाग्यांक): ${dobAnalysis.lifePathNumber}
-   - Birth Number (जन्मांक / मूलांक): ${dobAnalysis.birthNumber}
-   - Destiny Number (नामांक / भाग्य संख्या): ${dobAnalysis.destinyNumber}
+1. Date of Birth Grid:
+   - Life Path Number: ${dobAnalysis.lifePathNumber}
+   - Birth Number: ${dobAnalysis.birthNumber}
+   - Destiny Number: ${dobAnalysis.destinyNumber}
    - Soul Urge Number: ${dobAnalysis.soulUrgeNumber}
    - Personality Number: ${dobAnalysis.personalityNumber}
    - Maturity Number: ${dobAnalysis.maturityNumber}
@@ -170,169 +217,75 @@ Primary Grid Coordinates Calculated by Design Engines (Use these values exactly)
    - Recommended Yoga & Pranayama: ${medReport.ayurvedicLifestyle.yogaSuggestions.join(', ')}; ${medReport.ayurvedicLifestyle.pranayamaSuggestions.join(', ')}
 
 3. Numero Vaastu Pro Parameters:
-   - Kua Number (कुआ अंक): ${vaastuReport.kuaNumber} (Group: ${vaastuReport.groupType === 'EAST_GROUP' ? 'पूर्व दिशा समूह' : 'पश्चिम दिशा समूह'})
+   - Kua Number: ${vaastuReport.kuaNumber} (Group: ${vaastuReport.groupType === 'EAST_GROUP' ? 'East Group' : 'West Group'})
    - Lucky Directions: Success -> ${vaastuReport.directions.success.direction}, Health -> ${vaastuReport.directions.health.direction}, Family -> ${vaastuReport.directions.family.direction}, Growth -> ${vaastuReport.directions.personalDev.direction}
    - Avoid Directions: ${vaastuReport.directions.avoidList.join(', ')}
    - Lucky Colours: ${vaastuReport.colourCorrection.luckyColours.join(', ')}, Balance: ${vaastuReport.colourCorrection.balanceColours.join(', ')}, Anti: ${vaastuReport.colourCorrection.antiColours.join(', ')}
    - Vastu zone recommendations: Career: ${vaastuReport.zonesReport.careerZone.enhancement}, Money: ${vaastuReport.zonesReport.moneyZone.enhancement}, Relationships: ${vaastuReport.zonesReport.relationshipZone.enhancement}
 
 4. Dasha Engine & Personal Year Forecast:
-   - Current running Mahadasha (9-year Master Cycle): Rulership by ${dashaReport.currentMahadasha.planetName} from year ${dashaReport.currentMahadasha.startYear} to ${dashaReport.currentMahadasha.endYear}
-   - Current running Antardasha (1-year Sub Cycle): Sub planet ${dashaReport.currentAntardasha.subPlanetName} (Forecast: ${dashaReport.currentAntardasha.forecast})
+   - Current running Mahadasha: Rulership by ${dashaReport.currentMahadasha.planetName} from year ${dashaReport.currentMahadasha.startYear} to ${dashaReport.currentMahadasha.endYear}
+   - Current running Antardasha: Sub planet ${dashaReport.currentAntardasha.subPlanetName} (Forecast: ${dashaReport.currentAntardasha.forecast})
    - Shifting Personal Year Transit for 2026: Personal Year ${dashaReport.personalYearNumber} (${dashaReport.personalYearForecast})
 
 5. Mobile Phone Vibrational Diagnostics:
    - Suggestive lucky ending frequencies: ${remedies.mobileEndings.join(', ')}
    - Compound vibration score: ${mobileAnalysis.compoundTotal}
    - Reduced core frequency: ${mobileAnalysis.reducedTotal} (Rating Category: ${mobileAnalysis.rating}, Score: ${mobileAnalysis.score}/100)
-   - Hostile planetary pairs triggered: ${mobileAnalysis.hostileRelationships.map((h: any) => h.title).join(', ') || 'कोई नहीं'}
+   - Hostile planetary pairs triggered: ${mobileAnalysis.hostileRelationships.map((h: any) => h.title).join(', ') || 'None'}
 
 Active Consecutive Pairs Discovered inside User's Mobile:
-${pairsDataString || 'कोई नहीं'}
+${pairsDataString || 'None'}
 
-Please lay out the report with the following exact chapters in professional, rich, and highly formatted Markdown. All text must be in elite traditional Hindi:
+Please lay out the report with the following exact chapters in professional, rich, and highly formatted Markdown. All text must be in ${targetLangName}:
 
-- **1. मुख्य व्यक्तिगत सारांश (Executive Personal Summary)**: A majestic, poetic birds-eye view of their alignment, cosmic destiny, and general aura state.
-- **2. मूल व्यक्तित्व एवं खगोलीय-अंक ज्योतिष ब्लूप्रिंट (Core Personality & Astro-Numerology Blueprint)**: Dive deeply into Life Path (भाग्यांक), Birth Number (मूलांक), Destiny Number (नामांक), and Soul Urge frequency analysis in supreme consulting detail.
+- **1. Executive Personal Summary (मुख्य व्यक्तिगत सारांश)**: A majestic, poetic birds-eye view of their alignment, cosmic destiny, and general aura state.
+- **2. Core Personality & Astro-Numerology Blueprint (मूल व्यक्तित्व एवं खगोलीय-अंक ज्योतिष ब्लूप्रिंट)**: Dive deeply into Life Path, Birth Number, Destiny Number, and Soul Urge frequency analysis in supreme consulting detail.
+  
+  CRITICAL INSTRUCTION (NO SHALLOW OUTPUT):
+  For each and every number (Life Path Number, Birth Number, Destiny Number, Soul Urge Number, Personality Number, Maturity Number, and Attitude Number), you MUST fully present the following five sections in deep detail:
+  A) **Calculation details (गणना एवं स्रोत)**: Show how it was calculated (e.g. 23 -> 2+3=5, etc.).
+  B) **In-depth Interpretation (गहन फलादेश)**: Minimum 100-150 words of soulful, personal reading in second-person ("you", "your", etc.).
+  C) **Strengths (सकारात्मक शक्तियाँ)**: 3 to 5 practical, specific strengths bullet points.
+  D) **Challenges / Shadow Side (नकारात्मक पहलू / छाया प्रतिरूप)**: 3 to 5 bullet points highlighting shadow characteristics or weaknesses to correct.
+  E) **Expressions in Life (जीवन के महत्वपूर्ण क्षेत्रों में प्रकटीकरण)**: 1 short paragraph for each: Career, Relationships, and Personal Growth.
 
-  महत्वपूर्ण निर्देश (CRITICAL INSTRUCTION - NO SHALLOW OUTPUT):
-  इस अध्याय में शामिल प्रत्येक अंक (Life Path Number, Birth Number, Destiny Number, Soul Urge Number, Personality Number, Maturity Number, और Attitude Number) के लिए आपको बिना किसी अपवाद के निम्नलिखित पाँचों अनुभागों (five sections) को पूरी तरह से विस्तृत रूप में प्रस्तुत करना होगा। सामान्य या संक्षिप्त वाक्य (generic filler/shallow sentences) बिल्कुल न लिखें:
+- **3. Medical Numerology & Ayurvedic Dosha Diagnosis (चिकित्सा अंकशास्त्र एवं आयुर्वेदिक दोष निदान)**: Translate their medical numerology profile into deep wellness insights. Provide the dominant dosha, health score, digestive scores, weak organs, diet recommendations, sleep guides, and custom morning routine. Add a strict professional medical disclaimer at the start of this chapter in ${targetLangName}.
+- **4. Numero Vaastu Pro & Spatial Direction Coordinates (न्यूमरो वास्तु प्रो एवं चुंबकीय दिशा संरेखण)**: Analyze space vibrations using their Kua number and group. Provide lucky/anti colors suggestions, directions, and zone enhancement remedies. Discuss Lo Shu + Vaastu remedies for their missing numbers.
+- **5. Planetary Dasha Cycles & Personal Year Forecast (आगामी दशा चक्र एवं व्यक्तिगत वर्ष फलादेश)**: Break down current Mahadasha, Antardasha, and Personal Year 2026 forecast with calculations and predictions for 2026 to 2030.
+- **6. Mobile Diagnostics & Audit Remedies (मोबाईल अंक निदान एवं सुधारात्मक उपाय)**: Examine mobile compound score, reduced frequency, and active consecutive pairs. For EVERY pair, display it in this exact format:
   
-  A) **गणना एवं स्रोत (Derivation & Calculation)**:
-     स्पष्ट रूप से दिखाएं कि यह अंक कैसे प्राप्त किया गया है। उदाहरण के लिए:
-     - जन्मांक (Birth Number): "23 -> 2 + 3 = 5"
-     - भाग्यांक (Life Path): "1984-11-23 -> 1+9+8+4+1+1+2+3 = 29 -> 2+9 = 11 -> 1+1 = 2"
-     - नामांक (Destiny): "M-A-R-K-A-N-D-E → 4+1+2+2+1+5+4+1 = 20 → 2+0 = 2" (चैल्डियन पद्धति के वास्तविक मानों के साथ पूरी वर्ण-दर-वर्ण जोड़ श्रृंखला दर्शाएं)।
-  
-  B) **गहन फलादेश (In-depth Interpretation)**:
-     प्रत्येक अंक के लिए न्यूनतम 100-150 शब्दों का एक आत्मीय, गहरा और व्यक्तिगत फलादेश द्वितीय-पुरुष स्वर ("आप", "आपकी प्रकृति", "आपके जीवन में...") में होना चाहिए। यह व्याख्या पूरी तरह से उस विशिष्ट अंक और संबंधित ज्योतिषीय परंपरा (चैल्डियन/वैदिक) के अनुकूल होनी चाहिए। इसमें कोई सामान्य जेनेरिक वाक्य दोहराया नहीं जाना चाहिए।
-  
-  C) **सकारात्मक शक्तियाँ (Strengths)**:
-     कम से कम 3 से 5 अत्यधिक व्यावहारिक, वास्तविक और विशिष्ट बुलेट बिंदु जो आपकी अद्वितीय शक्तियों और प्रतिभाओं को दर्शाते हों।
-  
-  D) **नकारात्मक पहलू / छाया प्रतिरूप (Challenges / Shadow Side)**:
-     कम से कम 3 से 5 विशिष्ट बुलेट बिंदु जो आपकी कमजोरियों, छिपी हुई आदतों और उन छाया पक्षों को दर्शाते हों जिन्हें सुधारने की आवश्यकता है।
-  
-  E) **जीवन के महत्वपूर्ण क्षेत्रों में प्रकटीकरण (Expressions)**:
-     - **पेशेवर जीवन एवं करियर (Career)**: इस अंक का आपके करियर, व्यवसाय और धन उपार्जन शैली पर विस्तृत प्रभाव (1 लघु पैराग्राफ)।
-     - **प्रेम एवं पारस्परिक संबंध (Relationships)**: इस अंक का आपके विवाह, प्रेम, और पारिवारिक संबंधों में संवाद शैली पर प्रभाव (1 लघु पैराग्राफ)।
-     - **व्यक्तिगत एवं आत्मिक विकास (Personal Growth)**: इस अंक का आपके आंतरिक आध्यात्मिक उत्थान, आत्म-जागरूकता और जीवन के वास्तविक उद्देश्यों पर प्रभाव (1 लघु पैराग्राफ)।
+  PAIR: [Number]
+  Title: [Traditional, descriptive name in ${targetLangName}]
+  Positive Vibrations: [Bullet points]
+  Warning / Challenges: [Bullet points]
+  Stability Score: [X]%
 
-- **3. चिकित्सा अंकशास्त्र एवं आयुर्वेदिक दोष निदान (Medical Numerology & Ayurvedic Dosha Diagnosis)**: Translate their medical numerology profile into deep Vedic wellness insights. Mention their dominant doshas, health strength, digestive indices, weak body systems, comprehensive dietary guidelines (recommended foods, avoid foods, recommended fruits and vegetables), sleep guides, and custom morning routine. 
-  *ADD A STRICT PROFESSIONAL DISCLAIMER AT THE START OF THIS CHAPTER: "यह रिपोर्ट केवल अंकशास्त्र-आधारित कल्याण अंतर्दृष्टि और जीवनशैली मार्गदर्शन प्रदान करती है। यह पेशेवर चिकित्सा सलाह, निदान या उपचार का विकल्प नहीं है।"*
-- **4. न्यूमरो वास्तु प्रो एवं चुंबकीय दिशा संरेखण (Numero Vaastu Pro & Spatial Direction Coordinates)**: Analyze space vibrations using their Kua number and group. Provide their Success, Health, and Career directions, lucky/anti colors suggestions for home, bedroom, office, and vehicles, and discuss active zone enhancement remedies (Career, Money, Relationship, and Spiritual). Include detailed Lo Shu + Vaastu remedies for their missing numbers!
-- **5. आगामी दशा चक्र एवं व्यक्तिगत वर्ष फलादेश (Planetary Dasha Cycles & Personal Year Forecast)**: Break down their current running Mahadasha and Antardasha influences. Map the exact health, career, relationship, and financial impacts of this cycle, followed by their Personal Year 2026 forecast and predictions for the next 5 years (2026 to 2030).
-
-  महत्वपूर्ण निर्देश (CRITICAL INSTRUCTION - NO SHALLOW OUTPUT):
-  सक्रिय व्यक्तिगत वर्ष (Personal Year 2026) के लिए आपको बिना किसी अपवाद के निम्नलिखित पाँचों अनुभागों (five sections) को पूरी तरह से विस्तृत रूप में प्रस्तुत करना होगा:
-  A) **गणना एवं स्रोत (Derivation)**: जन्म तिथि और माह के साथ वर्ष 2026 को जोड़कर गणना दर्शाएं (जैसे: 23+11+2026 = 2+3+1+1+2+0+2+6 = 17 -> 1+7 = 8)।
-  B) **गहन फलादेश (In-depth Interpretation)**: न्यूनतम 100-150 शब्दों में हिन्दी में लिखी व्याख्या जो इस वर्ष की विशिष्ट ऊर्जा कम्पन को दर्शाए।
-  C) **सकारात्मक प्रभाव (Strengths/Opportunities)**: इस वर्ष के लिए 3 से 5 विशिष्ट बुलेट बिंदु।
-  D) **सावधानी एवं संभावित चुनौतियाँ (Challenges/Shadow Side)**: इस वर्ष आपके समक्ष आने वाले संभावित जोखिमों और सावधानियों के 3 से 5 बुलेट बिंदु।
-  E) **जीवन के महत्वपूर्ण क्षेत्रों में अभिव्यक्ति (Expressions)**: करियर, संबंधों, और आत्मिक विकास पर प्रभाव (प्रत्येक का 1 संक्षिप्त पैराग्राफ)।
-
-- **6. मोबाईल अंक निदान एवं सुधारात्मक उपाय (Mobile Diagnostics & Audit Remedies)**:
-  Examine the user's mobile total vibrations, repeating alarms, and hostile relationships.
-  
-  For EVERY pair listed in the "Active Consecutive Pairs Discovered" above, you MUST display it in this exact format. Do NOT combine them. Keep them formatted as individual cards using clean, elegant blockquotes or styled markdown:
-
-  PAIR: [संख्या, जैसे: 31]
-  
-  शीर्षक:
-  [शीर्षक का नाम - Use Traditional terms, e.g., "प्रशासनिक एवं सरकारी संबंध", "संवेदनशीलता एवं मानसिक अशांति" or similar descriptive Hindi names]
-  
-  सकारात्मक प्रभाव:
-  • [सकारात्मक प्रभाव बिंदु 1]
-  • [सकारात्मक प्रभाव बिंदु 2]
-  ...
-  
-  सावधानी:
-  • [सावधानी का विवरण बिंदु 1]
-  • [सावधानी का विवरण बिंदु 2]
-  ...
-  
-  स्थिरता स्कोर:
-  [X]%
-  
-- **7. सर्वकल्याणकारी लाल किताब कवच (Comprehensive Altar Remedies Shield)**: Personalized signature guidelines (angle, underline), lucky dates, corporate metal structures placement, and customized home altar guidelines. Includes gemstone rituals and lucky colors.
+- **7. Comprehensive Altar Remedies Shield (सर्वकल्याणकारी लाल किताब कवच)**: Personalized signature guidelines, lucky dates, corporate metal structures placement, gemstone rituals, and lucky colors.
 `;
 
-      const aiResponse = await client.models.generateContent({
+      const aiResponse = await generateContentWithRetry(client, {
         model: "gemini-3.5-flash",
         contents: prompt,
         config: {
-          systemInstruction: `You are an elite, compassionate astro-numerologist with 25 years of consulting experience in traditional Indian Vedic & Mobile Numerology.
-
-CRITICAL LANGUAGE INSTRUCTION:
-The entire Mobile Numerology Report must be generated in PROFESSIONAL HINDI exactly in the style used in traditional premium Mobile Numerology PDFs and consultations.
-
-Do NOT use:
-- Google-translated Hindi
-- Modern corporate Hindi
-- Hinglish
-- English mixed sentences
-
-Use:
-- Traditional Numerology Hindi (शास्त्रीय एवं पारंपरिक ज्योतिषीय हिंदी)
-- Simple, beautiful, and highly readable Hindi
-- Same elite, consulting, respectful, and authoritative tone ("आप", "आपका", "शुभम", "आशीर्वाद")
-
-Common English-to-Hindi mapping examples to adhere to strictly:
-- Positive Resonance -> सकारात्मक प्रभाव / शुभ लक्षण
-- Vibrational Constraint -> सावधानी / संभावित चुनौती / नकारात्मक योग
-- Government Connection & Leadership -> सरकारी संबंध और नेतृत्व क्षमता
-- Leadership & Authority -> नेतृत्व और अधिकार
-- Love Connection with Domestic Load -> पारिवारिक जिम्मेदारियों के साथ प्रेम संबंध
-- Creative Planner & Event Manager -> रचनात्मक योजनाकार एवं आयोजन प्रबंधक
-- Master Event Organiser & Designer -> उत्कृष्ट आयोजक एवं रचनात्मक डिज़ाइन क्षमता
-- Communication -> संचार क्षमता
-- Money Flow -> धन प्रवाह
-- Education -> शिक्षा
-- Marriage -> वैवाहिक जीवन
-- Relationships -> संबंध
-- Health -> स्वास्थ्य
-- Children -> संतान पक्ष
-- Business -> व्यवसाय
-- Luck -> भाग्य
-- Success -> सफलता
-
-For every pair result display in this format:
-PAIR: [संख्या]
-
-शीर्षक:
-[शीर्षक का नाम]
-
-सकारात्मक प्रभाव:
-• [बिंदु...]
-
-सावधानी:
-• [बिंदु...]
-
-स्थिरता स्कोर:
-[X]%
-
-For any structured cards, use these key markers:
-- शीर्षक
-- सकारात्मक प्रभाव
-- सावधानी
-- जीवन पर प्रभाव
-- उपयुक्त क्षेत्र
-- स्थिरता स्कोर
-- उपाय
-
-The output should look like a master-class, deeply personalized, premium consultation report preparado by an experienced cosmic guru. Ensure maximum details and thoroughness.`,
+          systemInstruction: customSystemInstruction,
           temperature: 0.70,
         }
       });
 
-      let responseText = aiResponse.text || "आपका आध्यात्मिक फलादेश वर्तमान में ग्रहों के पारगमन के कारण उपलब्ध नहीं है। कृपया पुनः प्रयास करें।";
-      if (language && language !== 'hi') {
-        responseText = await translateMarkdown(responseText, language);
-      }
+      const fallbackMessages: Record<string, string> = {
+        en: "Your spiritual forecast is currently unavailable due to planetary transits. Please try again.",
+        hi: "आपका आध्यात्मिक फलादेश वर्तमान में ग्रहों के पारगमन के कारण उपलब्ध नहीं है। कृपया पुनः प्रयास करें।",
+        mr: "तुमचा आध्यात्मिक अंदाज सध्या ग्रहांच्या गोचरामुळे उपलब्ध नाही. कृपया पुन्हा प्रयत्न करा.",
+        gu: "તમારો આધ્યાત્મिक અંદાજ હાલમાં ગ્રહોના ગોચરને કારણે ઉપલબ્ધ નથી. કૃપા કરીને ફરીથી પ્રયાસ કરો."
+      };
+      const fallbackMsg = fallbackMessages[language as string] || fallbackMessages.en;
+
+      const responseText = aiResponse.text || fallbackMsg;
       res.json({ report: responseText });
     } catch (err: any) {
       console.error("Gemini server error: ", err);
-      res.status(500).json({ error: "ब्रह्मांडीय सर्वर से संपर्क विफल रहा। कृपया आवश्यक सेटिंग्स में अपनी GEMINI_API_KEY जांचें।" });
+      res.status(500).json({ error: "Celestial connection issue. Please check your GEMINI_API_KEY in Settings." });
     }
   });
 
@@ -422,7 +375,7 @@ Report Chapters to construct:
 Write with premium consulting mastery strictly following traditional Vedic Hindi, keeping the quality worthy of elite consultations.
 `;
 
-      const aiResponse = await client.models.generateContent({
+      const aiResponse = await generateContentWithRetry(client, {
         model: "gemini-3.5-flash",
         contents: prompt,
         config: {
@@ -878,16 +831,7 @@ Structure the report with pristine Markdown layout, neat tables, divider lines, 
   app.post("/api/signature-audit", async (req, res) => {
     const { image, personalDetails, manualSelection, driver, conductor, nameNumber, description, language } = req.body;
 
-    const langNames: Record<string, string> = {
-      en: 'English',
-      hi: 'Hindi',
-      gu: 'Gujarati',
-      mr: 'Marathi',
-      es: 'Spanish',
-      fr: 'French',
-      ar: 'Arabic'
-    };
-    const targetLangName = langNames[language as string] || 'English';
+    const targetLangName = LANG_NAMES[language as string] || 'English';
 
     // Check if GEMINI_API_KEY is defined and not equal to MOCK placeholder
     const apiKey = process.env.GEMINI_API_KEY;
@@ -1056,7 +1000,7 @@ The total analysis MUST be between 600-800 words, structured into clean, authori
         required: ["psychologicalInterpretation", "numerologicalCompatibility", "professionalImpact", "specificTraitIndicators", "compatibilityScore", "recommendations", "differentPurposes"]
       };
 
-      const aiResponse = await client.models.generateContent({
+      const aiResponse = await generateContentWithRetry(client, {
         model: "gemini-3.5-flash",
         contents: contents,
         config: {
@@ -1159,16 +1103,7 @@ The total analysis MUST be between 600-800 words, structured into clean, authori
     const kw = (keywords || "").trim();
     const vibe = vibePreference || "MODERN";
 
-    const langNames: Record<string, string> = {
-      en: 'English',
-      hi: 'Hindi',
-      gu: 'Gujarati',
-      mr: 'Marathi',
-      es: 'Spanish',
-      fr: 'French',
-      ar: 'Arabic'
-    };
-    const targetLangName = langNames[language as string] || 'English';
+    const targetLangName = LANG_NAMES[language as string] || 'English';
 
     const apiKey = process.env.GEMINI_API_KEY;
     const hasValidKey = apiKey && apiKey !== "" && apiKey !== "MOCK_KEY_FOR_TESTING";
@@ -1210,7 +1145,7 @@ You must return the data in the EXACT JSON format with the following schema:
   ]
 }
 `;
-        const aiResponse = await client.models.generateContent({
+        const aiResponse = await generateContentWithRetry(client, {
           model: "gemini-3.5-flash",
           contents: promptText + `\n\nCRITICAL LANGUAGE INSTRUCTION:\nGenerate ALL brand alignment explanations, details, and categories inside the JSON response in the target language: ${targetLangName}. Do NOT use English if the target language is different. Keep the JSON keys exactly as specified in English, but translate the values of those keys into ${targetLangName}. Maintain occult correctness and deep spiritual/branding terminology.`,
           config: {
@@ -1354,16 +1289,7 @@ You must return the data in the EXACT JSON format with the following schema:
       language
     } = req.body;
 
-    const langNames: Record<string, string> = {
-      en: 'English',
-      hi: 'Hindi',
-      gu: 'Gujarati',
-      mr: 'Marathi',
-      es: 'Spanish',
-      fr: 'French',
-      ar: 'Arabic'
-    };
-    const targetLangName = langNames[language as string] || 'English';
+    const targetLangName = LANG_NAMES[language as string] || 'English';
 
     // Helper to calculate Driver and Conductor
     const getDriverAndConductor = (dobStr: string) => {
@@ -1486,7 +1412,7 @@ Return the response in the EXACT JSON format matching this schema:
 
 DO NOT ADD ANY EXTRANEOUS TEXT OUTSIDE THE JSON STRUCTURE. ONLY RETURN THE RAW JSON.
 `;
-        const aiResponse = await client.models.generateContent({
+        const aiResponse = await generateContentWithRetry(client, {
           model: "gemini-3.5-flash",
           contents: promptText + `\n\nCRITICAL LANGUAGE INSTRUCTION:\nGenerate ALL textual descriptions, explanations, recommendations, calculations, names, alternative variants, taglines, customer perceptions, and blueprints inside the JSON response in the target language: ${targetLangName}. Do NOT use English if the target language is different. Keep the JSON keys exactly as specified in English, but translate the values of those keys into ${targetLangName}. Maintain occult correctness and deep spiritual/branding terminology.`,
           config: {
@@ -1687,16 +1613,7 @@ DO NOT ADD ANY EXTRANEOUS TEXT OUTSIDE THE JSON STRUCTURE. ONLY RETURN THE RAW J
 
     const driver = parseInt(ownerDriver, 10) || 1;
 
-    const langNames: Record<string, string> = {
-      en: 'English',
-      hi: 'Hindi',
-      gu: 'Gujarati',
-      mr: 'Marathi',
-      es: 'Spanish',
-      fr: 'French',
-      ar: 'Arabic'
-    };
-    const targetLangName = langNames[language as string] || 'English';
+    const targetLangName = LANG_NAMES[language as string] || 'English';
 
     const apiKey = process.env.GEMINI_API_KEY;
     const hasValidKey = apiKey && apiKey !== "" && apiKey !== "MOCK_KEY_FOR_TESTING";
@@ -1856,7 +1773,7 @@ You must return the data in the EXACT JSON format matching this schema:
   }
 }
 `;
-        const aiResponse = await client.models.generateContent({
+        const aiResponse = await generateContentWithRetry(client, {
           model: "gemini-3.5-flash",
           contents: promptText + `\n\nCRITICAL LANGUAGE INSTRUCTION:\nGenerate ALL textual descriptions, explanations, recommendations, calculations, names, and taglines inside the JSON response in the target language: ${targetLangName}. Do NOT use English if the target language is different. Keep the JSON keys exactly as specified in English, but translate the values of those keys into ${targetLangName}. Maintain occult correctness and deep spiritual/Vastu terminology.`,
           config: {
@@ -2555,7 +2472,7 @@ Chapters to generate:
 Write this in elegant Markdown. Use subheadings, bullet points, divider lines, and structured Markdown tables where appropriate.
 `;
 
-        const aiResponse = await client.models.generateContent({
+        const aiResponse = await generateContentWithRetry(client, {
           model: "gemini-3.5-flash",
           contents: prompt,
           config: {
@@ -2568,18 +2485,12 @@ Write this in elegant Markdown. Use subheadings, bullet points, divider lines, a
           let finalReport = aiResponse.text;
 
           // Two-stage translation pipeline if language is requested and is not English
-          if (language && language !== 'en' && ['hi', 'gu', 'mr', 'es', 'fr', 'ar'].includes(language)) {
-            const langNames: Record<string, string> = {
-              hi: 'Hindi',
-              gu: 'Gujarati',
-              mr: 'Marathi',
-              es: 'Spanish',
-              fr: 'French',
-              ar: 'Arabic'
-            };
+          const supportedTranslateLangs = ['hi', 'gu', 'mr', 'es', 'fr', 'ar', 'zh', 'ja', 'pt', 'ta', 'te', 'bn', 'de', 'ru'];
+          if (language && language !== 'en' && supportedTranslateLangs.includes(language)) {
+            const targetLangName = LANG_NAMES[language] || 'English';
             
             const translationPrompt = `
-You are an expert astro-numerology translator and spiritual linguist. Your task is to translate the following comprehensive numerology consultation report into ${langNames[language]}.
+You are an expert astro-numerology translator and spiritual linguist. Your task is to translate the following comprehensive numerology consultation report into ${targetLangName}.
 
 ORIGINAL REPORT IN ENGLISH:
 ---
@@ -2596,7 +2507,7 @@ CRITICAL TRANSLATION INSTRUCTIONS:
 5. Output the result in beautiful Markdown.
 `;
 
-            const translationResponse = await client.models.generateContent({
+            const translationResponse = await generateContentWithRetry(client, {
               model: "gemini-3.5-flash",
               contents: translationPrompt,
               config: {
@@ -2636,16 +2547,7 @@ CRITICAL TRANSLATION INSTRUCTIONS:
         return res.json({ translated: object });
       }
 
-      const langNames: Record<string, string> = {
-        en: 'English',
-        hi: 'Hindi',
-        gu: 'Gujarati',
-        mr: 'Marathi',
-        es: 'Spanish',
-        fr: 'French',
-        ar: 'Arabic'
-      };
-      const targetLangName = langNames[language as string] || 'English';
+      const targetLangName = LANG_NAMES[language as string] || 'English';
 
       const apiKey = process.env.GEMINI_API_KEY;
       const hasValidKey = apiKey && apiKey !== "" && apiKey !== "MOCK_KEY_FOR_TESTING";
@@ -2670,7 +2572,7 @@ JSON OBJECT TO TRANSLATE:
 ${JSON.stringify(object)}
 `;
 
-      const aiResponse = await client.models.generateContent({
+      const aiResponse = await generateContentWithRetry(client, {
         model: "gemini-3.5-flash",
         contents: prompt,
         config: {
