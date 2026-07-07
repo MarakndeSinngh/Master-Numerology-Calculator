@@ -2372,7 +2372,8 @@ To ensure these cosmic guidelines translate into physical reality, follow this p
         lifeAreas,
         driver,
         conductor,
-        nameNumber
+        nameNumber,
+        language
       } = req.body;
 
       if (!fullName || !dob) {
@@ -2460,7 +2461,52 @@ Write this in elegant Markdown. Use subheadings, bullet points, divider lines, a
         });
 
         if (aiResponse.text) {
-          return res.json({ report: aiResponse.text });
+          let finalReport = aiResponse.text;
+
+          // Two-stage translation pipeline if language is requested and is not English
+          if (language && language !== 'en' && ['hi', 'gu', 'mr', 'es', 'fr', 'ar'].includes(language)) {
+            const langNames: Record<string, string> = {
+              hi: 'Hindi',
+              gu: 'Gujarati',
+              mr: 'Marathi',
+              es: 'Spanish',
+              fr: 'French',
+              ar: 'Arabic'
+            };
+            
+            const translationPrompt = `
+You are an expert astro-numerology translator and spiritual linguist. Your task is to translate the following comprehensive numerology consultation report into ${langNames[language]}.
+
+ORIGINAL REPORT IN ENGLISH:
+---
+${finalReport}
+---
+
+CRITICAL TRANSLATION INSTRUCTIONS:
+1. MAINTAIN THE SPIRITUAL AND PROFESSIONAL TONE. It must sound like an authentic Vedic/occult counselor directly speaking to the seeker, preserving warmth, respect, and deep cosmic wisdom.
+2. PRESERVE ACCURATE OCCULT TERMINOLOGY.
+   - Do NOT translate core Sanskrit/planetary/Vedic numerology terms. Keep them in their pristine phonetic state, followed by localized explanations in parentheses if helpful.
+   - For example: Keep terms like "Mulank" (मूलांक), "Bhagyank" (भाग्यांक), "Surya", "Chandra", "Shani", "Guru", "Rahu", "Ketu", "Loshu Grid", "Chaldean Numerology", "Dosha", "Karma", "Yantra" as-is or transliterated phonetically, rather than substituting with literal robotic dictionary words (e.g. do NOT translate "Bhagyank" as "Destiny Number" in local languages).
+3. RTL ALIGNMENT FOR ARABIC: If translating to Arabic, format headings, paragraphs, and lists to read naturally from right-to-left.
+4. DO NOT SUMMARIZE OR SHORTEN. The translation must match the thoroughness of the original 4,000+ word report perfectly.
+5. Output the result in beautiful Markdown.
+`;
+
+            const translationResponse = await client.models.generateContent({
+              model: "gemini-3.5-flash",
+              contents: translationPrompt,
+              config: {
+                systemInstruction: "You are the Rajiv Ji AI Master Translator. You translate sacred, deep numerology reports with pristine linguistic care, spiritual resonance, and terminology preservation.",
+                temperature: 0.30
+              }
+            });
+
+            if (translationResponse.text) {
+              finalReport = translationResponse.text;
+            }
+          }
+
+          return res.json({ report: finalReport });
         }
       }
 

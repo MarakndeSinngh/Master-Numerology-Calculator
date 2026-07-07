@@ -15,6 +15,7 @@ import { computeLoshuMasterReport } from '../services/loshuMasterEngine';
 import { analyzeDateOfBirth, analyzeNameSystems, analyzeMobileNumber } from '../services/numerologyEngine';
 import { generateCompleteNumerologyProfile } from '../core';
 import { generateLeoAdvisorActions } from '../services/leoAdvisorEngine';
+import { useLanguage } from '../hooks/useLanguage';
 
 const PLANETS_DB: Record<number, { name: string; icon: string; description: string }> = {
   1: { name: "Sun (Surya) ☀️", icon: "☀️", description: "Leadership, Ambition, Conscious Will" },
@@ -34,6 +35,7 @@ interface AIConsultationPortalProps {
 }
 
 export default function AIConsultationPortal({ initialProfile, onProfileUpdate }: AIConsultationPortalProps) {
+  const { lang, t, dir, isRtl } = useLanguage();
   // Saved reports state (Phase 9 - Client Dashboard)
   const [savedProfiles, setSavedProfiles] = useState<PersonalDetails[]>([]);
   const [activeProfile, setActiveProfile] = useState<PersonalDetails | null>(null);
@@ -227,7 +229,8 @@ export default function AIConsultationPortal({ initialProfile, onProfileUpdate }
           lifeAreas: grLifeAreas,
           driver: masterGrid?.personal.driver || 1,
           conductor: masterGrid?.personal.conductor || 1,
-          nameNumber: nameAnalysis?.chaldeanNumber || 1
+          nameNumber: nameAnalysis?.chaldeanNumber || 1,
+          language: lang
         })
       });
 

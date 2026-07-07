@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { analyzeDateOfBirth, analyzeNameSystems, analyzeMobileNumber, generateRemedies } from './services/numerologyEngine';
 import { PersonalDetails, DOBAnalysis, NameAnalysis, MobileAnalysis, remediesAdvice } from './types';
 import { generateCompleteNumerologyProfile, NumerologyProfile } from './core';
+import { useLanguage } from './hooks/useLanguage';
+import { SUPPORTED_LANGUAGES } from './core/i18n';
 import { 
   Phone, User, Calendar, Compass, Star, FileText, Sparkles, Shield, 
   TrendingUp, Heart, BookOpen, Layers, HelpCircle, RefreshCw, 
@@ -23,6 +25,7 @@ import AIConsultationPortal from './components/AIConsultationPortal';
 type ViewTab = 'DASHBOARD' | 'MOBILE' | 'COMPATIBILITY' | 'REMEDIES' | 'REPORT' | 'ADMIN';
 
 const App: React.FC = () => {
+  const { lang, setLanguage, t, dir, isRtl } = useLanguage();
   const [personalDetails, setPersonalDetails] = useState<PersonalDetails | null>(null);
   const [activeTab, setActiveTab] = useState<ViewTab>('MOBILE');
   const [currentPortal, setCurrentPortal] = useState<'MOBILE_NUMEROLOGY' | 'LOSHU_GRID' | 'MARRIAGE_COMPATIBILITY' | 'PREMIUM_CONSULTATIONS' | 'AI_CONSULTATION'>('AI_CONSULTATION');
@@ -235,32 +238,49 @@ const App: React.FC = () => {
             <div className="text-left">
               <div className="flex items-center gap-2">
                 <h1 className="font-playfair text-lg md:text-xl font-bold tracking-wide text-[#1F2937]">
-                  Leo Family Numerology
+                  {t('nav.title')}
                 </h1>
                 <span className="hidden md:inline-block bg-[#D97706]/10 text-[#D97706] font-mono text-[9px] px-2 py-0.5 rounded-full border border-[#D97706]/20 uppercase tracking-widest font-semibold">
-                  Occult Science
+                  {t('nav.occult')}
                 </span>
               </div>
               <span className="block text-[9px] font-mono text-[#6B7280] tracking-[0.25em] uppercase">
-                Premium Indian Numerology Portal
+                {t('nav.subtitle')}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Elegant Language Selector */}
+            <div className="relative inline-block text-left" id="language-selector-wrapper">
+              <select
+                id="language-select"
+                value={lang}
+                onChange={(e) => setLanguage(e.target.value as any)}
+                className="bg-[#F8F4EF] border border-[#D97706]/20 text-[#1F2937] hover:bg-[#F2E8DC] font-semibold text-xs py-2 px-3 pr-8 rounded-xl cursor-pointer transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[#D97706]/50 appearance-none font-sans"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%23D97706\' stroke-width=\'2\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundPosition: 'right 0.5rem center', backgroundSize: '1rem', backgroundRepeat: 'no-repeat' }}
+              >
+                {SUPPORTED_LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code} className="text-[#1F2937] bg-white">
+                    {l.nativeName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {personalDetails ? (
               <div className="flex items-center gap-4">
                 <div className="hidden md:block text-right">
                   <span className="text-xs font-semibold text-[#1F2937] block">{personalDetails.name}</span>
                   <span className="text-[9px] font-mono text-[#D97706] block uppercase font-bold">
-                    Mulank: {dobData?.birthNumber} | Bhagyank: {dobData?.lifePathNumber}
+                    {t('meta.mulank')}: {dobData?.birthNumber} | {t('meta.bhagyank')}: {dobData?.lifePathNumber}
                   </span>
                 </div>
                 <button
                   onClick={handleQuickReset}
                   className="bg-[#D97706]/10 hover:bg-[#D97706]/20 text-[#D97706] font-semibold px-4 py-2 rounded-xl text-xs transition duration-300 pointer-events-auto cursor-pointer border border-[#D97706]/20 flex items-center gap-1.5"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" /> Reset Profile
+                  <RefreshCw className="w-3.5 h-3.5" /> {t('nav.reset')}
                 </button>
               </div>
             ) : (
@@ -268,7 +288,7 @@ const App: React.FC = () => {
                 onClick={handleLoadDemoNumber}
                 className="hidden md:flex bg-[#F2E8DC] hover:bg-[#E5D7C6] text-[#D97706] font-semibold px-4 py-2 rounded-xl text-xs transition duration-300 border border-[#D97706]/20 items-center gap-1.5"
               >
-                🔮 Load Expert Pattern
+                {t('nav.loadDemo')}
               </button>
             )}
           </div>
@@ -288,7 +308,7 @@ const App: React.FC = () => {
                 : 'bg-transparent text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F8F4EF]/50 border border-dashed border-[#D97706]/20'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" /> AI Grand Consultation Hub 🔮
+            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" /> {t('tab.aiConsultation')}
           </button>
 
           <button
@@ -299,7 +319,7 @@ const App: React.FC = () => {
                 : 'bg-transparent text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F8F4EF]/50'
             }`}
           >
-            <Phone className="w-4 h-4" /> Mobile Numerology Scanner
+            <Phone className="w-4 h-4" /> {t('tab.mobileNumerology')}
           </button>
           
           <button
@@ -310,7 +330,7 @@ const App: React.FC = () => {
                 : 'bg-transparent text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F8F4EF]/50'
             }`}
           >
-            <Compass className="w-4 h-4 animate-spin-slow text-[#D97706]" /> Complete Loshu Grid Analysis 🌟
+            <Compass className="w-4 h-4 animate-spin-slow text-[#D97706]" /> {t('tab.loshuGrid')}
           </button>
 
           <button
@@ -321,7 +341,7 @@ const App: React.FC = () => {
                 : 'bg-transparent text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F8F4EF]/50'
             }`}
           >
-            <Heart className="w-4 h-4 text-rose-500 fill-rose-500 animate-pulse" /> Marriage Compatibility 💕
+            <Heart className="w-4 h-4 text-rose-500 fill-rose-500 animate-pulse" /> {t('tab.marriageCompatibility')}
           </button>
 
           <button
@@ -332,7 +352,7 @@ const App: React.FC = () => {
                 : 'bg-transparent text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F8F4EF]/50'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" /> Premium Tools 👑
+            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" /> {t('tab.premiumConsultations')}
           </button>
         </div>
 
