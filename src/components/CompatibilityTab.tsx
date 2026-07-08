@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { generateCompatibility } from '../services/numerologyEngine';
 import { CompatibilityReport } from '../types';
+import { useLanguage } from '../hooks/useLanguage';
 
 const CompatibilityTab: React.FC = () => {
+  const { t } = useLanguage();
   const [nameA, setNameA] = useState('');
   const [dobA, setDobA] = useState('');
   const [nameB, setNameB] = useState('');
@@ -19,20 +21,24 @@ const CompatibilityTab: React.FC = () => {
   return (
     <div id="compatibility-tab-panel" className="space-y-8 animate-in fade-in duration-500 text-left">
       <div className="glass-panel p-8 rounded-[40px] bg-white border-[#E5E7EB] shadow-sm space-y-6">
-        <h3 className="font-playfair text-xl font-bold text-[#1F2937] tracking-wider">Astro-Planetary Compatibility</h3>
+        <h3 className="font-playfair text-xl font-bold text-[#1F2937] tracking-wider">
+          {t('compatibility.title', 'Astro-Planetary Compatibility')}
+        </h3>
         <p className="text-[#6B7280] text-xs">
-          Match personal chart metrics to decode relationship, friendship, marital, or business alignments under Chaldean values.
+          {t('compatibility.desc', 'Match personal chart metrics to decode relationship, friendship, marital, or business alignments under Chaldean values.')}
         </p>
 
         <form onSubmit={handleCalculate} className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
           
           {/* Person A */}
           <div className="space-y-4">
-            <h4 className="text-xs uppercase font-mono tracking-widest text-[#D97706] font-bold">First Person Details</h4>
+            <h4 className="text-xs uppercase font-mono tracking-widest text-[#D97706] font-bold">
+              {t('compatibility.person1', 'First Person Details')}
+            </h4>
             <div className="space-y-3">
               <input
                 type="text"
-                placeholder="Full Name"
+                placeholder={t('form.fullNamePlaceholder', 'e.g. Rajiv Singh')}
                 className="w-full bg-[#F8F4EF] border border-[#E5E7EB] focus:border-[#D97706] rounded-2xl px-5 py-3.5 outline-none text-sm text-[#1F2937]"
                 value={nameA}
                 onChange={(e) => setNameA(e.target.value)}
@@ -50,11 +56,13 @@ const CompatibilityTab: React.FC = () => {
 
           {/* Person B */}
           <div className="space-y-4">
-            <h4 className="text-xs uppercase font-mono tracking-widest text-[#D97706] font-bold">Second Person Details</h4>
+            <h4 className="text-xs uppercase font-mono tracking-widest text-[#D97706] font-bold">
+              {t('compatibility.person2', 'Second Person Details')}
+            </h4>
             <div className="space-y-3">
               <input
                 type="text"
-                placeholder="Full Name"
+                placeholder={t('form.fullNamePlaceholder', 'e.g. Rajiv Singh')}
                 className="w-full bg-[#F8F4EF] border border-[#E5E7EB] focus:border-[#D97706] rounded-2xl px-5 py-3.5 outline-none text-sm text-[#1F2937]"
                 value={nameB}
                 onChange={(e) => setNameB(e.target.value)}
@@ -75,7 +83,7 @@ const CompatibilityTab: React.FC = () => {
               type="submit"
               className="w-full md:w-auto bg-[#D97706] hover:bg-[#B45309] text-white font-bold px-8 py-3.5 rounded-2xl transition-all duration-300 text-xs tracking-widest uppercase cursor-pointer"
             >
-              Analyze Synastry Bond
+              {t('compatibility.btnAnalyze', 'Analyze Synastry Bond')}
             </button>
           </div>
 
@@ -87,7 +95,9 @@ const CompatibilityTab: React.FC = () => {
           
           {/* Synastry Meter Card */}
           <div className="glass-panel p-8 rounded-[40px] bg-white border-[#E5E7EB] shadow-sm flex flex-col justify-center items-center text-center space-y-6">
-            <span className="text-xs font-mono uppercase text-[#D97706]/80 tracking-widest font-bold">Resonance Compatibility</span>
+            <span className="text-xs font-mono uppercase text-[#D97706]/80 tracking-widest font-bold">
+              {t('compatibility.resonance', 'Resonance Compatibility')}
+            </span>
             
             <div className="relative w-44 h-44 flex items-center justify-center">
               {/* Radial Score representation */}
@@ -107,41 +117,67 @@ const CompatibilityTab: React.FC = () => {
               </svg>
               <div className="absolute text-center">
                 <span className="text-5xl font-playfair font-bold text-[#1F2937]">{result.score}%</span>
-                <span className="block text-[8px] font-mono text-[#6B7280] uppercase mt-1 font-bold">Planetary Match</span>
+                <span className="block text-[8px] font-mono text-[#6B7280] uppercase mt-1 font-bold">
+                  {t('compatibility.planetaryMatch', 'Planetary Match')}
+                </span>
               </div>
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs font-mono uppercase text-[#F59E0B] tracking-widest block font-bold">Potential Verdict</span>
+              <span className="text-xs font-mono uppercase text-[#F59E0B] tracking-widest block font-bold">
+                {t('compatibility.potentialVerdict', 'Potential Verdict')}
+              </span>
               <p className="font-playfair text-lg text-[#1F2937] font-bold mt-1 uppercase tracking-wider">
-                {result.score >= 85 ? 'Highly Auspicious Match' : result.score >= 70 ? 'Favorable Match' : 'Planetary Adjustments Suggested'}
+                {result.score >= 85 
+                  ? t('compatibility.verdict.auspicious', 'Highly Auspicious Match') 
+                  : result.score >= 70 
+                    ? t('compatibility.verdict.favorable', 'Favorable Match') 
+                    : t('compatibility.verdict.suggested', 'Planetary Adjustments Suggested')}
               </p>
             </div>
           </div>
 
           {/* Detailed Match breakdown */}
           <div className="glass-panel p-8 rounded-[40px] bg-white border-[#E5E7EB] shadow-sm space-y-6">
-            <h4 className="font-playfair text-xl font-bold text-[#1F2937] pb-2 border-b border-[#E5E7EB]">Synastry Matrix Breakdown</h4>
+            <h4 className="font-playfair text-xl font-bold text-[#1F2937] pb-2 border-b border-[#E5E7EB]">
+              {t('compatibility.breakdown', 'Synastry Matrix Breakdown')}
+            </h4>
             
             <div className="space-y-4">
               <div>
-                <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold">Union Bond</span>
-                <p className="text-slate-700 text-xs mt-1 leading-relaxed">{result.relationship}</p>
+                <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold">
+                  {t('compatibility.unionBond', 'Union Bond')}
+                </span>
+                <p className="text-slate-700 text-xs mt-1 leading-relaxed">
+                  {t(result.relationshipKey || '', result.relationship)}
+                </p>
               </div>
 
               <div>
-                <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold">Friendship Alignment</span>
-                <p className="text-slate-700 text-xs mt-1 leading-relaxed">{result.friendship}</p>
+                <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold">
+                  {t('compatibility.friendshipAlign', 'Friendship Alignment')}
+                </span>
+                <p className="text-slate-700 text-xs mt-1 leading-relaxed">
+                  {t(result.friendshipKey || '', result.friendship)}
+                </p>
               </div>
 
               <div>
-                <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold">Business Synergy</span>
-                <p className="text-slate-700 text-xs mt-1 leading-relaxed">{result.business}</p>
+                <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold">
+                  {t('compatibility.businessSynergy', 'Business Synergy')}
+                </span>
+                <p className="text-slate-700 text-xs mt-1 leading-relaxed">
+                  {t(result.businessKey || '', result.business)}
+                </p>
               </div>
 
               <div>
-                <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold">Domestic Compatibility</span>
-                <p className="text-slate-700 text-xs mt-1 leading-relaxed">{result.marriage}</p>
+                <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold">
+                  {t('compatibility.domesticCompatibility', 'Domestic Compatibility')}
+                </span>
+                <p className="text-slate-700 text-xs mt-1 leading-relaxed">
+                  {t(result.marriageKey || '', result.marriage)}
+                </p>
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { DOBAnalysis, NameAnalysis, MobileAnalysis, remediesAdvice } from '../types';
 import { useLanguage } from '../hooks/useLanguage';
+import { localizedList } from '../services/i18n';
 
 interface AstroDashboardProps {
   dobData: DOBAnalysis | null;
@@ -23,7 +24,11 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({
   onLoadReport,
   onDeleteReport
 }) => {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
+
+  const positiveTraits = localizedList(lang, nameData.traits.positive, nameData.traits.positiveKeys || []);
+  const negativeTraits = localizedList(lang, nameData.traits.negative, nameData.traits.negativeKeys || []);
+  const careerTraits = localizedList(lang, nameData.traits.careers, nameData.traits.careersKeys || []);
 
   // Check presence for Vedic grid
   const presentNumbers = new Set(
@@ -179,16 +184,18 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({
 
       {/* Traits Section */}
       <div className="glass-panel p-8 rounded-[40px] bg-white border-[#E5E7EB] shadow-sm">
-        <h3 className="font-playfair text-xl font-bold text-[#1F2937] mb-6 tracking-wide border-b border-[#E5E7EB] pb-3">Planetary Traits Profile</h3>
+        <h3 className="font-playfair text-xl font-bold text-[#1F2937] mb-6 tracking-wide border-b border-[#E5E7EB] pb-3">
+          {t('dashboard.traitsTitle', 'Planetary Traits Profile')}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h4 className="text-sm font-bold text-[#10B981] mb-4 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span> Positive Strengths
+              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span> {t('dashboard.positiveStrengths', 'Positive Strengths')}
             </h4>
             <ul className="space-y-3 text-xs text-[#1F2937] leading-relaxed">
-              {nameData.traits.positive.map((t, idx) => (
+              {positiveTraits.map((tVal, idx) => (
                 <li key={idx} className="flex gap-2">
-                  <span className="text-[#10B981] font-mono font-bold">✓</span> <span className="text-slate-700">{t}</span>
+                  <span className="text-[#10B981] font-mono font-bold">✓</span> <span className="text-slate-700">{tVal}</span>
                 </li>
               ))}
             </ul>
@@ -196,12 +203,12 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({
 
           <div>
             <h4 className="text-sm font-bold text-[#EF4444] mb-4 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span> Frictional Blockages
+              <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span> {t('dashboard.frictionalBlockages', 'Frictional Blockages')}
             </h4>
             <ul className="space-y-3 text-xs text-[#1F2937] leading-relaxed">
-              {nameData.traits.negative.map((t, idx) => (
+              {negativeTraits.map((tVal, idx) => (
                 <li key={idx} className="flex gap-2">
-                  <span className="text-[#EF4444] font-mono font-bold">✗</span> <span className="text-slate-700">{t}</span>
+                  <span className="text-[#EF4444] font-mono font-bold">✗</span> <span className="text-slate-700">{tVal}</span>
                 </li>
               ))}
             </ul>
@@ -209,12 +216,12 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({
 
           <div>
             <h4 className="text-sm font-bold text-[#D97706] mb-4 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]"></span> Top Career Suitability
+              <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]"></span> {t('dashboard.careerSuitability', 'Top Career Suitability')}
             </h4>
             <ul className="space-y-3 text-xs text-[#1F2937] leading-relaxed">
-              {nameData.traits.careers.map((t, idx) => (
+              {careerTraits.map((tVal, idx) => (
                 <li key={idx} className="flex gap-2">
-                  <span className="text-[#F59E0B] font-mono font-bold">★</span> <span className="text-slate-700">{t}</span>
+                  <span className="text-[#F59E0B] font-mono font-bold">★</span> <span className="text-slate-700">{tVal}</span>
                 </li>
               ))}
             </ul>

@@ -119,6 +119,195 @@ CRITICAL TRANSLATION INSTRUCTIONS:
     }
   };
 
+  // API router for Gemini-powered Signature Audit
+  const handleSignatureAudit = async (req: any, res: any) => {
+    try {
+      const {
+        image,
+        personalDetails,
+        manualSelection,
+        driver,
+        conductor,
+        nameNumber,
+        description,
+        language
+      } = req.body;
+
+      if (!image) {
+        return res.status(400).json({ error: "Missing signature image payload" });
+      }
+
+      const client = getGeminiClient();
+      const apiKey = process.env.GEMINI_API_KEY;
+      const hasValidKey = apiKey && apiKey !== "" && apiKey !== "MOCK_KEY_FOR_TESTING";
+      const targetLangName = LANG_NAMES[language as string] || 'English';
+
+      if (hasValidKey) {
+        try {
+          // Parse base64 image data
+          let base64Data = image;
+          let mimeType = "image/png";
+          if (image.startsWith("data:")) {
+            const match = image.match(/^data:([^;]+);base64,(.*)$/);
+            if (match) {
+              mimeType = match[1];
+              base64Data = match[2];
+            }
+          }
+
+          const promptText = `
+Analyze the uploaded signature image from a Handwriting Vastu (Graphology & Astro-Vastu alignment) perspective.
+Subject Personal Credentials:
+- Name: ${personalDetails?.name || "Subject"}
+- Date of Birth / Profile: ${personalDetails?.dob || "N/A"}
+- Professional Intent: ${personalDetails?.profession || "General Success"}
+- Birth Driver Number (Mulank): ${driver || 1}
+- Destiny Conductor Number (Bhagyank): ${conductor || 1}
+- Chaldean Name Vibration Number: ${nameNumber || 1}
+
+Heuristics Detected locally by Canvas Scanning:
+- Sizing: ${description?.size || "Medium"}
+- Slant: ${description?.slant || "Straight"}
+- Legibility: ${description?.legibility || "Moderately Clear"}
+- Underline support: ${description?.underline || "No"}
+- Pen Pressure: ${description?.pressure || "Medium"}
+- Speed & Flow: ${description?.speed || "Quick and flowing"}
+
+Your task is to analyze this signature from a spiritual and professional graphology Vastu perspective.
+Generate an elite, customized Handwriting Vastu audit. You MUST return a valid JSON object matching this schema:
+{
+  "psychologicalInterpretation": {
+    "confidenceLevel": "Exhaustive description of the writer's confidence, self-esteem, and social standing based on the stroke sizing, slant, and name alignment...",
+    "ambitionDrive": "Exhaustive description of their professional ambition, goal focus, and execution drive based on signature slant and speed..."
+  },
+  "compatibilityScore": {
+    "score": 8,
+    "detailedExplanation": "Provide a thorough explanation (approx. 100-150 words) detailing the acoustic compatibility between the signed name vibration and the birth destiny coordinates, and how they resonate together..."
+  },
+  "professionalImpact": {
+    "firstImpression": "Detailed analysis of how this signature style is perceived by colleagues and clients on first impression...",
+    "industrySuitability": "Assess if this signature style is well-suited for their intent/profession, and how to project more authority...",
+    "authorityCredibility": "Explain how the baseline underline or lack thereof stabilizes or challenges their credibility and public command..."
+  },
+  "recommendations": {
+    "colors": [
+      { "color": "Royal Blue Ink", "reason": "Explain why royal blue is recommended based on planetary rulership (e.g. Jupiter/Mercury alignment) and intent..." },
+      { "color": "Deep Black Ink", "reason": "Explain when to use black ink for grounding and protective Saturn shield..." },
+      { "color": "Emerald Green Ink", "reason": "Explain when green ink is suitable for commercial growth and Mercury business communication..." }
+    ],
+    "variants": [
+      "A specific recommendation on slant (e.g. upward baseline at 15 degrees)",
+      "A specific recommendation on the underline support foundation",
+      "A recommendation regarding any final dots or ending segments"
+    ],
+    "signingDirection": "A concise instruction of the ideal signing direction (e.g. '15-Degree Ascending left-to-right')",
+    "shouldModify": "Provide a complete step-by-step Corrected Signature Formula blueprint. Give specific instructions on how they should write their first and last name, initial capital size, and stroke ending.",
+    "penType": "Specify the exact type of pen (e.g., fine gel pen, rollerball, classic fountain pen) and hand pressure to optimize energy flow"
+  }
+}
+
+CRITICAL LANGUAGE INSTRUCTION:
+Generate ALL textual descriptions, explanations, recommendations, and blueprints inside the JSON response in the target language: ${targetLangName}. Do NOT use English if the target language is different. Keep the JSON keys exactly as specified in English, but translate the values of those keys into ${targetLangName}. Maintain graphology and Astro-Vastu terminology correctly.
+`;
+
+          const aiResponse = await generateContentWithRetry(client, {
+            model: "gemini-2.5-flash",
+            contents: [
+              {
+                inlineData: {
+                  mimeType,
+                  data: base64Data
+                }
+              },
+              promptText
+            ],
+            config: {
+              systemInstruction: "You are the Rajiv Ji AI Master Graphologist and Astro-Vastu Signature specialist. You analyze signature stroke weights, angles, and alignments, returning professional and traditional Handwriting Vastu reports.",
+              responseMimeType: "application/json",
+              temperature: 0.3,
+            }
+          });
+
+          if (aiResponse.text) {
+            const parsed = JSON.parse(aiResponse.text);
+            return res.json(parsed);
+          }
+        } catch (innerErr) {
+          console.error("Gemini Signature Audit AI call failed, using local fallback generation:", innerErr);
+        }
+      }
+
+      // Local Fallback response if API key is missing or model fails
+      const fallbackResult = {
+        psychologicalInterpretation: {
+          confidenceLevel: language === 'hi'
+            ? "आपके हस्ताक्षर की संरचना एक मजबूत और संतुलित व्यक्तित्व को दर्शाती है। अक्षरों का आकार और प्रवाह दर्शाता है कि आपके भीतर गहरी प्रशासनिक क्षमता और सामाजिक प्रतिष्ठा स्थापित करने की इच्छा है।"
+            : "The layout of your signature reflects a robust and balanced personality. The size and fluid pressure signify strong executive capability, deep self-respect, and a steady desire to command respect in your social sphere.",
+          ambitionDrive: language === 'hi'
+            ? "आगे बढ़ता हुआ झुकाव आपके मजबूत इरादों, आशावाद और करियर में प्रगति की तीव्र इच्छा को रेखांकित करता है। यह आपके भीतर नया सोचने और नेतृत्व करने की शक्ति देता है।"
+            : "The ascending slope projects a clear ambitious outline, high optimism, and progress-oriented momentum. It shows a personality eager to explore new growth dimensions and pioneer fresh solutions."
+        },
+        compatibilityScore: {
+          score: description?.slant === 'Forward' ? 9 : 7,
+          detailedExplanation: language === 'hi'
+            ? `आपके हस्ताक्षरित नाम का कंपन अंक ${nameNumber} आपके मूलांक ${driver} और भाग्यांक ${conductor} के साथ एक सामंजस्यपूर्ण संरेखण बनाता है। यह संतुलन आपके पेशेवर जीवन में स्थिरता लाता है और आकस्मिक आर्थिक बाधाओं से सुरक्षा प्रदान करता है।`
+            : `Your signed name vibration of #${nameNumber} and birth coordinates (Driver #${driver}, Conductor #${conductor}) form a highly supportive planetary resonance. This ensures that when you sign documents, you evoke a supportive archetype that accelerates professional agreements and seals deals smoothly.`
+        },
+        professionalImpact: {
+          firstImpression: language === 'hi'
+            ? "सहकर्मियों और ग्राहकों पर आपका हस्ताक्षर एक ईमानदार, विश्वसनीय और पारदर्शी छवि छोड़ता है, जिससे गहरा व्यावसायिक विश्वास पैदा होता है।"
+            : "Colleagues and partners perceive your signature as a badge of transparent credibility, deep-seated reliability, and administrative authority.",
+          industrySuitability: language === 'hi'
+            ? `आपकी चुनी गई श्रेणी में यह शैली आपके कमान और नियंत्रण को बढ़ाती है। प्रथम अक्षर का स्पष्ट होना आपके नाम को ब्रांड वैल्यू प्रदान करता है।`
+            : `In your professional field, this structured flow enhances your command. Keeping a prominent initial capital elevates your brand presence and guarantees attention in commercial proposals.`,
+          authorityCredibility: language === 'hi'
+            ? "सहायक अंडरलाइन होने से समाज में आपकी साख को एक मजबूत आधार मिलता है, जो आपके लिए एक सुरक्षा कवच की तरह कार्य करता है।"
+            : "The horizontal underline support acts as a cosmic Vastu foundation, offering strong protective shielding and maintaining steady backing from administrative authorities."
+        },
+        recommendations: {
+          colors: [
+            {
+              color: language === 'hi' ? "रॉयल ब्लू स्याही (Royal Blue Ink)" : "Royal Blue Ink",
+              reason: language === 'hi'
+                ? "यह बृहस्पति की सकारात्मक ऊर्जाओं को आकर्षित करता है, जिससे आपके निर्णय लेने की क्षमता और सामाजिक सम्मान में वृद्धि होती है।"
+                : "Activates Jovian/Mercury waves, promoting communication clarity, professional respect, and authoritative speech."
+            },
+            {
+              color: language === 'hi' ? "गहरी काली स्याही (Deep Black Ink)" : "Deep Black Ink",
+              reason: language === 'hi'
+                ? "शनि की स्थिरता प्रदान करता है, जो लंबे समय तक संपत्तियों की सुरक्षा करने और वित्तीय रिसाव को रोकने में सहायक है।"
+                : "Provides grounding Saturnian protection, shielding assets from sudden losses and securing legal agreements."
+            },
+            {
+              color: language === 'hi' ? "पन्ना हरी स्याही (Emerald Green Ink)" : "Emerald Green Ink",
+              reason: language === 'hi'
+                ? "वित्तीय विकास और व्यापारिक बुद्धि को प्रेरित करता है। यह व्यावसायिक उन्नति के लिए अत्यंत शुभ है।"
+                : "Invokes Mercury trade intelligence, accelerating commercial transactions and attracting profitable client networks."
+            }
+          ],
+          variants: [
+            language === 'hi' ? "हस्ताक्षर को हमेशा बाएं से दाएं की ओर 15 डिग्री ऊपर की ओर उठाएं।" : "Force your signature axis upward at a 15-degree positive angle.",
+            language === 'hi' ? "नाम के नीचे बिना अक्षरों को काटे एक साफ अंडरलाइन खींचें।" : "Draw a clean, single, unbroken horizontal underline beneath your name.",
+            language === 'hi' ? "हस्ताक्षर के अंत में मौजूद किसी भी पूर्ण विराम या बिंदु को हटा दें।" : "Avoid placing trailing dots or full stops at the end of the stroke."
+          ],
+          signingDirection: language === 'hi' ? "बाएं से दाएं ऊपर की ओर (15 डिग्री)" : "Ascending left-to-right at a 15-degree positive angle",
+          shouldModify: language === 'hi'
+            ? "अपने पहले नाम को स्पष्ट रूप से लिखें, जिसमें पहला अक्षर बड़ा (सामान्य से ढाई गुना) हो। इसे 15 डिग्री के झुकाव पर ऊपर ले जाएं और नीचे बिना छुए एक सहायक अंडरलाइन खींचें। अंतिम छोर को खुला रखें।"
+            : "Write your name with a prominent initial capital (2.5x larger than lowercase characters), sloping upward at exactly 15 degrees. Underline it cleanly starting from the second character, leaving the end open.",
+          penType: language === 'hi' ? "मीडियम जेल पेन या रॉयल फाउंटेन पेन" : "Classic Fountain Pen or Medium Gel Pen with smooth ink distribution"
+        }
+      };
+
+      return res.json(fallbackResult);
+    } catch (err: any) {
+      console.error("Signature audit error in fallback chain: ", err);
+      return res.status(500).json({ error: "Internal server error during signature analysis." });
+    }
+  };
+
+  app.post("/api/signature-audit", handleSignatureAudit);
+  app.post("/api/analyze-signature", handleSignatureAudit);
+
   // API router for Gemini report generation
   app.post("/api/report", async (req, res) => {
     try {

@@ -37,6 +37,9 @@ export interface NameAnalysis {
     positive: string[];
     negative: string[];
     careers: string[];
+    positiveKeys?: string[];
+    negativeKeys?: string[];
+    careersKeys?: string[];
   };
 }
 
@@ -60,14 +63,24 @@ export interface CompatibilityReport {
   friendship: string;
   business: string;
   longTermPotential: string;
+  relationshipKey?: string;
+  marriageKey?: string;
+  friendshipKey?: string;
+  businessKey?: string;
+  longTermPotentialKey?: string;
 }
 
 export interface remediesAdvice {
   colors: string[];
+  colorsKeys?: string[];
   gemstones: string[];
+  gemstonesKeys?: string[];
   nameCorrection: string;
+  nameCorrectionKey?: string;
   mobileEndings: string[];
+  mobileEndingsKeys?: string[];
   signatureAdvice: string;
+  signatureAdviceKey?: string;
   luckyDates: number[];
   luckyDays: string[];
 }

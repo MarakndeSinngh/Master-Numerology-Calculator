@@ -14,6 +14,20 @@ export interface CombinationResult {
   financialImpact: string;
   spiritualImpact: string;
   remedy: string;
+  // i18n keys
+  nameKey?: string;
+  meaningKey?: string;
+  strengthKey?: string;
+  weaknessKey?: string;
+  careerImpactKey?: string;
+  relationshipImpactKey?: string;
+  financialImpactKey?: string;
+  spiritualImpactKey?: string;
+  remedyKey?: string;
+  // Metadata for parameter interpolation
+  rulerX?: string;
+  rulerY?: string;
+  sum?: number;
 }
 
 export interface ArrowMasterResult {
@@ -432,7 +446,19 @@ const generateCombinationDetails = (x: number, y: number): CombinationResult => 
     relationshipImpact,
     financialImpact,
     spiritualImpact,
-    remedy
+    remedy,
+    nameKey: `combinations.nodes.${code}.title`,
+    meaningKey: `combinations.nodes.${code}.description`,
+    strengthKey: `combinations.nodes.${code}.strengths`,
+    weaknessKey: `combinations.nodes.${code}.weaknesses`,
+    careerImpactKey: `combinations.nodes.${code}.careerImpact`,
+    relationshipImpactKey: `combinations.nodes.${code}.relationships`,
+    financialImpactKey: `combinations.nodes.${code}.financialFlow`,
+    spiritualImpactKey: `combinations.nodes.${code}.spiritualInfluence`,
+    remedyKey: `combinations.nodes.${code}.remedy`,
+    rulerX,
+    rulerY,
+    sum
   };
 };
 

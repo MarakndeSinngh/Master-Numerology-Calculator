@@ -15,6 +15,7 @@ import { PersonalDetails, DOBAnalysis, NameAnalysis, MobileAnalysis, remediesAdv
 import { PAIR_MEANINGS } from '../services/pairMeanings';
 import { HINDI_PAIR_MEANINGS } from '../services/hindiPairs';
 import { checkMobileDOBCompatibility } from '../services/numerologyEngine';
+import { useLanguage } from '../hooks/useLanguage';
 
 interface MobileDiagnosticsPanelProps {
   personalDetails: PersonalDetails;
@@ -137,6 +138,7 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
   isQuickMode = false,
   onSaveReport
 }) => {
+  const { lang, t } = useLanguage();
   // Use remedies from prop or fallback
   const internalRemedies = remedies;
 
@@ -1190,11 +1192,20 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                 : '';
 
               let lookupResult = PAIR_MEANINGS[finalPair];
+              let hindiLookup = HINDI_PAIR_MEANINGS[finalPair];
 
               let displayMeaning = lookupResult ? lookupResult.meaning : `${finalPair} Vibration`;
               let displayPositive = lookupResult ? lookupResult.positive : 'Positive frequencies are balanced in this placement.';
               let displayNegative = lookupResult ? lookupResult.negative : 'Ensure supportive remedies for custom balancing.';
-              let displayArea = lookupResult ? lookupResult.area : 'General';
+              let displayArea: string = lookupResult ? lookupResult.area : 'General';
+
+              if (lang === 'hi' && hindiLookup) {
+                displayMeaning = hindiLookup.meaning;
+                displayPositive = hindiLookup.positive;
+                displayNegative = hindiLookup.negative;
+                displayArea = hindiLookup.area;
+              }
+
               let severity = lookupResult ? lookupResult.severity : 65;
               const isNegativePair = ['16', '61', '65', '56', '79', '97'].includes(finalPair);
 

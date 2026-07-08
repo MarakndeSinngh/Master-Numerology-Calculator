@@ -17,7 +17,7 @@ interface ReportTabProps {
 }
 
 const ReportTab: React.FC<ReportTabProps> = ({ personalDetails, dobData, nameData, mobileData, remedies }) => {
-  const { lang } = useLanguage();
+  const { lang, t, tStrict } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [reportText, setReportText] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -139,6 +139,8 @@ const ReportTab: React.FC<ReportTabProps> = ({ personalDetails, dobData, nameDat
         for (let i = 0; i < Math.min(dobCount, 4); i++) {
           circles += `<span style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background-color: #FFFFFF; border: 1px solid #CBD5E1; font-family: monospace; font-weight: 900; font-size: 9px; color: #1F2937; margin: 1px;">${digit}</span>`;
         }
+      } else if (box && box.isDestinyLayer) {
+        circles += `<span style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background-color: #DBEAFE; border: 1px solid #3B82F6; font-family: monospace; font-weight: 900; font-size: 9px; color: #1E3A8A; margin: 1px;">${digit}</span>`;
       }
       
       let badges = '';
@@ -486,17 +488,17 @@ const ReportTab: React.FC<ReportTabProps> = ({ personalDetails, dobData, nameDat
         <div class="pdf-page" style="border: 8px double #D97706; padding: 25mm 20mm;">
           <div style="text-align: center; margin-top: 5mm;">
             <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; color: #6B7280;">
-              Leo Astrological & Numerological Portal
+              {t('pdf.portalTitle', 'Leo Astrological & Numerological Portal')}
             </span>
             <div style="width: 60px; height: 1.5px; background-color: #D97706; margin: 15px auto;"></div>
           </div>
           
           <div style="text-align: center; margin-top: 15mm; margin-bottom: 15mm;">
             <h1 style="font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; text-transform: uppercase; color: #111827; letter-spacing: 2px; line-height: 1.2; margin: 0;">
-              The Grand Cosmic<br />Astrological Blueprint
+              ${t('pdf.title', 'The Grand Cosmic<br />Astrological Blueprint')}
             </h1>
             <p style="font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px; color: #D97706; margin: 15px 0 0 0;">
-              A High-Fidelity Synthesized Vedic Astro-Numerology & Vibrations Mapping
+              ${t('pdf.subtitle', 'A High-Fidelity Synthesized Vedic Astro-Numerology & Vibrations Mapping')}
             </p>
             <div style="width: 140px; height: 1px; background-color: #E5E7EB; margin: 25px auto;"></div>
           </div>
@@ -506,7 +508,7 @@ const ReportTab: React.FC<ReportTabProps> = ({ personalDetails, dobData, nameDat
             <div style="font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 900; color: #D97706; border: 2px solid #D97706; padding: 6px 18px; border-radius: 4px; letter-spacing: 3px; display: inline-block; background-color: #FAF5EF; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
               LEO FAMILY
             </div>
-            <span style="font-size: 8px; text-transform: uppercase; letter-spacing: 2px; color: #6B7280; font-weight: 700; text-align: center;">ASTROLOGICAL TRUST & AUTHORITY</span>
+            <span style="font-size: 8px; text-transform: uppercase; letter-spacing: 2px; color: #6B7280; font-weight: 700; text-align: center;">${t('pdf.authoritySub', 'ASTROLOGICAL TRUST & AUTHORITY')}</span>
           </div>
           
           <div style="margin: 0 auto; display: block; text-align: center; width: 100%;">
@@ -516,11 +518,11 @@ const ReportTab: React.FC<ReportTabProps> = ({ personalDetails, dobData, nameDat
               <circle cx="60" cy="60" r="44" fill="none" stroke="#D97706" stroke-width="1" />
               <path id="curve" fill="none" d="M 22 60 A 38 38 0 0 1 98 60" />
               <text font-family="'Inter', sans-serif" font-size="6.5" font-weight="bold" fill="#D97706" letter-spacing="0.8">
-                <textPath href="#curve" startOffset="50%" text-anchor="middle">SACRED COSMIC MATRIX</textPath>
+                <textPath href="#curve" startOffset="50%" text-anchor="middle">${t('pdf.sacredMatrix', 'SACRED COSMIC MATRIX')}</textPath>
               </text>
               <path id="curve2" fill="none" d="M 98 60 A 38 38 0 0 1 22 60" />
               <text font-family="'Inter', sans-serif" font-size="6.5" font-weight="bold" fill="#D97706" letter-spacing="0.8">
-                <textPath href="#curve2" startOffset="50%" text-anchor="middle">★ LEO FAMILY AUTHORITY ★</textPath>
+                <textPath href="#curve2" startOffset="50%" text-anchor="middle">★ ${t('pdf.authority', 'LEO FAMILY AUTHORITY')} ★</textPath>
               </text>
               <g transform="translate(60,60) scale(0.75)">
                 <polygon points="0,-18 5,-5 18,-5 8,3 12,16 0,8 -12,16 -8,3 -18,-5 -5,-5" fill="#D97706" />
@@ -531,26 +533,26 @@ const ReportTab: React.FC<ReportTabProps> = ({ personalDetails, dobData, nameDat
           <div style="margin-top: 15mm; text-align: center; font-size: 12px; color: #374151;">
             <table style="width: 280px; margin: 0 auto; text-align: left; border-collapse: collapse; font-size: 11px;">
               <tr>
-                <td style="padding: 6px 0; color: #6B7280; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Prepared For:</td>
-                <td style="padding: 6px 0; font-weight: bold; color: #111827; text-align: right;">${details.name}</td>
+                <td style="padding: 6px 0; color: #6B7280; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">${t('pdf.preparedFor', 'Prepared For')}:</td>
+                <td style="padding: 6px 0; font-weight: bold; color: #111827; text-align: right;">\${details.name}</td>
               </tr>
               <tr>
-                <td style="padding: 6px 0; color: #6B7280; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Date of Birth:</td>
-                <td style="padding: 6px 0; font-weight: bold; color: #111827; text-align: right;">${details.dob}</td>
+                <td style="padding: 6px 0; color: #6B7280; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">${t('form.dob', 'Date of Birth')}:</td>
+                <td style="padding: 6px 0; font-weight: bold; color: #111827; text-align: right;">\${details.dob}</td>
               </tr>
               <tr>
-                <td style="padding: 6px 0; color: #6B7280; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Mobile Frequency:</td>
-                <td style="padding: 6px 0; font-weight: bold; color: #111827; text-align: right;">${details.mobile}</td>
+                <td style="padding: 6px 0; color: #6B7280; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">${t('pdf.mobileFrequency', 'Mobile Frequency')}:</td>
+                <td style="padding: 6px 0; font-weight: bold; color: #111827; text-align: right;">\${details.mobile}</td>
               </tr>
               <tr>
-                <td style="padding: 6px 0; color: #6B7280; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Prepared On:</td>
-                <td style="padding: 6px 0; font-weight: bold; color: #111827; text-align: right;">${currentDateStr}</td>
+                <td style="padding: 6px 0; color: #6B7280; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">${t('pdf.preparedOn', 'Prepared On')}:</td>
+                <td style="padding: 6px 0; font-weight: bold; color: #111827; text-align: right;">\${currentDateStr}</td>
               </tr>
             </table>
           </div>
           
           <div class="pdf-footer" style="border: none; text-align: center; justify-content: center; margin-bottom: 5mm; font-weight: bold; color: #D97706;">
-            Rajeev Singh Chauhann Method • Secure Certificate ${reportId}
+            ${t('pdf.footerMethod', 'Rajeev Singh Chauhann Method')} • ${t('pdf.certificate', 'Secure Certificate')} \${reportId}
           </div>
         </div>
         

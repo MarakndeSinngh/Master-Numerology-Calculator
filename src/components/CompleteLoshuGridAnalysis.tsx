@@ -91,6 +91,23 @@ interface CompleteLoshuGridAnalysisProps {
 
 export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps> = ({ initialProfile }) => {
   const { lang, t, tStrict } = useLanguage();
+
+  const localizedField = (item: any, fieldName: string) => {
+    const key = item[`${fieldName}Key`];
+    const params = {
+      rulerX: item.rulerX ? t(`planets.${item.rulerX.toLowerCase()}`, item.rulerX) : '',
+      rulerY: item.rulerY ? t(`planets.${item.rulerY.toLowerCase()}`, item.rulerY) : '',
+      sum: item.sum || '',
+      code: item.code || ''
+    };
+    if (!key) return item[fieldName] || '';
+    const specificVal = t(key, params);
+    if (specificVal && specificVal !== key) return specificVal;
+    const generalKey = `combinations.general.${fieldName}`;
+    const generalVal = t(generalKey, params);
+    if (generalVal && generalVal !== generalKey) return generalVal;
+    return item[fieldName] || specificVal || '';
+  };
   // Main states
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
@@ -461,6 +478,16 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
         <div className="space-y-10 animate-in fade-in duration-500">
           
           {/* SECTION 3: KEY METRICS ROW (MULANK & BHAGYANK CARDS) */}
+          <div className="text-center space-y-2 mt-8">
+            <span className="text-xs font-mono font-black text-[#D97706] tracking-widest uppercase block">Astrological Blueprint</span>
+            <h2 className="font-playfair text-3xl md:text-4xl font-extrabold text-[#1F2937]">
+              Personal Energy Indicators
+            </h2>
+            <p className="text-slate-500 text-sm max-w-xl mx-auto font-sans leading-relaxed">
+              Your Psychic Driver and Destiny Conductor planetary alignment coordinates, calculated from your core birth details.
+            </p>
+          </div>
+
           <motion.div 
             variants={containerVariants}
             initial="hidden"
@@ -661,18 +688,14 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
                   </p>
                   
                   {/* Dynamic Subject Quick Stats */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-slate-800/80">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-slate-800/80">
                     <div className="space-y-1">
                       <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block">Consultation Subject</span>
                       <p className="text-sm font-bold text-white font-sans">{masterReport.personal.name}</p>
                     </div>
                     <div className="space-y-1">
-                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block">Cosmic Driver</span>
-                      <p className="text-sm font-bold text-[#F59E0B] font-sans"># {masterReport.personal.driver} (मूलांक)</p>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block">Cosmic Conductor</span>
-                      <p className="text-sm font-bold text-blue-400 font-sans"># {masterReport.personal.conductor} (भाग्यांक)</p>
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block">Date of Birth</span>
+                      <p className="text-sm font-bold text-amber-500 font-sans font-mono">{dob}</p>
                     </div>
                     <div className="space-y-1">
                       <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block">Aura Archetype</span>
@@ -972,12 +995,14 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
               <div id="master-sec-combs" className="space-y-6 scroll-mt-6">
                 <div className="flex gap-2.5 items-center pb-2 border-b border-[#E5E7EB]">
                   <span className="w-8 h-8 rounded-full bg-[#D97706]/10 text-[#D97706] flex items-center justify-center font-mono font-bold text-xs">03</span>
-                  <h4 className="font-cinzel text-xl font-bold text-slate-800 uppercase tracking-widest">81 Combinations Master Matrix</h4>
+                  <h4 className="font-cinzel text-xl font-bold text-slate-800 uppercase tracking-widest">
+                    {t('combinations.masterMatrix.title', '81 Combinations Master Matrix')}
+                  </h4>
                 </div>
 
                 <div className="p-5 bg-amber-50/40 border border-amber-200/50 rounded-3xl text-left">
                   <p className="text-xs text-slate-700 leading-relaxed italic font-lora">
-                    "Every cosmic blueprint maps complex energy pathways. Below are the key double-digit combinations active inside your specific birth grid, describing the direct impact behind planetary intersections."
+                    "{t('combinations.masterMatrix.intro', 'Every cosmic blueprint maps complex energy pathways. Below are the key double-digit combinations active inside your specific birth grid, describing the direct impact behind planetary intersections.')}"
                   </p>
                 </div>
 
@@ -986,8 +1011,10 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
                     <div key={comb.code + index} className="p-6 bg-white border border-slate-200 rounded-[35px] shadow-sm space-y-4 text-left border-l-4 border-l-[#D97706]">
                       <div className="flex justify-between items-center gap-4 pb-2 border-b border-slate-100">
                         <div className="space-y-1">
-                          <span className="text-[10px] font-mono text-slate-400 uppercase">Combination Node #{comb.code}</span>
-                          <h4 className="text-sm font-black text-slate-800">{comb.name}</h4>
+                          <span className="text-[10px] font-mono text-slate-400 uppercase">
+                            {t('combinations.nodeLabel', 'Combination Node')} #{comb.code}
+                          </span>
+                          <h4 className="text-sm font-black text-slate-800">{localizedField(comb, 'name')}</h4>
                         </div>
                         <div className="bg-[#D97706]/10 text-[#D97706] font-mono font-black text-lg px-4 py-2 rounded-2xl border border-[#D97706]/20">
                           {comb.code}
@@ -995,41 +1022,57 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
                       </div>
                       
                       <div className="space-y-2.5 text-xs text-slate-600 leading-relaxed">
-                        <p className="font-medium text-slate-800">{comb.meaning}</p>
+                        <p className="font-medium text-slate-800">{localizedField(comb, 'meaning')}</p>
                         
                         <div className="grid grid-cols-2 gap-3 pt-2">
                           <div>
-                            <span className="text-[9px] font-mono text-[#D97706] uppercase tracking-wider block font-bold">Strengths</span>
-                            <p className="text-[11px] text-slate-600 font-sans mt-0.5">{comb.strength}</p>
+                            <span className="text-[9px] font-mono text-[#D97706] uppercase tracking-wider block font-bold">
+                              {t('combinations.strengths', 'Strengths')}
+                            </span>
+                            <p className="text-[11px] text-slate-600 font-sans mt-0.5">{localizedField(comb, 'strength')}</p>
                           </div>
                           <div>
-                            <span className="text-[9px] font-mono text-red-600 uppercase tracking-wider block font-bold">Weaknesses</span>
-                            <p className="text-[11px] text-slate-600 font-sans mt-0.5">{comb.weakness}</p>
+                            <span className="text-[9px] font-mono text-red-600 uppercase tracking-wider block font-bold">
+                              {t('combinations.weaknesses', 'Weaknesses')}
+                            </span>
+                            <p className="text-[11px] text-slate-600 font-sans mt-0.5">{localizedField(comb, 'weakness')}</p>
                           </div>
                         </div>
 
                         <div className="space-y-2 pt-2 border-t border-slate-50">
                           <div className="flex justify-between gap-4 text-[11px]">
-                            <span className="font-semibold text-slate-700 font-sans">Career Impact:</span>
-                            <span className="text-slate-500 font-sans">{comb.careerImpact}</span>
+                            <span className="font-semibold text-slate-700 font-sans">
+                              {t('combinations.careerImpact', 'Career Impact')}:
+                            </span>
+                            <span className="text-slate-500 font-sans">{localizedField(comb, 'careerImpact')}</span>
                           </div>
                           <div className="flex justify-between gap-4 text-[11px]">
-                            <span className="font-semibold text-slate-700 font-sans">Relationships:</span>
-                            <span className="text-slate-500 font-sans">{comb.relationshipImpact}</span>
+                            <span className="font-semibold text-slate-700 font-sans">
+                              {t('combinations.relationships', 'Relationships')}:
+                            </span>
+                            <span className="text-slate-500 font-sans">{localizedField(comb, 'relationshipImpact')}</span>
                           </div>
                           <div className="flex justify-between gap-4 text-[11px]">
-                            <span className="font-semibold text-slate-700 font-sans">Financial Flow:</span>
-                            <span className="text-slate-500 font-sans">{comb.financialImpact}</span>
+                            <span className="font-semibold text-slate-700 font-sans">
+                              {t('combinations.financialFlow', 'Financial Flow')}:
+                            </span>
+                            <span className="text-slate-500 font-sans">{localizedField(comb, 'financialImpact')}</span>
                           </div>
                           <div className="flex justify-between gap-4 text-[11px]">
-                            <span className="font-semibold text-slate-700 font-sans">Spiritual Influence:</span>
-                            <span className="text-slate-500 font-sans">{comb.spiritualImpact}</span>
+                            <span className="font-semibold text-slate-700 font-sans">
+                              {t('combinations.spiritualInfluence', 'Spiritual Influence')}:
+                            </span>
+                            <span className="text-slate-500 font-sans">{localizedField(comb, 'spiritualImpact')}</span>
                           </div>
                         </div>
 
                         <div className="p-3 bg-[#FDFCF7] border border-[#D97706]/20 rounded-xl mt-2">
-                          <span className="text-[9px] font-mono text-[#D97706] uppercase tracking-wider block font-bold mb-0.5">Siddha Remedy</span>
-                          <p className="italic text-[#B45309] font-medium leading-relaxed font-sans text-[11px]">"{comb.remedy}"</p>
+                          <span className="text-[9px] font-mono text-[#D97706] uppercase tracking-wider block font-bold mb-0.5">
+                            {t('combinations.siddhaRemedy', 'Siddha Remedy')}
+                          </span>
+                          <p className="italic text-[#B45309] font-medium leading-relaxed font-sans text-[11px]">
+                            "{localizedField(comb, 'remedy')}"
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -1864,12 +1907,12 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
                     <p className="font-bold text-white text-sm font-mono">{dob}</p>
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">Psychic / Mulank</span>
-                    <p className="font-bold text-amber-400 text-sm font-mono"># {masterReport.personal.driver} (Ruler: {masterReport.personal.driver === 1 ? 'Sun' : masterReport.personal.driver === 2 ? 'Moon' : masterReport.personal.driver === 3 ? 'Jupiter' : masterReport.personal.driver === 4 ? 'Rahu' : masterReport.personal.driver === 5 ? 'Mercury' : masterReport.personal.driver === 6 ? 'Venus' : masterReport.personal.driver === 7 ? 'Ketu' : masterReport.personal.driver === 8 ? 'Saturn' : 'Mars'})</p>
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">Gender</span>
+                    <p className="font-bold text-amber-400 text-sm font-mono">{masterReport.personal.gender}</p>
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">Conductor / Bhagyank</span>
-                    <p className="font-bold text-blue-400 text-sm font-mono"># {masterReport.personal.conductor}</p>
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">Aura Archetype</span>
+                    <p className="font-bold text-emerald-400 text-sm font-sans">{masterReport.archetype.title}</p>
                   </div>
                 </div>
               </div>
@@ -1909,6 +1952,11 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
                                     </span>
                                   ))
                                 ) : null}
+                                {box.isDestinyLayer && (
+                                  <span title="Conductor Injected Digit" className="w-4 h-4 rounded-full bg-blue-500 border border-blue-600 flex items-center justify-center text-[9px] font-mono font-black text-white shadow-sm animate-pulse">
+                                    {digit}
+                                  </span>
+                                )}
                               </div>
                               <div className="flex flex-col gap-0.5 mt-0.5">
                                 {isDriver && (
@@ -2573,6 +2621,11 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
                                   </span>
                                 ))
                               ) : null}
+                              {box.isDestinyLayer && (
+                                <span title="Conductor Injected Digit" className="w-5 h-5 rounded-full bg-blue-600 border border-blue-700 flex items-center justify-center text-[10px] font-mono font-black text-white shadow-sm animate-pulse">
+                                  {digit}
+                                </span>
+                              )}
                             </div>
 
                             {/* Reinforcement / Layer Badges */}

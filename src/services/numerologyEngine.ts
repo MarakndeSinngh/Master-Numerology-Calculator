@@ -320,7 +320,12 @@ export function analyzeNameSystems(name: string): NameAnalysis {
     expressionNumber: chaldeanNumber,
     soulUrgeNumber: reduceToSingleDigit(chalVowelSum),
     personalityNumber: reduceToSingleDigit(chalConsonantSum),
-    traits
+    traits: {
+      ...traits,
+      positiveKeys: traits.positive.map((_, i) => `traits.${chaldeanNumber}.positive.${i}`),
+      negativeKeys: traits.negative.map((_, i) => `traits.${chaldeanNumber}.negative.${i}`),
+      careersKeys: traits.careers.map((_, i) => `traits.${chaldeanNumber}.careers.${i}`)
+    }
   };
 }
 
@@ -563,7 +568,12 @@ export function generateCompatibility(nameA: string, dobA: string, nameB: string
     marriage,
     friendship,
     business,
-    longTermPotential
+    longTermPotential,
+    relationshipKey: `compatibility.relationship.${baseScore >= 85 ? 'high' : baseScore >= 70 ? 'medium' : 'low'}`,
+    marriageKey: `compatibility.marriage.${baseScore >= 85 ? 'high' : baseScore >= 70 ? 'medium' : 'low'}`,
+    friendshipKey: `compatibility.friendship.${baseScore >= 85 ? 'high' : baseScore >= 70 ? 'medium' : 'low'}`,
+    businessKey: `compatibility.business.${baseScore >= 85 ? 'high' : baseScore >= 70 ? 'medium' : 'low'}`,
+    longTermPotentialKey: `compatibility.longTermPotential.${baseScore >= 85 ? 'high' : baseScore >= 70 ? 'medium' : 'low'}`
   };
 }
 
@@ -621,10 +631,15 @@ export function generateRemedies(dobStr: string, name: string): remediesAdvice {
 
   return {
     colors: colorsMap[num] || colorsMap[1],
+    colorsKeys: (colorsMap[num] || colorsMap[1]).map((_, i) => `remedies.colors.${num}.${i}`),
     gemstones: gemstoneMap[num] || gemstoneMap[1],
+    gemstonesKeys: (gemstoneMap[num] || gemstoneMap[1]).map((_, i) => `remedies.gemstones.${num}.${i}`),
     nameCorrection: nameCorrectionMap[num] || nameCorrectionMap[1],
+    nameCorrectionKey: `remedies.nameCorrection.${num}`,
     mobileEndings: mobileEndingsMap[num] || mobileEndingsMap[1],
+    mobileEndingsKeys: (mobileEndingsMap[num] || mobileEndingsMap[1]).map((_, i) => `remedies.mobileEndings.${num}.${i}`),
     signatureAdvice: 'Begin signature upwards at a 15-degree angle. Never put a dot below the signature; underline it to signify stable ambition.',
+    signatureAdviceKey: 'remedies.signatureAdvice',
     luckyDates: [1, 5, 9, 14, 19, 23, 27],
     luckyDays: ['Monday', 'Wednesday', 'Sunday']
   };
