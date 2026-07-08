@@ -1,5 +1,6 @@
 import React from 'react';
 import { DOBAnalysis, NameAnalysis, MobileAnalysis, remediesAdvice } from '../types';
+import { useLanguage } from '../hooks/useLanguage';
 
 interface AstroDashboardProps {
   dobData: DOBAnalysis | null;
@@ -22,6 +23,8 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({
   onLoadReport,
   onDeleteReport
 }) => {
+  const { t } = useLanguage();
+
   // Check presence for Vedic grid
   const presentNumbers = new Set(
     dobData
@@ -49,33 +52,53 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="glass-panel p-5 rounded-3xl relative overflow-hidden bg-white hover:border-[#D97706]/30 border-[#E5E7EB] shadow-sm">
-          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">Driver Number (Mulank)</span>
+          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">
+            {t('meta.mulank', 'Driver Number (Mulank)')}
+          </span>
           <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{dobData ? dobData.birthNumber : "Not Computed"}</span>
-          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">Your conscious character, talent, and physical disposition.</p>
+          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">
+            {t('dashboard.driverDesc', 'Your conscious character, talent, and physical disposition.')}
+          </p>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl relative overflow-hidden bg-white hover:border-[#D97706]/30 border-[#E5E7EB] shadow-sm">
-          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">Conductor Number (Bhagyank)</span>
+          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">
+            {t('meta.bhagyank', 'Conductor Number (Bhagyank)')}
+          </span>
           <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{dobData ? dobData.lifePathNumber : "Not Computed"}</span>
-          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">Your divine purpose, karmic trajectory, and path in life.</p>
+          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">
+            {t('dashboard.conductorDesc', 'Your divine purpose, karmic trajectory, and path in life.')}
+          </p>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl relative overflow-hidden bg-white hover:border-[#D97706]/30 border-[#E5E7EB] shadow-sm">
-          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">Birth Compound Number</span>
+          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">
+            {t('cards.birthCompoundNumber', 'Birth Compound Number')}
+          </span>
           <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{dobData ? dobData.birthNumberCompound : "Not Computed"}</span>
-          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">The unreduced daily birth vibration representing core heritage.</p>
+          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">
+            {t('cards.birthCompoundDesc', 'The unreduced daily birth vibration representing core heritage.')}
+          </p>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl relative overflow-hidden bg-white hover:border-[#D97706]/30 border-[#E5E7EB] shadow-sm">
-          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">Mobile Compound Number</span>
+          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">
+            {t('cards.mobileCompoundNumber', 'Mobile Compound Number')}
+          </span>
           <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{mobileData.compoundTotal}</span>
-          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">The collective total of your 10-digit mobile number.</p>
+          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">
+            {t('cards.mobileCompoundDesc', 'The collective total of your 10-digit mobile number.')}
+          </p>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl relative overflow-hidden bg-white hover:border-[#D97706]/30 border-[#E5E7EB] shadow-sm">
-          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">Mobile Root Number</span>
+          <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">
+            {t('cards.mobileRootNumber', 'Mobile Root Number')}
+          </span>
           <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{mobileData.reducedTotal}</span>
-          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">The single-digit primary mobile vibration influencing success.</p>
+          <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">
+            {t('cards.mobileRootDesc', 'The single-digit primary mobile vibration influencing success.')}
+          </p>
         </div>
       </div>
 
@@ -85,10 +108,16 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({
         {/* Vedic Grid Card */}
         <div className="glass-panel p-8 rounded-[40px] space-y-6 bg-white border-[#E5E7EB] shadow-sm">
           <div className="flex justify-between items-center">
-            <h3 className="font-playfair text-xl font-bold text-[#1F2937] tracking-wider">Vedic Grid (Sepharial)</h3>
-            <span className="text-[10px] font-mono bg-[#D97706]/10 text-[#D97706] px-3.5 py-1.5 rounded-full uppercase tracking-wider font-bold border border-[#D97706]/20">Planetary Houses</span>
+            <h3 className="font-playfair text-xl font-bold text-[#1F2937] tracking-wider">
+              {t('dashboard.vedicGrid', 'Vedic Grid (Sepharial)')}
+            </h3>
+            <span className="text-[10px] font-mono bg-[#D97706]/10 text-[#D97706] px-3.5 py-1.5 rounded-full uppercase tracking-wider font-bold border border-[#D97706]/20">
+              {t('dashboard.planetaryHouses', 'Planetary Houses')}
+            </span>
           </div>
-          <p className="text-xs text-[#6B7280]">Highlights active numeric portals influencing your subtle body energy aligned with celestial forces.</p>
+          <p className="text-xs text-[#6B7280]">
+            {t('dashboard.vedicDesc', 'Highlights active numeric portals influencing your subtle body energy aligned with celestial forces.')}
+          </p>
 
           <div className="grid grid-cols-3 gap-3 max-w-[280px] mx-auto pt-4">
             {vedicTemplate.map((row, rIdx) =>
@@ -114,10 +143,16 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({
         {/* Losho Grid Card */}
         <div className="glass-panel p-8 rounded-[40px] space-y-6 bg-white border-[#E5E7EB] shadow-sm">
           <div className="flex justify-between items-center">
-            <h3 className="font-playfair text-xl font-bold text-[#1F2937] tracking-wider">Losho Magic Square Grid</h3>
-            <span className="text-[10px] font-mono bg-[#D97706]/10 text-[#D97706] px-3.5 py-1.5 rounded-full uppercase tracking-wider font-bold border border-[#D97706]/20">Vibrational Planes</span>
+            <h3 className="font-playfair text-xl font-bold text-[#1F2937] tracking-wider">
+              {t('dashboard.loshoGrid', 'Losho Magic Square Grid')}
+            </h3>
+            <span className="text-[10px] font-mono bg-[#D97706]/10 text-[#D97706] px-3.5 py-1.5 rounded-full uppercase tracking-wider font-bold border border-[#D97706]/20">
+              {t('dashboard.vibrationalPlanes', 'Vibrational Planes')}
+            </span>
           </div>
-          <p className="text-xs text-[#6B7280]">Shows the material, social, and emotional alignments acting in your planetary cosmic charts.</p>
+          <p className="text-xs text-[#6B7280]">
+            {t('dashboard.loshoDesc', 'Shows the material, social, and emotional alignments acting in your planetary cosmic charts.')}
+          </p>
 
           <div className="grid grid-cols-3 gap-3 max-w-[280px] mx-auto pt-4">
             {loshoTemplate.map((row, rIdx) =>

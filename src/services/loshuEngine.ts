@@ -162,6 +162,9 @@ export interface LoshuAnalysisResult {
     title: string;
     description: string;
     forecast: string;
+    titleKey?: string;
+    forecastKey?: string;
+    focusKeys?: string[];
   };
   pinnacles: {
     pinnacle: number;
@@ -189,6 +192,9 @@ export interface LoshuAnalysisResult {
     title: string;
     ruler: string;
     description: string;
+    titleKey?: string;
+    descriptionKey?: string;
+    planetKey?: string;
   };
   chaldeanBhagyank?: {
     compound: number;
@@ -196,6 +202,9 @@ export interface LoshuAnalysisResult {
     title: string;
     ruler: string;
     description: string;
+    titleKey?: string;
+    descriptionKey?: string;
+    planetKey?: string;
   };
   rawJSON: string;
 }
@@ -289,6 +298,35 @@ const CHALDEAN_COMPOUNDS: Record<number, ChaldeanCompound> = {
   58: { title: "दृढ़ कोट (The Fortress)", ruler: "Saturn (शनि)", description: "Outstanding perseverance; success in minerals, heavy industries, or land development." },
   59: { title: "सक्रिय सेनापति (The Vanguard Commander)", ruler: "Mars (मंगल)", description: "Fosters great physical speed, high reaction focus, and mechanical skills." }
 };
+
+export function getPlanetKey(ruler: string): string {
+  const r = ruler ? ruler.toLowerCase() : '';
+  if (r.includes('sun') || r.includes('सूर्य')) return 'sun';
+  if (r.includes('moon') || r.includes('चन्द्र') || r.includes('चंद्र')) return 'moon';
+  if (r.includes('jupiter') || r.includes('गुरु')) return 'jupiter';
+  if (r.includes('rahu') || r.includes('राहू') || r.includes('राहु')) return 'rahu';
+  if (r.includes('mercury') || r.includes('बुध')) return 'mercury';
+  if (r.includes('venus') || r.includes('शुक्र')) return 'venus';
+  if (r.includes('ketu') || r.includes('केतु')) return 'ketu';
+  if (r.includes('saturn') || r.includes('शनि')) return 'saturn';
+  if (r.includes('mars') || r.includes('मंगल')) return 'mars';
+  return 'sun';
+}
+
+export function getPersonalYearFocusKeys(num: number): string[] {
+  const mapping: Record<number, string[]> = {
+    1: ['newBeginnings', 'leadership'],
+    2: ['patience', 'partnerships', 'balance'],
+    3: ['expansion', 'expressions', 'knowledge'],
+    4: ['foundation', 'work', 'organization'],
+    5: ['dynamicChange', 'freedom', 'publicRelation'],
+    6: ['domesticPeace', 'luxury', 'health'],
+    7: ['selfReflection', 'spiritualStudy', 'solitude'],
+    8: ['materialAbundance', 'businessGrowth', 'assets'],
+    9: ['completion', 'detoxification', 'philanthropy']
+  };
+  return mapping[num] || [];
+}
 
 export function computeLoshuAnalysis(dobStr: string, name: string, gender: string = 'MALE'): LoshuAnalysisResult {
   const parts = dobStr.split('-');
@@ -813,7 +851,10 @@ export function computeLoshuAnalysis(dobStr: string, name: string, gender: strin
       number: pYearNum,
       title: personalYearTitles[pYearNum] || 'Auspicious Progress Year',
       description: `Your Personal Year code is #${pYearNum} resolving to elements aligned with your core paths.`,
-      forecast: personalYearForecasts[pYearNum] || 'Expect highly progressive changes aligned with destiny plans.'
+      forecast: personalYearForecasts[pYearNum] || 'Expect highly progressive changes aligned with destiny plans.',
+      titleKey: `personalYear.title${pYearNum}`,
+      forecastKey: `personalYear.forecast${pYearNum}`,
+      focusKeys: getPersonalYearFocusKeys(pYearNum)
     },
     pinnacles: pinnaclesList,
     challenges: challengesList,
@@ -826,14 +867,20 @@ export function computeLoshuAnalysis(dobStr: string, name: string, gender: strin
       reduced: chaldeanMulankReduced,
       title: mComp.title,
       ruler: mComp.ruler,
-      description: mComp.description
+      description: mComp.description,
+      titleKey: `chaldean.rank${chaldeanMulankCompound}.title`,
+      descriptionKey: `chaldean.rank${chaldeanMulankCompound}.description`,
+      planetKey: getPlanetKey(mComp.ruler)
     },
     chaldeanBhagyank: {
       compound: chaldeanBhagyankCompound,
       reduced: chaldeanBhagyankReduced,
       title: bComp.title,
       ruler: bComp.ruler,
-      description: bComp.description
+      description: bComp.description,
+      titleKey: `chaldean.rank${chaldeanBhagyankCompound}.title`,
+      descriptionKey: `chaldean.rank${chaldeanBhagyankCompound}.description`,
+      planetKey: getPlanetKey(bComp.ruler)
     },
     rawJSON: JSON.stringify(outputObj, null, 2)
   };

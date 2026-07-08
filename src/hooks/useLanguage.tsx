@@ -12,6 +12,7 @@ interface LanguageContextType {
   lang: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => void;
   t: (key: string, paramsOrFallback?: Record<string, any> | string, fallback?: string) => string;
+  tStrict: (key: string, params?: Record<string, any>) => string;
   dir: 'ltr' | 'rtl';
   isRtl: boolean;
 }
@@ -55,12 +56,22 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return translate(lang, key, params, actualFallback);
   };
 
+  const tStrict = (key: string, params?: Record<string, any>): string => {
+    const value = t(key, params);
+    const isDev = (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') || 
+                  (import.meta && (import.meta as any).env && (import.meta as any).env.DEV);
+    if (isDev && (value === key || !value)) {
+      console.warn("Missing translation:", key, "language:", lang);
+    }
+    return value;
+  };
+
   const currentConfig = SUPPORTED_LANGUAGES.find(l => l.code === lang) || SUPPORTED_LANGUAGES[0];
   const dir = currentConfig.dir;
   const isRtl = dir === 'rtl';
 
   return (
-    <LanguageContext.Provider value={{ lang, setLanguage, t, dir, isRtl }}>
+    <LanguageContext.Provider value={{ lang, setLanguage, t, tStrict, dir, isRtl }}>
       {children}
     </LanguageContext.Provider>
   );
