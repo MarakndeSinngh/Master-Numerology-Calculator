@@ -4,13 +4,14 @@ import {
   SUPPORTED_LANGUAGES, 
   TRANSLATIONS, 
   detectLanguage, 
-  applyLanguageSettings 
+  applyLanguageSettings,
+  translate
 } from '../core/i18n';
 
 interface LanguageContextType {
   lang: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => void;
-  t: (key: string, fallback?: string) => string;
+  t: (key: string, paramsOrFallback?: Record<string, any> | string, fallback?: string) => string;
   dir: 'ltr' | 'rtl';
   isRtl: boolean;
 }
@@ -40,9 +41,18 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.location.hash = `/${newLang}${cleanHash || '/mobile-numerology'}`;
   };
 
-  const t = (key: string, fallback?: string): string => {
-    const translationSet = TRANSLATIONS[lang] || TRANSLATIONS['en'];
-    return translationSet[key] || TRANSLATIONS['en'][key] || fallback || key;
+  const t = (key: string, paramsOrFallback?: Record<string, any> | string, fallback?: string): string => {
+    let params: Record<string, any> | undefined = undefined;
+    let actualFallback: string | undefined = undefined;
+
+    if (typeof paramsOrFallback === 'string') {
+      actualFallback = paramsOrFallback;
+    } else if (typeof paramsOrFallback === 'object') {
+      params = paramsOrFallback;
+      actualFallback = fallback;
+    }
+
+    return translate(lang, key, params, actualFallback);
   };
 
   const currentConfig = SUPPORTED_LANGUAGES.find(l => l.code === lang) || SUPPORTED_LANGUAGES[0];

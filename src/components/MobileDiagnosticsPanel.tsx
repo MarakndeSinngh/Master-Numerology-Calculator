@@ -18,11 +18,12 @@ import { checkMobileDOBCompatibility } from '../services/numerologyEngine';
 
 interface MobileDiagnosticsPanelProps {
   personalDetails: PersonalDetails;
-  dobData: DOBAnalysis;
+  dobData: DOBAnalysis | null;
   nameData: NameAnalysis;
   mobileData: MobileAnalysis;
   remedies: remediesAdvice;
   isQuickMode?: boolean;
+  onSaveReport?: (details: PersonalDetails) => string;
 }
 
 const planetMapping: Record<number, {
@@ -133,7 +134,8 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
   nameData,
   mobileData,
   remedies,
-  isQuickMode = false
+  isQuickMode = false,
+  onSaveReport
 }) => {
   // Use remedies from prop or fallback
   const internalRemedies = remedies;
@@ -194,11 +196,11 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
   const coreScore = mobileData.score;
   const wealthScore = Math.max(45, Math.min(100, Math.floor(coreScore * 1.05) - (mobileData.hostileRelationships.length * 8)));
 
-  const compatibility = checkMobileDOBCompatibility(
+  const compatibility = dobData ? checkMobileDOBCompatibility(
     mobileData.reducedTotal,
-    dobData?.birthNumber || 1,
-    dobData?.lifePathNumber || 1
-  );
+    dobData.birthNumber,
+    dobData.lifePathNumber
+  ) : null;
   const commScore = Math.max(50, Math.min(100, Math.floor(coreScore * 0.95) + (digitsArray.filter(d => d === 5 || d === 6 || d === 1).length * 6)));
   
   // Custom Career, Relationship, and Stability score formulas based on digits and hostile nodes
@@ -309,8 +311,16 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
     setSharingState(true);
     setTimeout(() => {
       setSharingState(false);
-      navigator.clipboard.writeText(window.location.href);
-      alert('Secure Astro report sharing token copied to clipboard successfully!');
+      try {
+        const shareParam = btoa(unescape(encodeURIComponent(JSON.stringify(personalDetails))));
+        const shareUrl = `${window.location.origin}/mobile-numerology?share=${shareParam}`;
+        navigator.clipboard.writeText(shareUrl);
+        alert('Secure Astro report sharing URL copied to clipboard successfully!');
+      } catch (err) {
+        console.error("Failed to generate share URL", err);
+        navigator.clipboard.writeText(window.location.href);
+        alert('Secure Astro report sharing token copied to clipboard successfully!');
+      }
     }, 1000);
   };
 
@@ -319,7 +329,12 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
     setSavingState(true);
     setTimeout(() => {
       setSavingState(false);
-      alert('Numerology diagnostic records saved encrypted under UID: LEO-' + Math.floor(Math.random() * 900000 + 100000));
+      if (onSaveReport) {
+        const id = onSaveReport(personalDetails);
+        alert('Numerology diagnostic records saved successfully under UID: ' + id);
+      } else {
+        alert('Numerology diagnostic records saved encrypted under UID: LEO-' + Math.floor(Math.random() * 900000 + 100000));
+      }
     }, 1200);
   };
 
@@ -386,7 +401,7 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                   <div>
                     <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">DOB Anchor</span>
                     <span className="text-xs text-[#1F2937] font-mono font-bold">
-                      {isQuickMode ? "Not Provided 🔒" : personalDetails.dob}
+                      {personalDetails.dob ? personalDetails.dob : "Not Provided"}
                     </span>
                   </div>
                 </div>
@@ -402,7 +417,7 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                   <div>
                     <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">Driver Number (Mulank)</span>
                     <span className="text-xs text-[#D97706] font-bold">
-                      {isQuickMode ? "Not Computed 🔒" : `Mulank #${dobData.birthNumber}`}
+                      {dobData ? `Mulank #${dobData.birthNumber}` : "Not Computed"}
                     </span>
                   </div>
                 </div>
@@ -411,7 +426,7 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                   <div>
                     <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">Conductor Number (Bhagyank)</span>
                     <span className="text-xs text-[#D97706] font-bold">
-                      {isQuickMode ? "Not Computed 🔒" : `Bhagyank #${dobData.lifePathNumber}`}
+                      {dobData ? `Bhagyank #${dobData.lifePathNumber}` : "Not Computed"}
                     </span>
                   </div>
                 </div>
@@ -443,7 +458,7 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
         </div>
 
         {/* Mobile to Birth-Grid Compatibility Section */}
-        {personalDetails && dobData && !isQuickMode && (
+        {personalDetails && dobData && compatibility && (
           <div className="bg-white border border-[#E5E7EB] p-6 md:p-8 rounded-[30px] md:rounded-[40px] shadow-sm text-left relative overflow-hidden group hover:border-[#D97706]/20 transition-all duration-500">
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-gradient-to-br from-[#D97706]/5 to-[#F59E0B]/5 rounded-full blur-3xl pointer-events-none"></div>
             
@@ -519,6 +534,36 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                   ))}
                 </ul>
               </div>
+            </div>
+          </div>
+        )}
+
+        {personalDetails && !dobData && (
+          <div className="bg-white border border-[#E5E7EB] p-6 md:p-8 rounded-[30px] md:rounded-[40px] shadow-sm text-left relative overflow-hidden group hover:border-[#D97706]/20 transition-all duration-500">
+            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-gradient-to-br from-[#D97706]/5 to-[#F59E0B]/5 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-[#E5E7EB]/70">
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-[#D97706]" /> Indian Numerology Alignment Report
+                </span>
+                <h3 className="font-playfair text-xl md:text-2xl font-black text-[#1F2937]">
+                  Mobile & Birth Grid Compatibility Check
+                </h3>
+              </div>
+              <div className="flex items-center gap-3 bg-[#FDFCF7] border border-[#D97706]/20 px-4 py-2.5 rounded-2xl shrink-0">
+                <div className="text-right">
+                  <span className="block text-[8px] font-mono text-[#6B7280] uppercase tracking-wider font-bold">Planetary Alignment</span>
+                  <span className="text-xs font-bold text-[#D97706] block">
+                    Requires DOB
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="pt-6">
+              <p className="text-sm text-slate-500 italic">
+                Please enter your Date of Birth (DOB) as optional input or in Advanced Mode to compute driver, conductor, and birth grid compatibility with this mobile number.
+              </p>
             </div>
           </div>
         )}
@@ -1678,12 +1723,12 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                 Auspicious digits that resonate with your inner auric vibration. Utilize them for accounts, cabins, and flight choices.
               </p>
             </div>
-            <div className="flex gap-2 pt-4 mt-4 border-t border-[#E5E7EB]/70">
-              <span className="w-7 h-7 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/15 flex items-center justify-center text-[10px] font-mono font-bold" title={isQuickMode ? "Unlock in Advanced Scan" : "Driver Number (Mulank)"}>
-                {isQuickMode ? "🔒" : dobData.birthNumber}
+             <div className="flex gap-2 pt-4 mt-4 border-t border-[#E5E7EB]/70">
+              <span className="w-7 h-7 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/15 flex items-center justify-center text-[10px] font-mono font-bold" title={dobData ? "Driver Number (Mulank)" : "Requires DOB"}>
+                {dobData ? dobData.birthNumber : "🔒"}
               </span>
-              <span className="w-7 h-7 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/15 flex items-center justify-center text-[10px] font-mono font-bold" title={isQuickMode ? "Unlock in Advanced Scan" : "Conductor Number (Bhagyank)"}>
-                {isQuickMode ? "🔒" : dobData.lifePathNumber}
+              <span className="w-7 h-7 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/15 flex items-center justify-center text-[10px] font-mono font-bold" title={dobData ? "Conductor Number (Bhagyank)" : "Requires DOB"}>
+                {dobData ? dobData.lifePathNumber : "🔒"}
               </span>
               <span className="w-7 h-7 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/15 flex items-center justify-center text-[10px] font-mono font-bold" title="Mobile Reduced Number">
                 {mobileData.reducedTotal}

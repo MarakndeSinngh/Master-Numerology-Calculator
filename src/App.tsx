@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { analyzeDateOfBirth, analyzeNameSystems, analyzeMobileNumber, generateRemedies } from './services/numerologyEngine';
 import { PersonalDetails, DOBAnalysis, NameAnalysis, MobileAnalysis, remediesAdvice } from './types';
 import { generateCompleteNumerologyProfile, NumerologyProfile } from './core';
@@ -10,17 +10,24 @@ import {
   Award, ArrowRight, CheckCircle, AlertTriangle, ShieldCheck, Mail
 } from 'lucide-react';
 
-// Component imports
-import AstroDashboard from './components/AstroDashboard';
-import MobileDiagnosticsPanel from './components/MobileDiagnosticsPanel';
-import CompatibilityTab from './components/CompatibilityTab';
-import RemediesTab from './components/RemediesTab';
-import ReportTab from './components/ReportTab';
-import AdminPanel from './components/AdminPanel';
-import CompleteLoshuGridAnalysis from './components/CompleteLoshuGridAnalysis';
-import MarriageCompatibility from './components/MarriageCompatibility';
-import PremiumConsultations from './components/PremiumConsultations';
-import AIConsultationPortal from './components/AIConsultationPortal';
+// Lazy-loaded component imports
+const AstroDashboard = lazy(() => import('./components/AstroDashboard'));
+const MobileDiagnosticsPanel = lazy(() => import('./components/MobileDiagnosticsPanel'));
+const CompatibilityTab = lazy(() => import('./components/CompatibilityTab'));
+const RemediesTab = lazy(() => import('./components/RemediesTab'));
+const ReportTab = lazy(() => import('./components/ReportTab'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const CompleteLoshuGridAnalysis = lazy(() => import('./components/CompleteLoshuGridAnalysis'));
+const MarriageCompatibility = lazy(() => import('./components/MarriageCompatibility'));
+const PremiumConsultations = lazy(() => import('./components/PremiumConsultations'));
+const AIConsultationPortal = lazy(() => import('./components/AIConsultationPortal'));
+
+const LoadingSpinner = () => (
+  <div className="flex flex-col items-center justify-center p-12 min-h-[300px] space-y-4">
+    <RefreshCw className="w-8 h-8 text-[#D97706] animate-spin" />
+    <p className="text-xs font-mono uppercase tracking-widest text-[#B45309]">Loading sacred module...</p>
+  </div>
+);
 
 type ViewTab = 'DASHBOARD' | 'MOBILE' | 'COMPATIBILITY' | 'REMEDIES' | 'REPORT' | 'ADMIN';
 
@@ -48,11 +55,119 @@ const App: React.FC = () => {
 
   // Virtual URL & Hash Router for Professional SEO Pages & Dynamic Metadata/JSON-LD Injector
   const [currentSEOPath, setCurrentSEOPath] = React.useState<string>('mobile-numerology');
+  const [mobileError, setMobileError] = useState('');
+  const [mobileWarning, setMobileWarning] = useState('');
+
+  const [savedReports, setSavedReports] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('leo_saved_reports');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveReport = (details: PersonalDetails) => {
+    const id = 'LEO-' + Date.now();
+    const newReport = {
+      id,
+      timestamp: new Date().toLocaleString(),
+      details
+    };
+    const updated = [newReport, ...savedReports];
+    setSavedReports(updated);
+    localStorage.setItem('leo_saved_reports', JSON.stringify(updated));
+    return id;
+  };
+
+  const deleteReport = (id: string) => {
+    const updated = savedReports.filter(r => r.id !== id);
+    setSavedReports(updated);
+    localStorage.setItem('leo_saved_reports', JSON.stringify(updated));
+  };
+
+  const navigateTo = (path: string) => {
+    window.history.pushState(null, '', '/' + path);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
+  const runAnalysis = (details: PersonalDetails) => {
+    setPersonalDetails(details);
+    setName(details.name);
+    setDob(details.dob || '');
+    setGender(details.gender || 'MALE');
+    setMobile(details.mobile);
+    setEmail(details.email || '');
+
+    // Run the centralized core engine as the ONLY source of truth
+    const profile = generateCompleteNumerologyProfile({
+      dob: details.dob || '',
+      name: details.name,
+      mobile: details.mobile,
+      gender: details.gender
+    });
+    setNumerologyProfile(profile);
+
+    // Populate backward compatible states
+    const dobAnalysis = details.dob ? analyzeDateOfBirth(details.dob, details.name) : null;
+    const nameAnalysis = analyzeNameSystems(details.name);
+    const mobileAnalysis = analyzeMobileNumber(details.mobile);
+    const remediesResults = generateRemedies(details.dob || "1994-05-15", details.name);
+
+    setDobData(dobAnalysis);
+    setNameData(nameAnalysis);
+    setMobileData(mobileAnalysis);
+    setRemedies(remediesResults);
+    setActiveTab('MOBILE');
+  };
+
+  const handleMobileChange = (raw: string) => {
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length === 0) {
+      setMobile('');
+      setMobileError('');
+      setMobileWarning('');
+      return;
+    }
+
+    if (digits.length <= 10) {
+      setMobile(digits);
+      setMobileError('');
+      setMobileWarning('');
+      return;
+    }
+
+    if (digits.length === 12 && digits.startsWith("91")) {
+      setMobile(digits.slice(-10));
+      setMobileWarning(t("warnings.countryCodeRemoved") || "Country code removed.");
+      setMobileError('');
+      return;
+    }
+
+    // Otherwise, restrict to 10 digits
+    setMobile(digits.slice(0, 10));
+    setMobileWarning(t("warnings.only10DigitsAllowed") || "Only 10 digits allowed.");
+    setMobileError('');
+  };
 
   React.useEffect(() => {
     const handleRouteSync = () => {
       const path = window.location.pathname.substring(1) || window.location.hash.substring(1) || 'mobile-numerology';
       setCurrentSEOPath(path);
+
+      // Check for share query parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const shareData = urlParams.get('share');
+      if (shareData) {
+        try {
+          const decoded = JSON.parse(decodeURIComponent(escape(atob(shareData))));
+          if (decoded.mobile) {
+            runAnalysis(decoded);
+          }
+        } catch (err) {
+          console.error("Failed to decode shared state:", err);
+        }
+      }
 
       let title = "Leo Family Numerology - Premium Indian Numerology Portal";
       let description = "Vedic Numerology & Chaldean Frequencies. Explore hidden planetary yogas, material blockages, and cosmic alignments curated by Rajiv Singh Chauhann.";
@@ -69,6 +184,10 @@ const App: React.FC = () => {
           "description": "How mobile phone digits create resonance with Saturn, Rahu, and Venus under Chaldean rules.",
           "author": { "@type": "Person", "name": "Raajeev Singh Chauhann" }
         };
+      } else if (path.includes('ai-consultation')) {
+        setCurrentPortal('AI_CONSULTATION');
+        title = "AI Astrology Consultant - Vedic Insights";
+        description = "Consult our AI astrologer for customized remedies and personalized numerology charts.";
       } else if (path.includes('name-numerology')) {
         setCurrentPortal('MOBILE_NUMEROLOGY');
         setAnalysisMode('ADVANCED');
@@ -155,43 +274,79 @@ const App: React.FC = () => {
 
     handleRouteSync();
     window.addEventListener('hashchange', handleRouteSync);
+    window.addEventListener('popstate', handleRouteSync);
     return () => {
       window.removeEventListener('hashchange', handleRouteSync);
+      window.removeEventListener('popstate', handleRouteSync);
     };
   }, []);
 
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [lastTranslatedLang, setLastTranslatedLang] = useState('en');
+
+  React.useEffect(() => {
+    if (lang === lastTranslatedLang) return;
+
+    if (lang === 'en') {
+      // Re-run english calculations to reset
+      if (personalDetails) {
+        runAnalysis(personalDetails);
+      }
+      setLastTranslatedLang('en');
+      return;
+    }
+
+    if (!personalDetails || !nameData || !mobileData) return;
+
+    const translateAllData = async () => {
+      setIsTranslating(true);
+      try {
+        const bundle = {
+          dobData,
+          nameData,
+          mobileData,
+          remedies
+        };
+        const response = await fetch('/api/translate-object', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ object: bundle, language: lang })
+        });
+        const resData = await response.json();
+        if (resData && resData.translated) {
+          const tBundle = resData.translated;
+          if (tBundle.dobData) setDobData(tBundle.dobData);
+          if (tBundle.nameData) setNameData(tBundle.nameData);
+          if (tBundle.mobileData) setMobileData(tBundle.mobileData);
+          if (tBundle.remedies) setRemedies(tBundle.remedies);
+          setLastTranslatedLang(lang);
+        }
+      } catch (err) {
+        console.error("Failed to translate numerology data bundle:", err);
+      } finally {
+        setIsTranslating(false);
+      }
+    };
+
+    translateAllData();
+  }, [lang, personalDetails]);
+
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mobile) return;
+    if (!/^\d{10}$/.test(mobile)) {
+      setMobileError(t('errors.mobileExact10') || 'Mobile number must be exactly 10 digits.');
+      return;
+    }
+    setMobileError('');
+    setMobileWarning('');
 
     const finalName = name.trim() || "Vibrations Seeker";
-    const finalDob = dob || "1994-05-15";
+    const finalDob = dob || ""; // Store as empty string when not provided
     const finalGender = gender || "MALE";
     const finalEmail = email || "";
 
     const details: PersonalDetails = { name: finalName, dob: finalDob, gender: finalGender, mobile, email: finalEmail };
-    setPersonalDetails(details);
-
-    // Run the centralized core engine as the ONLY source of truth
-    const profile = generateCompleteNumerologyProfile({
-      dob: finalDob,
-      name: finalName,
-      mobile: mobile,
-      gender: finalGender
-    });
-    setNumerologyProfile(profile);
-
-    // Populate backward compatible states
-    const dobAnalysis = analyzeDateOfBirth(finalDob, finalName);
-    const nameAnalysis = analyzeNameSystems(finalName);
-    const mobileAnalysis = analyzeMobileNumber(mobile);
-    const remediesResults = generateRemedies(finalDob, finalName);
-
-    setDobData(dobAnalysis);
-    setNameData(nameAnalysis);
-    setMobileData(mobileAnalysis);
-    setRemedies(remediesResults);
-    setActiveTab('MOBILE');
+    runAnalysis(details);
   };
 
   const handleLoadDemoNumber = () => {
@@ -271,9 +426,11 @@ const App: React.FC = () => {
             {personalDetails ? (
               <div className="flex items-center gap-4">
                 <div className="hidden md:block text-right">
-                  <span className="text-xs font-semibold text-[#1F2937] block">{personalDetails.name}</span>
+                  <span className="text-xs font-semibold text-[#1F2937] block">
+                    {t('welcome.user', { name: personalDetails.name.split(' ')[0] })}
+                  </span>
                   <span className="text-[9px] font-mono text-[#D97706] block uppercase font-bold">
-                    {t('meta.mulank')}: {dobData?.birthNumber} | {t('meta.bhagyank')}: {dobData?.lifePathNumber}
+                    {t('meta.mulankAndBhagyank', { mulank: dobData?.birthNumber || '?', bhagyank: dobData?.lifePathNumber || '?' })}
                   </span>
                 </div>
                 <button
@@ -301,7 +458,7 @@ const App: React.FC = () => {
         {/* Top-Level Portal Navigation - Separate page and menu items */}
         <div className="flex flex-col md:flex-row border border-[#E5E7EB] mb-8 bg-white p-2 rounded-3xl gap-2 shadow-sm border-t-slate-100 print:hidden">
           <button
-            onClick={() => setCurrentPortal('AI_CONSULTATION')}
+            onClick={() => navigateTo('ai-consultation')}
             className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               currentPortal === 'AI_CONSULTATION'
                 ? 'bg-[#D97706] text-white shadow-md'
@@ -312,7 +469,7 @@ const App: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setCurrentPortal('MOBILE_NUMEROLOGY')}
+            onClick={() => navigateTo('mobile-numerology')}
             className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               currentPortal === 'MOBILE_NUMEROLOGY'
                 ? 'bg-[#1E3A8A] text-white shadow-md'
@@ -323,7 +480,7 @@ const App: React.FC = () => {
           </button>
           
           <button
-            onClick={() => setCurrentPortal('LOSHU_GRID')}
+            onClick={() => navigateTo('loshu-grid')}
             className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               currentPortal === 'LOSHU_GRID'
                 ? 'bg-[#1E3A8A] text-white shadow-md'
@@ -334,7 +491,7 @@ const App: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setCurrentPortal('MARRIAGE_COMPATIBILITY')}
+            onClick={() => navigateTo('marriage-compatibility')}
             className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               currentPortal === 'MARRIAGE_COMPATIBILITY'
                 ? 'bg-[#1E3A8A] text-white shadow-md'
@@ -345,7 +502,7 @@ const App: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setCurrentPortal('PREMIUM_CONSULTATIONS')}
+            onClick={() => navigateTo('vehicle-numerology')}
             className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               currentPortal === 'PREMIUM_CONSULTATIONS'
                 ? 'bg-[#1E3A8A] text-white shadow-md'
@@ -356,9 +513,10 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        {currentPortal === 'AI_CONSULTATION' ? (
-          <AIConsultationPortal initialProfile={personalDetails} onProfileUpdate={(p) => setPersonalDetails(p)} />
-        ) : currentPortal === 'MOBILE_NUMEROLOGY' ? (
+        <Suspense fallback={<LoadingSpinner />}>
+          {currentPortal === 'AI_CONSULTATION' ? (
+            <AIConsultationPortal initialProfile={personalDetails} onProfileUpdate={(p) => setPersonalDetails(p)} />
+          ) : currentPortal === 'MOBILE_NUMEROLOGY' ? (
           !personalDetails ? (
           <div id="landing-stage" className="space-y-20 animate-in fade-in duration-800">
             
@@ -446,7 +604,7 @@ const App: React.FC = () => {
                     {/* Always display Mobile Number */}
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-sans text-[#6B7280] uppercase tracking-widest block font-bold">
+                        <label htmlFor="mobileNumber" className="text-[10px] font-sans text-[#6B7280] uppercase tracking-widest block font-bold">
                           Enter 10-Digit Mobile Number
                         </label>
                         <span className="text-[10px] font-sans text-[#D97706]">Do not include country code</span>
@@ -456,22 +614,56 @@ const App: React.FC = () => {
                           <Phone className="h-5 w-5" />
                         </div>
                         <input
+                          id="mobileNumber"
                           type="text"
                           required
                           placeholder="e.g. 9930117696"
-                          maxLength={10}
+                          maxLength={12}
+                          inputMode="numeric"
+                          pattern="[0-9]{10}"
+                          minLength={10}
+                          aria-invalid={!!mobileError}
+                          aria-describedby={mobileError ? "mobile-error" : mobileWarning ? "mobile-warning" : undefined}
                           className="w-full bg-[#F8F4EF] border border-[#E5E7EB] hover:border-[#D97706]/35 focus:border-[#D97706] rounded-2xl pl-12 pr-6 py-4.5 outline-none text-lg text-[#1F2937] font-mono tracking-[0.15em] font-bold shadow-inner transition-colors"
                           value={mobile}
-                          onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, ''))}
+                          onChange={(e) => handleMobileChange(e.target.value)}
+                          onPaste={(e) => {
+                            e.preventDefault();
+                            const pastedText = e.clipboardData.getData('text');
+                            const digits = pastedText.replace(/\D/g, "");
+                            if (digits.length === 12 && digits.startsWith("91")) {
+                              setMobile(digits.slice(-10));
+                              setMobileWarning(t("warnings.countryCodeRemoved") || "Country code removed.");
+                              setMobileError('');
+                            } else {
+                              setMobile(digits.slice(0, 10));
+                              if (digits.length > 10) {
+                                setMobileWarning(t("warnings.only10DigitsAllowed") || "Only 10 digits allowed.");
+                              } else {
+                                setMobileWarning('');
+                              }
+                              setMobileError('');
+                            }
+                          }}
                         />
                       </div>
+                      {mobileError && (
+                        <p id="mobile-error" className="text-xs text-rose-500 font-medium flex items-center gap-1 mt-1.5 animate-in fade-in duration-200">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" /> {mobileError}
+                        </p>
+                      )}
+                      {mobileWarning && (
+                        <p id="mobile-warning" className="text-xs text-amber-600 font-medium flex items-center gap-1 mt-1.5 animate-in fade-in duration-200">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0 animate-bounce" /> {mobileWarning}
+                        </p>
+                      )}
                     </div>
 
                     {/* Optional DOB input for Quick Mode */}
                     {analysisMode === 'QUICK' && (
                       <div className="space-y-2 pt-2 border-t border-[#E5E7EB]/50 animate-in fade-in duration-300">
                         <div className="flex justify-between items-center">
-                          <label className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">
+                          <label htmlFor="dobQuick" className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">
                             Date of Birth (Optional - Checks Compatibility)
                           </label>
                           <span className="text-[9px] font-sans text-[#D97706]">Check alignment with your mobile number</span>
@@ -481,6 +673,7 @@ const App: React.FC = () => {
                             <Calendar className="h-4 w-4" />
                           </span>
                           <input
+                            id="dobQuick"
                             type="date"
                             className="w-full bg-[#F8F4EF] border border-[#E5E7EB] rounded-2xl pl-10 pr-4 py-3.5 focus:border-[#D97706] outline-none text-sm text-[#1F2937] transition-all font-mono"
                             value={dob}
@@ -494,12 +687,13 @@ const App: React.FC = () => {
                     {analysisMode === 'ADVANCED' && (
                       <div className="space-y-4 pt-2 border-t border-[#E5E7EB]/80 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">Full Name (Chaldean Link)</label>
+                          <label htmlFor="fullName" className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">Full Name (Chaldean Link)</label>
                           <div className="relative">
                             <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#D97706]">
                               <User className="h-4 w-4" />
                             </span>
                             <input
+                              id="fullName"
                               type="text"
                               required
                               placeholder="e.g. Raajeev Singh Chauhann"
@@ -512,12 +706,13 @@ const App: React.FC = () => {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <label className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">Date of Birth</label>
+                            <label htmlFor="dobAdvanced" className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">Date of Birth</label>
                             <div className="relative">
                               <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#D97706]">
                                 <Calendar className="h-4 w-4" />
                               </span>
                               <input
+                                id="dobAdvanced"
                                 type="date"
                                 required
                                 className="w-full bg-[#F8F4EF] border border-[#E5E7EB] rounded-2xl pl-10 pr-4 py-3.5 focus:border-[#D97706] outline-none text-sm text-[#1F2937] transition-all font-mono"
@@ -528,8 +723,9 @@ const App: React.FC = () => {
                           </div>
 
                           <div className="space-y-1">
-                            <label className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">Gender Alignment</label>
+                            <label htmlFor="genderSelection" className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">Gender Alignment</label>
                             <select
+                              id="genderSelection"
                               className="w-full bg-[#F8F4EF] border border-[#E5E7EB] rounded-2xl px-5 py-3.5 focus:border-[#D97706] outline-none text-sm text-[#1F2937] font-semibold cursor-pointer"
                               value={gender}
                               onChange={(e: any) => setGender(e.target.value)}
@@ -542,12 +738,13 @@ const App: React.FC = () => {
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">Email Address (Optional)</label>
+                          <label htmlFor="emailAddress" className="text-[10px] font-sans text-[#6B7280] uppercase block font-bold">Email Address (Optional)</label>
                           <div className="relative">
                             <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#D97706]">
                               <Mail className="h-4 w-4" />
                             </span>
                             <input
+                              id="emailAddress"
                               type="email"
                               placeholder="e.g. contact@domain.com"
                               className="w-full bg-[#F8F4EF] border border-[#E5E7EB] rounded-2xl pl-10 pr-4 py-3.5 focus:border-[#D97706] outline-none text-sm text-[#1F2937] transition-all"
@@ -887,17 +1084,20 @@ const App: React.FC = () => {
 
             {/* Tab Views render stage */}
             <div id="active-tab-stage">
-              {activeTab === 'DASHBOARD' && dobData && nameData && mobileData && remedies && (
+              {activeTab === 'DASHBOARD' && personalDetails && nameData && mobileData && remedies && (
                 <AstroDashboard
                   dobData={dobData}
                   nameData={nameData}
                   mobileData={mobileData}
                   remedies={remedies}
                   name={personalDetails.name}
+                  savedReports={savedReports}
+                  onLoadReport={(details) => runAnalysis(details)}
+                  onDeleteReport={(id) => deleteReport(id)}
                 />
               )}
 
-              {activeTab === 'MOBILE' && dobData && nameData && mobileData && remedies && (
+              {activeTab === 'MOBILE' && personalDetails && nameData && mobileData && remedies && (
                 <MobileDiagnosticsPanel
                   personalDetails={personalDetails}
                   dobData={dobData}
@@ -905,6 +1105,7 @@ const App: React.FC = () => {
                   mobileData={mobileData}
                   remedies={remedies}
                   isQuickMode={analysisMode === 'QUICK' && !dob}
+                  onSaveReport={(details) => saveReport(details)}
                 />
               )}
 
@@ -916,7 +1117,7 @@ const App: React.FC = () => {
                 <RemediesTab remedies={remedies} />
               )}
 
-              {activeTab === 'REPORT' && dobData && nameData && mobileData && remedies && (
+              {activeTab === 'REPORT' && personalDetails && nameData && mobileData && remedies && (
                 <ReportTab
                   personalDetails={personalDetails}
                   dobData={dobData}
@@ -940,6 +1141,7 @@ const App: React.FC = () => {
         ) : (
           <PremiumConsultations />
         )}
+        </Suspense>
 
       </main>
 
@@ -1053,6 +1255,13 @@ const App: React.FC = () => {
 
         </div>
       </section>
+
+      {isTranslating && (
+        <div className="fixed bottom-6 right-6 bg-[#D97706] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 z-50 text-xs font-semibold animate-bounce border border-amber-400/20">
+          <RefreshCw className="w-4 h-4 animate-spin" />
+          <span>Translating cosmic frequencies to {SUPPORTED_LANGUAGES.find(l => l.code === lang)?.name}...</span>
+        </div>
+      )}
 
       {/* Footer System Line */}
       <footer id="main-footer" className="border-t border-[#E5E7EB] bg-[#F2E8DC]/40 py-10 relative z-20 mt-auto text-center space-y-2">

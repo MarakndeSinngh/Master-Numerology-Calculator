@@ -2,19 +2,33 @@ import React from 'react';
 import { DOBAnalysis, NameAnalysis, MobileAnalysis, remediesAdvice } from '../types';
 
 interface AstroDashboardProps {
-  dobData: DOBAnalysis;
+  dobData: DOBAnalysis | null;
   nameData: NameAnalysis;
   mobileData: MobileAnalysis;
   remedies: remediesAdvice;
   name: string;
+  savedReports?: any[];
+  onLoadReport?: (details: any) => void;
+  onDeleteReport?: (id: string) => void;
 }
 
-const AstroDashboard: React.FC<AstroDashboardProps> = ({ dobData, nameData, mobileData, remedies, name }) => {
+const AstroDashboard: React.FC<AstroDashboardProps> = ({
+  dobData,
+  nameData,
+  mobileData,
+  remedies,
+  name,
+  savedReports = [],
+  onLoadReport,
+  onDeleteReport
+}) => {
   // Check presence for Vedic grid
   const presentNumbers = new Set(
-    (dobData.birthNumber.toString() + dobData.lifePathNumber.toString() + dobData.destinyNumber.toString())
-      .split('')
-      .map(Number)
+    dobData
+      ? (dobData.birthNumber.toString() + dobData.lifePathNumber.toString() + dobData.destinyNumber.toString())
+          .split('')
+          .map(Number)
+      : []
   );
 
   const vedicTemplate = [
@@ -36,19 +50,19 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({ dobData, nameData, mobi
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="glass-panel p-5 rounded-3xl relative overflow-hidden bg-white hover:border-[#D97706]/30 border-[#E5E7EB] shadow-sm">
           <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">Driver Number (Mulank)</span>
-          <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{dobData.birthNumber}</span>
+          <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{dobData ? dobData.birthNumber : "Not Computed"}</span>
           <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">Your conscious character, talent, and physical disposition.</p>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl relative overflow-hidden bg-white hover:border-[#D97706]/30 border-[#E5E7EB] shadow-sm">
           <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">Conductor Number (Bhagyank)</span>
-          <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{dobData.lifePathNumber}</span>
+          <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{dobData ? dobData.lifePathNumber : "Not Computed"}</span>
           <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">Your divine purpose, karmic trajectory, and path in life.</p>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl relative overflow-hidden bg-white hover:border-[#D97706]/30 border-[#E5E7EB] shadow-sm">
           <span className="text-[10px] font-mono uppercase text-[#D97706]/80 block tracking-wider font-bold">Birth Compound Number</span>
-          <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{dobData.birthNumberCompound}</span>
+          <span className="text-4xl font-playfair font-bold text-[#D97706] mt-2 block">{dobData ? dobData.birthNumberCompound : "Not Computed"}</span>
           <p className="text-[#6B7280] text-[10px] mt-2 leading-relaxed">The unreduced daily birth vibration representing core heritage.</p>
         </div>
 
@@ -171,6 +185,59 @@ const AstroDashboard: React.FC<AstroDashboardProps> = ({ dobData, nameData, mobi
             </ul>
           </div>
         </div>
+      </div>
+
+      {/* Saved Diagnostic Reports Section */}
+      <div className="glass-panel p-8 rounded-[40px] bg-white border-[#E5E7EB] shadow-sm">
+        <h3 className="font-playfair text-xl font-bold text-[#1F2937] mb-4 tracking-wide border-b border-[#E5E7EB] pb-3">
+          Saved Diagnostic Reports
+        </h3>
+        {savedReports.length === 0 ? (
+          <p className="text-xs text-slate-500 italic">
+            No saved reports found. You can save your active session analysis to local storage from the Mobile Diagnostics tab.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {savedReports.map((report) => (
+              <div
+                key={report.id}
+                className="p-5 border border-slate-200 hover:border-amber-500/30 rounded-3xl bg-slate-50/50 flex flex-col justify-between gap-4 transition duration-300"
+              >
+                <div>
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-sm font-semibold text-slate-900">{report.details.name}</span>
+                    <span className="text-[9px] font-mono bg-slate-200 px-2 py-0.5 rounded text-slate-600 uppercase">
+                      {report.id}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-mono mt-1">
+                    Mobile: {report.details.mobile}
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-mono">
+                    DOB: {report.details.dob || "Not Provided"}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-2">
+                    Saved: {report.timestamp}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onLoadReport && onLoadReport(report.details)}
+                    className="flex-1 py-2 text-xs font-bold text-white bg-amber-600 rounded-xl hover:bg-amber-700 transition cursor-pointer text-center"
+                  >
+                    Load Report
+                  </button>
+                  <button
+                    onClick={() => onDeleteReport && onDeleteReport(report.id)}
+                    className="py-2 px-3 text-xs font-bold text-rose-600 border border-rose-200 rounded-xl hover:bg-rose-50 hover:border-rose-300 transition cursor-pointer text-center"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
     </div>

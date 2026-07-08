@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   --color-gold-primary: #D97706;
   --color-gold-muted: #B45309;
@@ -68,4 +70,57 @@ body {
 
 .cosmic-drift {
   animation: drift 10s ease-in-out infinite alternate;
+}
+
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 12pt !important;
+  }
+  
+  /* Hide non-report layout elements */
+  header,
+  footer,
+  nav,
+  form,
+  button,
+  .sticky,
+  .no-print,
+  #application-container > div:first-child,
+  #sticky-nav-bar,
+  #diagnostics-tab-triggers {
+    display: none !important;
+  }
+
+  /* Reset layout borders and padding */
+  main, 
+  #mobile-analytics-portal, 
+  #active-tab-stage {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Avoid cutting off cards mid-page */
+  .glass-panel, 
+  .rounded-3xl, 
+  .rounded-\[40px\],
+  .rounded-2xl {
+    border: 1px solid #E5E7EB !important;
+    background: #FFFFFF !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    color: #000000 !important;
+  }
 }
