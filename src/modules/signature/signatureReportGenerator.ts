@@ -184,28 +184,28 @@ export function generateLocalSignatureReport(
   const intentScores = [
     {
       labelKey: "signature.scores.career",
-      score: metrics.slant === 'UPWARD' ? Math.min(10, scoreBreakdown.score + 1) : Math.max(2, scoreBreakdown.score - 2),
+      score: scoreBreakdown.careerGrowthScore,
       description: isHi
         ? (metrics.slant === 'UPWARD' ? "करियर में मजबूत वृद्धि के संकेत। यह आपके व्यावसायिक जीवन में पदोन्नति और अधिकार को आकर्षित करता है।" : "करियर में उतार-चढ़ाव या प्रगति की धीमी गति। झुकाव सुधारने से वृद्धि तेज होगी।")
-        : (metrics.slant === 'UPWARD' ? "Strong positive career growth signals. Attracts promotions and managerial responsibilities." : "Career momentum is slightly bottlenecked. realigning baseline angle is advised.")
+        : (metrics.slant === 'UPWARD' ? "Strong positive career growth signals. Attracts promotions and managerial responsibilities." : "Career momentum is slightly bottlenecked. Realigning baseline angle is advised.")
     },
     {
       labelKey: "signature.scores.prosperity",
-      score: metrics.underline === 'PRESENT' ? Math.min(10, scoreBreakdown.score + 1) : Math.max(3, scoreBreakdown.score - 1),
+      score: scoreBreakdown.vastuAlignmentScore,
       description: isHi
         ? (metrics.underline === 'PRESENT' ? "व्यवसाय में उत्कृष्ट स्थिरता। सहायक अंडरलाइन मजबूत आर्थिक आधार और नए सौदों की ओर इशारा करती है।" : "व्यापारिक प्रयासों में अनिश्चितता। एक सहायक अंडरलाइन जोड़ने से वित्तीय निर्णय मजबूत होंगे।")
         : (metrics.underline === 'PRESENT' ? "Excellent commercial stability. The underline support provides firm business roots." : "Fluctuations in trading or startup stability. Adding an underline is highly recommended.")
     },
     {
       labelKey: "signature.scores.finance",
-      score: metrics.finalDot === 'NONE' ? Math.min(10, scoreBreakdown.score + 1) : Math.max(2, scoreBreakdown.score - 3),
+      score: scoreBreakdown.financialStabilityScore,
       description: isHi
         ? (metrics.finalDot === 'NONE' ? "वित्तीय प्रवाह अबाधित है। कोई बिंदु न होने से धन संचय में कोई रुकावट नहीं आती।" : "अंतिम बिंदु वित्तीय अवरोध पैदा कर रहा है। अचानक पैसे खर्च होने या धन अटकने की समस्या हो सकती है।")
         : (metrics.finalDot === 'NONE' ? "Liquid cash flow is unblocked. Absence of dot prevents sudden asset freezes." : "The final dot triggers sudden monetary leakages or blocks payments. Erasing it is crucial.")
     },
     {
       labelKey: "signature.scores.authority",
-      score: metrics.starting === 'CLEAN' ? Math.min(10, scoreBreakdown.score + 1) : Math.max(3, scoreBreakdown.score - 2),
+      score: scoreBreakdown.authorityScore,
       description: isHi
         ? (metrics.starting === 'CLEAN' ? "उच्च नेतृत्व क्षमता और अधिकार। पहला साफ अक्षर आपको दूसरों के सामने सम्मान दिलाता है।" : "प्रशासनिक कार्यों या दूसरों पर प्रभुत्व स्थापित करने में कठिनाई। पहला अक्षर बड़ा बनाएं।")
         : (metrics.starting === 'CLEAN' ? "Superb executive authority. The clean capital initial projects strong command." : "Struggles with authority projection. Enlarge the initial to claim your professional space.")

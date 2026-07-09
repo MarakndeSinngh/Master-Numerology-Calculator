@@ -119,6 +119,8 @@ export const SIGNATURE_TRANSLATIONS: Record<string, Record<string, string>> = {
     // Observations keys
     "signature.obs.slant.upward.title": "Upward Ambition Slant",
     "signature.obs.slant.upward.desc": "Your signature rises upwards from left to right. This shows strong ambition, optimism, and progressive career rise. It allows solar and Jovian energy flow.",
+    "signature.obs.slant.neutralRising.title": "Neutral body with Rising Support",
+    "signature.obs.slant.neutralRising.desc": "Your main letter body is straight and stable, while the underline climbs upwards. This represents a highly balanced personal character supported by positive growth energy.",
     "signature.obs.slant.downward.title": "Downward Descent Trap",
     "signature.obs.slant.downward.desc": "A downward slope indicates blocked momentum, declining stamina, or self-doubt at critical moments. It siphons wealth and drains material energy.",
     "signature.obs.slant.straight.title": "Flat Stable Horizon",
@@ -143,11 +145,14 @@ export const SIGNATURE_TRANSLATIONS: Record<string, Record<string, string>> = {
 
     "signature.obs.readability.clear.title": "Transparent Credibility",
     "signature.obs.readability.clear.desc": "A highly legible signature projects honest intentions, self-acceptance, and clear professional standing, which builds strong trust.",
+    "signature.obs.readability.moderate.desc": "Moderate readability shows a balance between personal privacy and public identity. It protects inner vulnerability while allowing essential trust.",
     "signature.obs.readability.unclear.title": "Guarded Professional Identity",
     "signature.obs.readability.unclear.desc": "Low readability suggests extreme discretion, a guarded persona, or difficulty in sharing plans with others. It may create trust gaps.",
 
     "signature.obs.pressure.heavy.title": "Stressful Force",
     "signature.obs.pressure.heavy.desc": "Extremely heavy pressure shows deep intensity, strong willpower, but also potential blockages of mental peace and high friction.",
+    "signature.obs.pressure.medium.title": "Balanced Steady Pressure",
+    "signature.obs.pressure.medium.desc": "Moderate steady pressure represents stable willpower, balanced vitality, and controlled emotions. It shows high adaptability and social grace.",
     "signature.obs.pressure.light.title": "Sensitive Adaptability",
     "signature.obs.pressure.light.desc": "Light pen pressure suggests a gentle, adaptable nature, high empathy, but occasionally a lack of execution force or stamina."
   },
@@ -260,6 +265,8 @@ export const SIGNATURE_TRANSLATIONS: Record<string, Record<string, string>> = {
 
     "signature.obs.slant.upward.title": "ऊपर उठता हुआ हस्ताक्षर",
     "signature.obs.slant.upward.desc": "आपका हस्ताक्षर बाएं से दाएं ऊपर की ओर बढ़ता है, जो महत्वाकांक्षा, विकास और करियर में आगे बढ़ने की ऊर्जा को दर्शाता है। यह सूर्य और बृहस्पति की ऊर्जा को आकर्षित करता है।",
+    "signature.obs.slant.neutralRising.title": "उठती हुई सहायक रेखा के साथ संतुलित मुख्य भाग",
+    "signature.obs.slant.neutralRising.desc": "आपका मुख्य भाग सीधा और स्थिर है, जबकि नीचे की रेखा ऊपर की ओर बढ़ती है। यह सकारात्मक विकास ऊर्जा द्वारा समर्थित एक संतुलित व्यक्तिगत चरित्र का प्रतिनिधित्व करता है।",
     "signature.obs.slant.downward.title": "नीचे गिरता हुआ हस्ताक्षर",
     "signature.obs.slant.downward.desc": "नीचे की ओर झुकाव गिरते हुए आत्मविश्वास, थकान, या महत्वपूर्ण क्षणों में आत्म-संदेह का संकेत माना जाता है। यह धन संचय को रोकता है और ऊर्जा को नष्ट करता है।",
     "signature.obs.slant.straight.title": "समतल स्थिर हस्ताक्षर",
@@ -284,11 +291,14 @@ export const SIGNATURE_TRANSLATIONS: Record<string, Record<string, string>> = {
 
     "signature.obs.readability.clear.title": "पारदर्शी विश्वसनीयता",
     "signature.obs.readability.clear.desc": "अत्यधिक पठनीय हस्ताक्षर ईमानदार इरादों, खुद को स्वीकार करने और मजबूत व्यावसायिक विश्वसनीयता को प्रोजेक्ट करता है, जो गहरा विश्वास पैदा करता है।",
+    "signature.obs.readability.moderate.desc": "मध्यम पठनीयता व्यक्तिगत गोपनीयता और सार्वजनिक पहचान के बीच संतुलन दर्शाती है। यह आवश्यक विश्वास की अनुमति देते हुए आंतरिक संवेदनशीलता की रक्षा करती है।",
     "signature.obs.readability.unclear.title": "अति सुरक्षित व्यावसायिक छवि",
     "signature.obs.readability.unclear.desc": "कम पठनीयता अत्यधिक गोपनीयता या आत्म-सुरक्षा की भावना को दर्शाती है। यह आपके पेशेवर जीवन में विश्वसनीयता या विश्वास की कमी पैदा कर सकता है।",
 
     "signature.obs.pressure.heavy.title": "अत्यधिक तनावपूर्ण दबाव",
     "signature.obs.pressure.heavy.desc": "पेन का बहुत भारी दबाव मजबूत इच्छाशक्ति दिखाता है, लेकिन यह मानसिक अशांति, आंतरिक क्रोध और जीवन में अत्यधिक घर्षण का भी प्रतीक है।",
+    "signature.obs.pressure.medium.title": "संतुलित स्थिर दबाव",
+    "signature.obs.pressure.medium.desc": "मध्यम स्थिर दबाव स्थिर इच्छाशक्ति, संतुलित जीवन शक्ति और नियंत्रित भावनाओं का प्रतिनिधित्व करता है। यह उच्च अनुकूलन क्षमता और सामाजिक शालीनता को दर्शाता है।",
     "signature.obs.pressure.light.title": "संवेदनशील अनुकूलनशीलता",
     "signature.obs.pressure.light.desc": "पेन का बहुत हल्का दबाव संवेदनशील स्वभाव, सहानुभूति की भावना, लेकिन कभी-कभी शारीरिक ऊर्जा या मजबूत इच्छाशक्ति की कमी को भी दर्शाता है।"
   }

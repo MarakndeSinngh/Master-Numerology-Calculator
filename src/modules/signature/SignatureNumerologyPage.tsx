@@ -68,6 +68,7 @@ export const SignatureNumerologyPage: React.FC<SignatureNumerologyPageProps> = (
   const [isScanning, setIsScanning] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string>('');
   const [dossier, setDossier] = useState<SignatureDossier | null>(null);
+  const [localMetrics, setLocalMetrics] = useState<VisualMetrics | null>(null);
 
   const handleAuditStart = async (data: {
     name: string;
@@ -90,6 +91,7 @@ export const SignatureNumerologyPage: React.FC<SignatureNumerologyPageProps> = (
     try {
       // Step 1: Run local heuristic canvas scanning to parse visual attributes
       const localMetrics = await analyzeSignatureImage(data.image);
+      setLocalMetrics(localMetrics);
 
       // Step 2: Try calling the backend endpoint for Gemini-powered structural analysis
       let apiResult: any = null;
@@ -257,8 +259,10 @@ export const SignatureNumerologyPage: React.FC<SignatureNumerologyPageProps> = (
               onRemove={() => {
                 setUploadedImage('');
                 setDossier(null);
+                setLocalMetrics(null);
               }}
               language={language}
+              metrics={localMetrics}
             />
           )}
 
@@ -286,6 +290,7 @@ export const SignatureNumerologyPage: React.FC<SignatureNumerologyPageProps> = (
             <SignatureResultDashboard
               dossier={dossier}
               language={language}
+              uploadedImage={uploadedImage}
             />
           ) : (
             !isScanning && (

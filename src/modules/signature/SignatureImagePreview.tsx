@@ -1,21 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Crop, Trash2 } from 'lucide-react';
+import { Sparkles, Trash2, Eye, EyeOff } from 'lucide-react';
+import { VisualMetrics } from './signatureImageAnalysis';
 
 interface SignatureImagePreviewProps {
   imageSrc: string;
   isScanning: boolean;
   onRemove: () => void;
   language: string;
+  metrics?: VisualMetrics | null;
 }
 
 export const SignatureImagePreview: React.FC<SignatureImagePreviewProps> = ({
   imageSrc,
   isScanning,
   onRemove,
-  language
+  language,
+  metrics
 }) => {
   const isHi = language === 'hi';
+  const [showDebug, setShowDebug] = useState(false);
+
+  // Determine dot coordinates based on position
+  let dotY = "50%";
+  if (metrics?.finalDotPosition === 'upperRight') dotY = "30%";
+  if (metrics?.finalDotPosition === 'lowerRight') dotY = "70%";
+
+  // Determine underline Y position
+  const isCuts = metrics?.underlinePosition === 'cutsName' || metrics?.underlineCutsSignature;
+  const underlineY = isCuts ? "60%" : "78%";
 
   return (
     <div className="relative w-full max-w-md mx-auto bg-slate-950 border border-slate-800 rounded-3xl p-4 shadow-xl overflow-hidden group">
@@ -36,6 +49,70 @@ export const SignatureImagePreview: React.FC<SignatureImagePreviewProps> = ({
           className="max-w-full max-h-full object-contain filter invert opacity-90 contrast-125 select-none"
           referrerPolicy="no-referrer"
         />
+
+        {/* ADMIN VISUAL DEBUG OVERLAY */}
+        {showDebug && metrics && (
+          <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-20">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              {/* 1. Global Ink Bounding Box (dashed green) */}
+              <rect 
+                x="12" y="18" width="76" height="64" 
+                fill="none" stroke="#10b981" strokeWidth="0.8" strokeDasharray="2,2" 
+              />
+              <text x="14" y="24" fill="#10b981" fontSize="3" fontFamily="monospace" fontWeight="bold">INK BOUNDS</text>
+
+              {/* 2. Start Clutter Zone (shaded purple left 28%) */}
+              <rect 
+                x="12" y="18" width="22" height="64" 
+                fill="rgba(168, 85, 247, 0.08)" stroke="#a855f7" strokeWidth="0.5" strokeDasharray="1,1" 
+              />
+              <text x="13" y="78" fill="#a855f7" fontSize="3" fontFamily="monospace" fontWeight="bold">START ZONE</text>
+              <text x="13" y="81" fill="#a855f7" fontSize="2" fontFamily="monospace">
+                {`Score: ${metrics.startClutterScore}`}
+              </text>
+
+              {/* 3. Estimated Baseline Slant (blue angle line) */}
+              <line 
+                x1="12" y1="50" x2="88" y2={50 - (metrics.baselineAngle * 0.5)} 
+                stroke="#3b82f6" strokeWidth="0.8" strokeDasharray="3,1" 
+              />
+              <text x="50" y="46" fill="#3b82f6" fontSize="3" fontFamily="monospace" fontWeight="bold">
+                {`BASELINE (${metrics.baselineAngle}°)`}
+              </text>
+
+              {/* 4. Underline trajectory (gold line) */}
+              {metrics.hasUnderline && (
+                <>
+                  <line 
+                    x1="20" y1={underlineY} x2="80" y2={parseFloat(underlineY) - (metrics.underlineAngle * 0.4) + "%"} 
+                    stroke="#fbbf24" strokeWidth="1.2" 
+                  />
+                  <text x="40" y={parseFloat(underlineY) - 3 + "%"} fill="#fbbf24" fontSize="3" fontFamily="monospace" fontWeight="bold">
+                    {`UNDERLINE (${metrics.underlineAngle}°)`}
+                  </text>
+                </>
+              )}
+
+              {/* 5. Final Dot Target (red target & text) */}
+              {metrics.hasFinalDot && (
+                <>
+                  <circle cx="86" cy={dotY} r="3" fill="none" stroke="#ef4444" strokeWidth="0.6" />
+                  <circle cx="86" cy={dotY} r="0.8" fill="#ef4444" />
+                  <text x="75" y={parseFloat(dotY) - 4 + "%"} fill="#ef4444" fontSize="3" fontFamily="monospace" fontWeight="bold">DOT TARGET</text>
+                </>
+              )}
+
+              {/* 6. Loop Detection Highlights (Teal Circles) */}
+              {metrics.loopBalance !== 'weak' && (
+                <>
+                  <circle cx="45" cy="45" r="4" fill="none" stroke="#14b8a6" strokeWidth="0.6" strokeDasharray="1,1" />
+                  <circle cx="58" cy="40" r="5" fill="none" stroke="#14b8a6" strokeWidth="0.6" strokeDasharray="1,1" />
+                  <text x="40" y="34" fill="#14b8a6" fontSize="3" fontFamily="monospace" fontWeight="bold">ENCLOSED LOOPS</text>
+                </>
+              )}
+            </svg>
+          </div>
+        )}
 
         {/* Moving Scanning Laser Radar Line */}
         {isScanning && (
@@ -70,16 +147,31 @@ export const SignatureImagePreview: React.FC<SignatureImagePreviewProps> = ({
           </span>
         </div>
 
-        {!isScanning && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="flex items-center gap-1.5 bg-red-950/40 border border-red-800/60 hover:bg-red-900/40 text-red-400 hover:text-red-300 px-3 py-1.5 rounded-xl text-[10px] font-bold font-mono transition-all uppercase cursor-pointer"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            {isHi ? "छवि हटाएं" : "Remove Image"}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Debug overlay toggle button */}
+          {metrics && !isScanning && (
+            <button
+              type="button"
+              onClick={() => setShowDebug(!showDebug)}
+              className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-xl text-[10px] font-bold font-mono transition-all uppercase cursor-pointer"
+              title="Toggle Dev/Admin Analysis Overlay"
+            >
+              {showDebug ? <EyeOff className="w-3.5 h-3.5 text-amber-500" /> : <Eye className="w-3.5 h-3.5 text-emerald-500" />}
+              {showDebug ? (isHi ? "डिबग छुपाएं" : "Hide Debug") : (isHi ? "डिबग दिखाएं" : "Show Debug")}
+            </button>
+          )}
+
+          {!isScanning && (
+            <button
+              type="button"
+              onClick={onRemove}
+              className="flex items-center gap-1.5 bg-red-950/40 border border-red-800/60 hover:bg-red-900/40 text-red-400 hover:text-red-300 px-3 py-1.5 rounded-xl text-[10px] font-bold font-mono transition-all uppercase cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              {isHi ? "छवि हटाएं" : "Remove Image"}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Scanner metadata log overlay */}

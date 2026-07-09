@@ -35,7 +35,7 @@ interface PremiumConsultationsProps {
 
 export default function PremiumConsultations({ activeToolFromRoute }: PremiumConsultationsProps = {}) {
   const { lang } = useLanguage();
-  const [activeModule, setActiveModule] = useState<'VEHICLE' | 'HOUSE' | 'BUSINESS' | 'SIGNATURE' | 'CHILD' | 'LUCKY_DATES' | 'MEDICAL' | 'VAASTU' | 'DASHA'>('VEHICLE');
+  const [activeModule, setActiveModule] = useState<'VEHICLE' | 'HOUSE' | 'BUSINESS' | 'SIGNATURE' | 'CHILD' | 'LUCKY_DATES' | 'MEDICAL' | 'VAASTU' | 'DASHA'>(activeToolFromRoute || 'VEHICLE');
 
   React.useEffect(() => {
     if (activeToolFromRoute) {
@@ -3315,8 +3315,10 @@ export default function PremiumConsultations({ activeToolFromRoute }: PremiumCon
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Driver Number</label>
+                <label htmlFor="luckyDatesDriverSelect" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Driver Number</label>
                 <select
+                  id="luckyDatesDriverSelect"
+                  aria-label="Driver Number"
                   value={luckyDatesDriver}
                   onChange={(e) => setLuckyDatesDriver(parseInt(e.target.value, 10))}
                   className="w-full bg-white border border-[#E5E7EB] py-3 px-4 rounded-xl text-sm font-sans focus:outline-none"
@@ -3325,8 +3327,10 @@ export default function PremiumConsultations({ activeToolFromRoute }: PremiumCon
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Conductor Number</label>
+                <label htmlFor="luckyDatesConductorSelect" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Conductor Number</label>
                 <select
+                  id="luckyDatesConductorSelect"
+                  aria-label="Conductor Number"
                   value={luckyDatesConductor}
                   onChange={(e) => setLuckyDatesConductor(parseInt(e.target.value, 10))}
                   className="w-full bg-white border border-[#E5E7EB] py-3 px-4 rounded-xl text-sm font-sans focus:outline-none"

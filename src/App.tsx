@@ -31,6 +31,55 @@ const LoadingSpinner = () => (
 
 type ViewTab = 'DASHBOARD' | 'MOBILE' | 'COMPATIBILITY' | 'REMEDIES' | 'REPORT' | 'ADMIN';
 
+const routeConfig = {
+  "/vehicle-numerology": {
+    page: "PREMIUM_CONSULTATIONS",
+    premiumTool: "VEHICLE" as const,
+    titleKey: "seo.vehicle.title",
+    descriptionKey: "seo.vehicle.description"
+  },
+  "/house-numerology": {
+    page: "PREMIUM_CONSULTATIONS",
+    premiumTool: "HOUSE" as const,
+    titleKey: "seo.house.title",
+    descriptionKey: "seo.house.description"
+  },
+  "/business-numerology": {
+    page: "PREMIUM_CONSULTATIONS",
+    premiumTool: "BUSINESS" as const,
+    titleKey: "seo.business.title",
+    descriptionKey: "seo.business.description"
+  },
+  "/signature-numerology": {
+    page: "PREMIUM_CONSULTATIONS",
+    premiumTool: "SIGNATURE" as const,
+    titleKey: "seo.signature.title",
+    descriptionKey: "seo.signature.description"
+  },
+  "/child-numerology": {
+    page: "PREMIUM_CONSULTATIONS",
+    premiumTool: "CHILD" as const,
+    titleKey: "seo.child.title",
+    descriptionKey: "seo.child.description"
+  },
+  "/lucky-date-finder": {
+    page: "PREMIUM_CONSULTATIONS",
+    premiumTool: "LUCKY_DATES" as const,
+    titleKey: "seo.luckyDates.title",
+    descriptionKey: "seo.luckyDates.description"
+  }
+};
+
+const getPremiumToolFromPath = (path: string): 'VEHICLE' | 'HOUSE' | 'BUSINESS' | 'SIGNATURE' | 'CHILD' | 'LUCKY_DATES' | undefined => {
+  if (path.includes('vehicle-numerology')) return 'VEHICLE';
+  if (path.includes('house-numerology')) return 'HOUSE';
+  if (path.includes('business-numerology')) return 'BUSINESS';
+  if (path.includes('signature-numerology')) return 'SIGNATURE';
+  if (path.includes('child-numerology')) return 'CHILD';
+  if (path.includes('lucky-date-finder')) return 'LUCKY_DATES';
+  return undefined;
+};
+
 const App: React.FC = () => {
   const { lang, setLanguage, t, dir, isRtl } = useLanguage();
   const [personalDetails, setPersonalDetails] = useState<PersonalDetails | null>(null);
@@ -55,6 +104,7 @@ const App: React.FC = () => {
 
   // Virtual URL & Hash Router for Professional SEO Pages & Dynamic Metadata/JSON-LD Injector
   const [currentSEOPath, setCurrentSEOPath] = React.useState<string>('mobile-numerology');
+  const [pathname, setPathname] = React.useState<string>(window.location.pathname);
   const [mobileError, setMobileError] = useState('');
   const [mobileWarning, setMobileWarning] = useState('');
 
@@ -123,36 +173,58 @@ const App: React.FC = () => {
 
   const handleMobileChange = (raw: string) => {
     const digits = raw.replace(/\D/g, "");
-    if (digits.length === 0) {
-      setMobile('');
-      setMobileError('');
-      setMobileWarning('');
-      return;
-    }
+    const hasPlus91 = raw.includes("+91");
+    const has91Prefix = digits.length === 12 && digits.startsWith("91");
 
-    if (digits.length <= 10) {
-      setMobile(digits);
-      setMobileError('');
-      setMobileWarning('');
-      return;
-    }
-
-    if (digits.length === 12 && digits.startsWith("91")) {
+    if (hasPlus91 || has91Prefix) {
       setMobile(digits.slice(-10));
       setMobileWarning(t("warnings.countryCodeRemoved") || "Country code removed.");
       setMobileError('');
       return;
     }
 
-    // Otherwise, restrict to 10 digits
-    setMobile(digits.slice(0, 10));
-    setMobileWarning(t("warnings.only10DigitsAllowed") || "Only 10 digits allowed.");
-    setMobileError('');
+    if (digits.length === 10) {
+      setMobile(digits);
+      setMobileError('');
+      setMobileWarning('');
+    } else if (digits.length < 10) {
+      setMobile(digits);
+      setMobileWarning('');
+      setMobileError('');
+    } else {
+      setMobile(digits.slice(0, 10));
+      setMobileError(t('errors.mobileExact10') || 'Mobile number must be exactly 10 digits.');
+      setMobileWarning('');
+    }
   };
 
   React.useEffect(() => {
     const handleRouteSync = () => {
-      const path = window.location.pathname.substring(1) || window.location.hash.substring(1) || 'mobile-numerology';
+      let path = window.location.pathname.substring(1) || window.location.hash.substring(1) || 'mobile-numerology';
+      
+      const validPaths = [
+        'mobile-numerology',
+        'ai-consultation',
+        'name-numerology',
+        'loshu-grid',
+        'marriage-compatibility',
+        'vehicle-numerology',
+        'house-numerology',
+        'business-numerology',
+        'signature-numerology',
+        'child-numerology',
+        'lucky-date-finder'
+      ];
+      
+      const isValid = validPaths.some(p => path.includes(p));
+      if (!isValid) {
+        window.history.replaceState(null, '', '/mobile-numerology');
+        path = 'mobile-numerology';
+        setPathname('/mobile-numerology');
+      } else {
+        setPathname(window.location.pathname);
+      }
+      
       setCurrentSEOPath(path);
 
       // Check for share query parameter
@@ -410,6 +482,7 @@ const App: React.FC = () => {
             <div className="relative inline-block text-left" id="language-selector-wrapper">
               <select
                 id="language-select"
+                aria-label="Select Language"
                 value={lang}
                 onChange={(e) => setLanguage(e.target.value as any)}
                 className="bg-[#F8F4EF] border border-[#D97706]/20 text-[#1F2937] hover:bg-[#F2E8DC] font-semibold text-xs py-2 px-3 pr-8 rounded-xl cursor-pointer transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-[#D97706]/50 appearance-none font-sans"
@@ -618,7 +691,7 @@ const App: React.FC = () => {
                           type="text"
                           required
                           placeholder="e.g. 9930117696"
-                          maxLength={12}
+                          maxLength={30}
                           inputMode="numeric"
                           pattern="[0-9]{10}"
                           minLength={10}
@@ -631,18 +704,22 @@ const App: React.FC = () => {
                             e.preventDefault();
                             const pastedText = e.clipboardData.getData('text');
                             const digits = pastedText.replace(/\D/g, "");
-                            if (digits.length === 12 && digits.startsWith("91")) {
+                            const hasPlus91 = pastedText.includes("+91");
+                            const has91Prefix = digits.length === 12 && digits.startsWith("91");
+
+                            if (hasPlus91 || has91Prefix) {
                               setMobile(digits.slice(-10));
                               setMobileWarning(t("warnings.countryCodeRemoved") || "Country code removed.");
                               setMobileError('');
                             } else {
                               setMobile(digits.slice(0, 10));
-                              if (digits.length > 10) {
-                                setMobileWarning(t("warnings.only10DigitsAllowed") || "Only 10 digits allowed.");
+                              if (digits.length !== 10) {
+                                setMobileError(t('errors.mobileExact10') || "Mobile number must be exactly 10 digits.");
+                                setMobileWarning('');
                               } else {
+                                setMobileError('');
                                 setMobileWarning('');
                               }
-                              setMobileError('');
                             }
                           }}
                         />
@@ -1043,7 +1120,7 @@ const App: React.FC = () => {
             <div className="bg-white p-6 md:p-8 rounded-[35px] border border-[#E5E7EB] flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-sm">
               <div className="text-left space-y-2">
                 <div className="inline-flex items-center gap-1.5 bg-[#D97706]/10 text-[#D97706] px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold border border-[#D97706]/20">
-                  <Sparkles className="w-3 h-3" /> Active Destiny Matrix
+                  <Sparkles className="w-3 h-3" /> {t('destiny.activeMatrix', 'Active Destiny Matrix')}
                 </div>
                 <h2 className="font-playfair text-2.5xl md:text-4xl font-extrabold text-[#1F2937]">
                   {personalDetails.name}
@@ -1058,13 +1135,13 @@ const App: React.FC = () => {
               {/* Navigation buttons */}
               <nav className="flex flex-wrap gap-2 w-full lg:w-auto">
                 {[
-                  { id: 'MOBILE', label: 'Mobile Diagnostics' },
+                  { id: 'MOBILE', label: t('tab.mobileDiagnostics', 'Mobile Diagnostics') },
                   ...(analysisMode === 'ADVANCED' ? [
-                    { id: 'DASHBOARD', label: 'Overview Planes' },
-                    { id: 'COMPATIBILITY', label: 'Hostile/Lover Match' },
-                    { id: 'REMEDIES', label: 'Remedies Altar' },
-                    { id: 'REPORT', label: 'AI printable Report' },
-                    { id: 'ADMIN', label: 'Systems Hub' }
+                    { id: 'DASHBOARD', label: t('tab.overviewPlanes', 'Overview Planes') },
+                    { id: 'COMPATIBILITY', label: t('tab.hostileLoverMatch', 'Hostile/Lover Match') },
+                    { id: 'REMEDIES', label: t('tab.remediesAltar', 'Remedies Altar') },
+                    { id: 'REPORT', label: t('tab.aiPrintableReport', 'AI printable Report') },
+                    { id: 'ADMIN', label: t('tab.systemsHub', 'Systems Hub') }
                   ] : [])
                 ].map((tab) => (
                   <button
@@ -1139,7 +1216,7 @@ const App: React.FC = () => {
         ) : currentPortal === 'MARRIAGE_COMPATIBILITY' ? (
           <MarriageCompatibility />
         ) : (
-          <PremiumConsultations />
+          <PremiumConsultations activeToolFromRoute={getPremiumToolFromPath(currentSEOPath)} />
         )}
         </Suspense>
 
@@ -1184,22 +1261,26 @@ const App: React.FC = () => {
               <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest font-bold block mb-4">Direct Portal Reference Registry</span>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {[
-                  { hash: '#mobile-numerology', label: '1. Mobile Scanner', desc: 'Cumulative Chaldean analysis' },
-                  { hash: '#name-numerology', label: '2. Name Corrector', desc: 'Planetary spelling formulas' },
-                  { hash: '#loshu-grid', label: '3. Master Lo Shu Grid', desc: 'Vedic 3x3 birth grid' },
-                  { hash: '#marriage-compatibility', label: '4. Marriage Synastry', desc: '7-Layer relational scores' },
-                  { hash: '#vehicle-numerology', label: '5. Vehicle Plates', desc: 'Vastu limits & risk scales' },
-                  { hash: '#house-numerology', label: '6. House Address', desc: 'Domestic plot vibrations' },
-                  { hash: '#business-numerology', label: '7. Corporate Branding', desc: 'Marketing suitability keys' },
-                  { hash: '#signature-numerology', label: '8. Signature Audit', desc: 'Financial shielding curves' },
-                  { hash: '#child-numerology', label: '9. Child Lucky Names', desc: 'Wisdom starting letters' },
-                  { hash: '#lucky-date-finder', label: '10. Lucky Dates Finder', desc: 'Transit matching grids' },
+                  { path: 'mobile-numerology', label: '1. Mobile Scanner', desc: 'Cumulative Chaldean analysis' },
+                  { path: 'name-numerology', label: '2. Name Corrector', desc: 'Planetary spelling formulas' },
+                  { path: 'loshu-grid', label: '3. Master Lo Shu Grid', desc: 'Vedic 3x3 birth grid' },
+                  { path: 'marriage-compatibility', label: '4. Marriage Synastry', desc: '7-Layer relational scores' },
+                  { path: 'vehicle-numerology', label: '5. Vehicle Plates', desc: 'Vastu limits & risk scales' },
+                  { path: 'house-numerology', label: '6. House Address', desc: 'Domestic plot vibrations' },
+                  { path: 'business-numerology', label: '7. Corporate Branding', desc: 'Marketing suitability keys' },
+                  { path: 'signature-numerology', label: '8. Signature Audit', desc: 'Financial shielding curves' },
+                  { path: 'child-numerology', label: '9. Child Lucky Names', desc: 'Wisdom starting letters' },
+                  { path: 'lucky-date-finder', label: '10. Lucky Dates Finder', desc: 'Transit matching grids' },
                 ].map((lnk) => (
                   <a
-                    key={lnk.hash}
-                    href={lnk.hash}
+                    key={lnk.path}
+                    href={`/${lnk.path}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigateTo(lnk.path);
+                    }}
                     className={`block p-3 rounded-2xl border transition-all ${
-                      currentSEOPath === lnk.hash.substring(1)
+                      currentSEOPath === lnk.path
                         ? 'bg-[#1E3A8A]/5 border-[#1E3A8A] text-[#1E3A8A]'
                         : 'bg-white border-[#E5E7EB] hover:bg-slate-50 text-slate-600'
                     }`}

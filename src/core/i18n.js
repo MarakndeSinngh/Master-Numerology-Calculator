@@ -282,7 +282,15 @@ export const TRANSLATIONS = {
     'compatibility.longTermPotential.medium': 'Good long term potential, provided ego-struggles are regulated.',
     'compatibility.longTermPotential.low': 'Challenging. Regular planetary mantra meditation is suggested.',
     // Remedies generic fallback signature
-    'remedies.signatureAdvice': 'Begin signature upwards at a 15-degree angle. Never put a dot below the signature; underline it to signify stable ambition.'
+    'remedies.signatureAdvice': 'Begin signature upwards at a 15-degree angle. Never put a dot below the signature; underline it to signify stable ambition.',
+    // Active Destiny Matrix & Tabs
+    'destiny.activeMatrix': 'Active Destiny Matrix',
+    'tab.mobileDiagnostics': 'Mobile Diagnostics',
+    'tab.overviewPlanes': 'Overview Planes',
+    'tab.hostileLoverMatch': 'Hostile/Lover Match',
+    'tab.remediesAltar': 'Remedies Altar',
+    'tab.aiPrintableReport': 'AI printable Report',
+    'tab.systemsHub': 'Systems Hub'
   },
   hi: {
     'nav.title': 'सिंह परिवार अंकशास्त्र',
@@ -452,7 +460,15 @@ export const TRANSLATIONS = {
     'compatibility.longTermPotential.medium': 'अच्छा दीर्घकालिक संभावित परिणाम, बशर्ते अहंकार के संघर्षों को नियंत्रित किया जाए।',
     'compatibility.longTermPotential.low': 'चुनौतीपूर्ण। नियमित रूप से ग्रहों के मंत्र ध्यान की सलाह दी जाती है।',
     // Remedies generic fallback signature
-    'remedies.signatureAdvice': 'हस्ताक्षर को 15-डिग्री कोण पर ऊपर की ओर शुरू करें। कभी भी हस्ताक्षर के नीचे बिंदु न लगाएं; इसे स्थिरता और महत्वाकांक्षा दर्शाने के लिए रेखांकित करें।'
+    'remedies.signatureAdvice': 'हस्ताक्षर को 15-डिग्री कोण पर ऊपर की ओर शुरू करें। कभी भी हस्ताक्षर के नीचे बिंदु न लगाएं; इसे स्थिरता और महत्वाकांक्षा दर्शाने के लिए रेखांकित करें।',
+    // Active Destiny Matrix & Tabs
+    'destiny.activeMatrix': 'सक्रिय भाग्य मैट्रिक्स (Active Destiny Matrix)',
+    'tab.mobileDiagnostics': 'मोबाइल डायग्नोस्टिक्स (Mobile Diagnostics)',
+    'tab.overviewPlanes': 'अवलोकन समतल (Overview Planes)',
+    'tab.hostileLoverMatch': 'शत्रु/मित्र मिलान (Hostile/Lover Match)',
+    'tab.remediesAltar': 'उपचार वेदी (Remedies Altar)',
+    'tab.aiPrintableReport': 'एआई प्रिंट करने योग्य रिपोर्ट (AI printable Report)',
+    'tab.systemsHub': 'प्रणाली हब (Systems Hub)'
   },
   gu: {
     'nav.title': 'સિંહ પરિવાર અંકશાસ્ત્ર',
