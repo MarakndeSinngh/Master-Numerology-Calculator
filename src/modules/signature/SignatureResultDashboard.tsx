@@ -257,9 +257,16 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                 <tr>
                   <td className="py-3 pr-4 font-bold text-slate-900">{getTranslatedKey(language, "signature.metrics.slant")}</td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-lg text-[10px]">
-                      {getTranslatedKey(language, metrics.slantLabel)}
-                    </span>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="font-medium text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-lg text-[10px]">
+                        {getTranslatedKey(language, metrics.slantLabel)}
+                      </span>
+                      {dossier.confidenceScores?.slant && (
+                        <span className="text-[9px] text-slate-400 font-mono">
+                          {isHi ? "सटीकता: " : "Confidence: "}{Math.round(dossier.confidenceScores.slant * 100)}%
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 pl-4 text-slate-500 text-[11px] leading-relaxed">
                     {getTranslatedKey(
@@ -277,9 +284,16 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                 <tr>
                   <td className="py-3 pr-4 font-bold text-slate-900">{getTranslatedKey(language, "signature.metrics.underline")}</td>
                   <td className="py-3 px-4">
-                    <span className={`font-medium px-2.5 py-0.5 rounded-lg text-[10px] ${metrics.underlineLabel === "signature.metrics.underline.cutting" ? "text-red-700 bg-red-50" : "text-emerald-700 bg-emerald-50"}`}>
-                      {getTranslatedKey(language, metrics.underlineLabel)}
-                    </span>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className={`font-medium px-2.5 py-0.5 rounded-lg text-[10px] ${metrics.underlineLabel === "signature.metrics.underline.cutting" ? "text-red-700 bg-red-50" : "text-emerald-700 bg-emerald-50"}`}>
+                        {getTranslatedKey(language, metrics.underlineLabel)}
+                      </span>
+                      {dossier.confidenceScores?.underline && (
+                        <span className="text-[9px] text-slate-400 font-mono">
+                          {isHi ? "सटीकता: " : "Confidence: "}{Math.round(dossier.confidenceScores.underline * 100)}%
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 pl-4 text-slate-500 text-[11px] leading-relaxed">
                     {getTranslatedKey(language, metrics.underlineLabel === "signature.metrics.underline.cutting" ? "signature.obs.underline.cuts.desc" : (metrics.underlineLabel === "signature.metrics.underline.present" ? "signature.obs.underline.present.desc" : "signature.obs.underline.none.desc"))}
@@ -288,9 +302,16 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                 <tr>
                   <td className="py-3 pr-4 font-bold text-slate-900">{getTranslatedKey(language, "signature.metrics.finalDot")}</td>
                   <td className="py-3 px-4">
-                    <span className={`font-medium px-2.5 py-0.5 rounded-lg text-[10px] ${metrics.finalDotLabel === "signature.metrics.finalDot.present" ? "text-amber-700 bg-amber-50" : "text-emerald-700 bg-emerald-50"}`}>
-                      {getTranslatedKey(language, metrics.finalDotLabel)}
-                    </span>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className={`font-medium px-2.5 py-0.5 rounded-lg text-[10px] ${metrics.finalDotLabel === "signature.metrics.finalDot.present" ? "text-amber-700 bg-amber-50" : "text-emerald-700 bg-emerald-50"}`}>
+                        {getTranslatedKey(language, metrics.finalDotLabel)}
+                      </span>
+                      {dossier.confidenceScores?.finalDot && (
+                        <span className="text-[9px] text-slate-400 font-mono">
+                          {isHi ? "सटीकता: " : "Confidence: "}{Math.round(dossier.confidenceScores.finalDot * 100)}%
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 pl-4 text-slate-500 text-[11px] leading-relaxed">
                     {getTranslatedKey(language, metrics.finalDotLabel === "signature.metrics.finalDot.present" ? "signature.obs.dot.present.desc" : "signature.obs.dot.none.desc")}
@@ -299,9 +320,16 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                 <tr>
                   <td className="py-3 pr-4 font-bold text-slate-900">{getTranslatedKey(language, "signature.metrics.starting")}</td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg text-[10px]">
-                      {getTranslatedKey(language, metrics.startingLabel)}
-                    </span>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="font-medium text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg text-[10px]">
+                        {getTranslatedKey(language, metrics.startingLabel)}
+                      </span>
+                      {dossier.confidenceScores?.startingClutter && (
+                        <span className="text-[9px] text-slate-400 font-mono">
+                          {isHi ? "सटीकता: " : "Confidence: "}{Math.round(dossier.confidenceScores.startingClutter * 100)}%
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 pl-4 text-slate-500 text-[11px] leading-relaxed">
                     {getTranslatedKey(language, metrics.startingLabel === "signature.metrics.starting.clean" ? "signature.obs.starting.clean.desc" : "signature.obs.starting.complex.desc")}
@@ -310,9 +338,16 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                 <tr>
                   <td className="py-3 pr-4 font-bold text-slate-900">{getTranslatedKey(language, "signature.metrics.readability")}</td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-lg text-[10px]">
-                      {getTranslatedKey(language, metrics.readabilityLabel)}
-                    </span>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="font-medium text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-lg text-[10px]">
+                        {getTranslatedKey(language, metrics.readabilityLabel)}
+                      </span>
+                      {dossier.confidenceScores?.readability && (
+                        <span className="text-[9px] text-slate-400 font-mono">
+                          {isHi ? "सटीकता: " : "Confidence: "}{Math.round(dossier.confidenceScores.readability * 100)}%
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 pl-4 text-slate-500 text-[11px] leading-relaxed">
                     {getTranslatedKey(
@@ -328,9 +363,16 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                 <tr>
                   <td className="py-3 pr-4 font-bold text-slate-900">{getTranslatedKey(language, "signature.metrics.pressure")}</td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg text-[10px]">
-                      {getTranslatedKey(language, metrics.pressureLabel)}
-                    </span>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="font-medium text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg text-[10px]">
+                        {getTranslatedKey(language, metrics.pressureLabel)}
+                      </span>
+                      {dossier.confidenceScores?.pressure && (
+                        <span className="text-[9px] text-slate-400 font-mono">
+                          {isHi ? "सटीकता: " : "Confidence: "}{Math.round(dossier.confidenceScores.pressure * 100)}%
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 pl-4 text-slate-500 text-[11px] leading-relaxed">
                     {getTranslatedKey(

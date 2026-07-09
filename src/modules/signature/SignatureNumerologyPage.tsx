@@ -207,7 +207,8 @@ export const SignatureNumerologyPage: React.FC<SignatureNumerologyPageProps> = (
             blueprint: apiResult.recommendations?.shouldModify || "",
             penType: apiResult.recommendations?.penType || "Rollerball or Fountain Pen",
             direction: apiResult.recommendations?.signingDirection || "Ascending left-to-right"
-          }
+          },
+          confidenceScores: localMetrics.confidenceScores
         };
 
         setDossier(mappedDossier);

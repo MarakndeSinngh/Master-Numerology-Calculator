@@ -85,33 +85,37 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
     // Get image data
     const imgData = ctx.getImageData(0, 0, width, height);
     const data = imgData.data;
-    
-    // 1. Convert to grayscale & threshold to find dark pen pixels
-    let totalBrightness = 0;
     const pixelCount = width * height;
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i+1];
-      const b = data[i+2];
+    
+    // 1. Grayscale & Percentile-based robust thresholding
+    const brightnessValues = new Float32Array(pixelCount);
+    let totalBrightness = 0;
+    for (let i = 0; i < pixelCount; i++) {
+      const idx = i * 4;
+      const r = data[idx];
+      const g = data[idx+1];
+      const b = data[idx+2];
       const brightness = (r + g + b) / 3;
+      brightnessValues[i] = brightness;
       totalBrightness += brightness;
     }
     const avgBrightness = totalBrightness / pixelCount;
+    const sortedBrightness = [...brightnessValues].sort((a, b) => a - b);
     
-    // Pixels darker than 80-85% of average brightness are considered ink
-    const inkThreshold = Math.max(45, avgBrightness * 0.85);
+    // Percentile-based selection to isolate the ink.
+    // Signature ink typically represents 4% to 18% of the total pixels.
+    // 12th percentile is a reliable adaptive anchor for uneven backgrounds.
+    const pct12 = sortedBrightness[Math.floor(pixelCount * 0.12)];
+    const medianBrightness = sortedBrightness[Math.floor(pixelCount * 0.5)];
+    const inkThreshold = Math.min(pct12 + 8, medianBrightness * 0.85);
+
     const isInk: boolean[][] = Array.from({ length: height }, () => new Array(width).fill(false));
     const inkPixels: { x: number; y: number; brightness: number }[] = [];
     let darkPixelSum = 0;
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        const idx = (y * width + x) * 4;
-        const r = data[idx];
-        const g = data[idx+1];
-        const b = data[idx+2];
-        const brightness = (r + g + b) / 3;
-        
+        const brightness = brightnessValues[y * width + x];
         if (brightness < inkThreshold) {
           isInk[y][x] = true;
           inkPixels.push({ x, y, brightness });
@@ -195,7 +199,9 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
     const inkW = maxX - minX + 1;
     const inkH = maxY - minY + 1;
 
-    // 3. Underline detection via Hough-like line segment scan
+    // 3. Robust Underline Detection
+    // An underline lies in the bottom half of the signature, has a width of >= 40% of the total width,
+    // and rises/slopes within -25 to 35 degrees.
     let hasUnderline = false;
     let underlineAngle = 0;
     let underlinePosition: "belowName" | "cutsName" | "throughMiddle" | "none" = "none";
@@ -203,105 +209,148 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
     let bestUnderlineY = -1;
     let underlineSpanWidth = 0;
     let underlineConfidence = 0.5;
-
-    // We scan bottom 55% of the signature bounding box for an underline segment
-    const yScanStart = Math.round(minY + inkH * 0.45);
-    const yScanEnd = maxY;
-    let maxLineWeight = 0;
     let bestAngleRad = 0;
 
-    // Angles to check: -25 degrees to +35 degrees
-    const angles = [];
-    for (let a = -25; a <= 35; a += 2.5) {
-      angles.push(a);
-    }
+    // A. Connected Components Check (STANDALONE UNDERLINES)
+    let bestCompUnderline = null;
+    let bestCompUnderlineScore = -1;
 
-    for (let y0 = yScanStart; y0 <= yScanEnd; y0++) {
-      for (const angle of angles) {
-        const rad = (angle * Math.PI) / 180;
-        let currentSegmentLength = 0;
-        let currentGap = 0;
-        let activeSegment = false;
-        let segStartX = -1;
-        let segEndX = -1;
-
-        for (let x = minX; x <= maxX; x++) {
-          const yc = Math.round(y0 + (x - minX) * Math.sin(rad));
-          
-          // Check vertical search window of 3 pixels around yc
-          let foundInk = false;
-          for (let dy = -1; dy <= 1; dy++) {
-            const ny = yc + dy;
-            if (ny >= 0 && ny < height && isInk[ny][x]) {
-              foundInk = true;
-              break;
-            }
-          }
-
-          if (foundInk) {
-            if (!activeSegment) {
-              activeSegment = true;
-              segStartX = x;
-            }
-            currentSegmentLength++;
-            currentGap = 0;
-            segEndX = x;
-          } else {
-            if (activeSegment) {
-              if (currentGap < 4) {
-                currentGap++;
-                currentSegmentLength++;
-              } else {
-                // End of segment
-                const span = segEndX - segStartX + 1;
-                if (span >= 0.40 * inkW && span > maxLineWeight) {
-                  maxLineWeight = span;
-                  underlineAngle = angle;
-                  bestUnderlineY = y0;
-                  underlineSpanWidth = span;
-                  bestAngleRad = rad;
-                }
-                activeSegment = false;
-                currentSegmentLength = 0;
-                currentGap = 0;
-              }
-            }
-          }
-        }
-
-        // Check tail segment
-        if (activeSegment) {
-          const span = segEndX - segStartX + 1;
-          if (span >= 0.40 * inkW && span > maxLineWeight) {
-            maxLineWeight = span;
-            underlineAngle = angle;
-            bestUnderlineY = y0;
-            underlineSpanWidth = span;
-            bestAngleRad = rad;
-          }
+    for (const c of components) {
+      const cy = (c.minY + c.maxY) / 2;
+      const isBottom = cy > minY + inkH * 0.42; // Lower half
+      const isWide = c.width >= 0.35 * inkW; // Covered span
+      const isFlat = c.height <= 0.20 * inkH && c.height <= 32; // Thin aspect
+      
+      if (isBottom && isWide && isFlat) {
+        const aspect = c.width / c.height;
+        const score = aspect * (c.width / inkW);
+        if (score > bestCompUnderlineScore) {
+          bestCompUnderlineScore = score;
+          bestCompUnderline = c;
         }
       }
     }
 
-    if (maxLineWeight >= 0.40 * inkW) {
-      hasUnderline = true;
-      underlineConfidence = Math.min(0.98, 0.70 + (underlineSpanWidth / inkW) * 0.28);
+    if (bestCompUnderline) {
+      // Calculate regression slope for this standalone component
+      let uSumX = 0, uSumY = 0, uSumXY = 0, uSumXX = 0;
+      const un = bestCompUnderline.pixels.length;
+      bestCompUnderline.pixels.forEach(p => {
+        uSumX += p.x;
+        uSumY += p.y;
+        uSumXY += p.x * p.y;
+        uSumXX += p.x * p.x;
+      });
+      const uDen = (un * uSumXX) - (uSumX * uSumX);
+      const uSlope = uDen !== 0 ? ((un * uSumXY) - (uSumX * uSumY)) / uDen : 0;
+      const uAngleRadRaw = Math.atan(-uSlope); // Invert since Y goes down
+      underlineAngle = Math.round((uAngleRadRaw * 180) / Math.PI);
       
-      // Calculate intersection density along the underline path
+      if (underlineAngle >= -25 && underlineAngle <= 35) {
+        hasUnderline = true;
+        bestUnderlineY = Math.round((bestCompUnderline.minY + bestCompUnderline.maxY) / 2);
+        underlineSpanWidth = bestCompUnderline.width;
+        bestAngleRad = -uSlope;
+        underlineConfidence = Math.min(0.99, 0.85 + (underlineSpanWidth / inkW) * 0.14);
+      }
+    }
+
+    // B. Hough-like line segment scan (CONNECTED UNDERLINES)
+    if (!hasUnderline) {
+      const yScanStart = Math.round(minY + inkH * 0.45);
+      const yScanEnd = maxY;
+      let maxLineWeight = 0;
+      
+      const angles = [];
+      for (let a = -25; a <= 35; a += 2) {
+        angles.push(a);
+      }
+
+      for (let y0 = yScanStart; y0 <= yScanEnd; y0++) {
+        for (const angle of angles) {
+          const rad = (angle * Math.PI) / 180;
+          let currentSegmentLength = 0;
+          let currentGap = 0;
+          let activeSegment = false;
+          let segStartX = -1;
+          let segEndX = -1;
+
+          for (let x = minX; x <= maxX; x++) {
+            const yc = Math.round(y0 + (x - minX) * Math.sin(rad));
+            
+            let foundInk = false;
+            for (let dy = -1; dy <= 1; dy++) {
+              const ny = yc + dy;
+              if (ny >= 0 && ny < height && isInk[ny][x]) {
+                foundInk = true;
+                break;
+              }
+            }
+
+            if (foundInk) {
+              if (!activeSegment) {
+                activeSegment = true;
+                segStartX = x;
+              }
+              currentSegmentLength++;
+              currentGap = 0;
+              segEndX = x;
+            } else {
+              if (activeSegment) {
+                if (currentGap < 6) { // Small gaps allowed in stroke
+                  currentGap++;
+                  currentSegmentLength++;
+                } else {
+                  const span = segEndX - segStartX + 1;
+                  if (span >= 0.38 * inkW && span > maxLineWeight) {
+                    maxLineWeight = span;
+                    underlineAngle = angle;
+                    bestUnderlineY = y0;
+                    underlineSpanWidth = span;
+                    bestAngleRad = rad;
+                  }
+                  activeSegment = false;
+                  currentSegmentLength = 0;
+                  currentGap = 0;
+                }
+              }
+            }
+          }
+
+          if (activeSegment) {
+            const span = segEndX - segStartX + 1;
+            if (span >= 0.38 * inkW && span > maxLineWeight) {
+              maxLineWeight = span;
+              underlineAngle = angle;
+              bestUnderlineY = y0;
+              underlineSpanWidth = span;
+              bestAngleRad = rad;
+            }
+          }
+        }
+      }
+
+      if (maxLineWeight >= 0.38 * inkW) {
+        hasUnderline = true;
+        underlineConfidence = Math.min(0.95, 0.70 + (underlineSpanWidth / inkW) * 0.25);
+      }
+    }
+
+    // C. Underline classification and overlap analysis
+    if (hasUnderline) {
       let overlapColumns = 0;
-      const uAngleRad = (underlineAngle * Math.PI) / 180;
+      const uAngleRad = -bestAngleRad; // align with canvas coordinates
       
       for (let x = minX; x <= maxX; x++) {
         const yc = Math.round(bestUnderlineY + (x - minX) * Math.sin(uAngleRad));
-        // Check if there is ink both substantially above and below the line
         let inkAbove = false;
         let inkBelow = false;
 
-        for (let dy = -25; dy < -3; dy++) {
+        for (let dy = -22; dy < -3; dy++) {
           const ny = yc + dy;
           if (ny >= 0 && ny < height && isInk[ny][x]) { inkAbove = true; break; }
         }
-        for (let dy = 3; dy <= 25; dy++) {
+        for (let dy = 3; dy <= 22; dy++) {
           const ny = yc + dy;
           if (ny >= 0 && ny < height && isInk[ny][x]) { inkBelow = true; break; }
         }
@@ -314,7 +363,7 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
       const overlapRatio = overlapColumns / underlineSpanWidth;
       const avgY = bestUnderlineY + (underlineSpanWidth / 2) * Math.sin(uAngleRad);
 
-      if (overlapRatio > 0.22) {
+      if (overlapRatio > 0.20) {
         underlinePosition = "cutsName";
         underlineCutsSignature = true;
       } else if (avgY < minY + inkH * 0.58) {
@@ -326,66 +375,69 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
       }
     }
 
-    // 4. Final Dot isolation detection
+    // 4. Final Dot Detection (highly robust distance and isolation check)
     let hasFinalDot = false;
     let finalDotPosition: "upperRight" | "middleRight" | "lowerRight" | "none" = "none";
     let finalDotRisk: "low" | "medium" | "high" = "low";
     let finalDotConfidence = 0.5;
 
-    // A final dot sits in the far right 15% of the bounding box
+    // Clean dot must fall into the far right 18% of the signature bounding box
     const dotRightLimit = minX + inkW * 0.82;
     const dotCandidates = components.filter(c => {
       const cx = (c.minX + c.maxX) / 2;
       const isRight = cx > dotRightLimit;
-      const isSmall = c.area >= 4 && c.area <= 120 && c.area <= inkPixels.length * 0.05;
-      const isCompact = c.area / (c.width * c.height) >= 0.38;
-      const isSquareish = c.width / c.height >= 0.35 && c.width / c.height <= 2.8;
+      const isSmall = c.area >= 3 && c.area <= 110 && c.area <= inkPixels.length * 0.04;
+      const isCompact = c.area / (c.width * c.height) >= 0.35;
+      const isSquareish = c.width / c.height >= 0.3 && c.width / c.height <= 3.0;
       return isRight && isSmall && isCompact && isSquareish;
     });
 
     if (dotCandidates.length > 0) {
-      // Find candidate most isolated horizontally from other components
-      let bestCandidate = null;
-      let maxIsolationGap = -1;
+      let finalDotComponent = null;
+      let finalDotMaxGap = -1;
 
       for (const cand of dotCandidates) {
-        // Calculate closest distance to any other component that is larger than it
-        let minGap = 9999;
+        let minDistance = 9999;
+        
         components.forEach(other => {
-          if (other !== cand && other.area > cand.area * 2) {
+          if (other !== cand && other.area > cand.area * 1.5) {
             const gapX = Math.max(0, cand.minX - other.maxX, other.minX - cand.maxX);
-            if (gapX < minGap) {
-              minGap = gapX;
+            const gapY = Math.max(0, cand.minY - other.maxY, other.minY - cand.maxY);
+            const bboxDist = Math.sqrt(gapX * gapX + gapY * gapY);
+            
+            if (bboxDist < minDistance) {
+              minDistance = bboxDist;
             }
           }
         });
 
-        if (minGap > maxIsolationGap) {
-          maxIsolationGap = minGap;
-          bestCandidate = cand;
+        if (minDistance > finalDotMaxGap) {
+          finalDotMaxGap = minDistance;
+          finalDotComponent = cand;
         }
       }
 
-      if (bestCandidate && maxIsolationGap >= 5) {
+      // Must be substantially isolated (e.g. at least 8 pixels away from larger components)
+      if (finalDotComponent && finalDotMaxGap >= 8) {
         hasFinalDot = true;
-        finalDotConfidence = Math.min(0.99, 0.75 + (maxIsolationGap / 30) * 0.24);
-        const cy = (bestCandidate.minY + bestCandidate.maxY) / 2;
+        finalDotConfidence = Math.min(0.99, 0.75 + (finalDotMaxGap / 30) * 0.24);
+        const cy = (finalDotComponent.minY + finalDotComponent.maxY) / 2;
 
         if (cy < minY + inkH * 0.35) {
           finalDotPosition = "upperRight";
-          finalDotRisk = "medium";
+          finalDotRisk = "low";
         } else if (cy > minY + inkH * 0.65) {
           finalDotPosition = "lowerRight";
           finalDotRisk = "high";
         } else {
           finalDotPosition = "middleRight";
-          finalDotRisk = "high";
+          finalDotRisk = "medium";
         }
       }
     }
 
-    // 5. Signature Slant / Baseline estimation
-    // Exclude underline ink pixels to get pure letter body slant!
+    // 5. Signature Slant / Baseline Estimation
+    // Exclude the detected underline so it doesn't skew our letters slant!
     const pureBodyPixels: { x: number; y: number }[] = [];
     inkPixels.forEach(p => {
       let isUnderlinePixel = false;
@@ -400,47 +452,27 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
       }
     });
 
-    // If too few pure pixels, fallback to using all pixels
     const regressionPixels = pureBodyPixels.length > 15 ? pureBodyPixels : inkPixels;
 
-    // Linear regression on bottom-edge pixels of columns to estimate baseline angle
-    // In each column x, find bottom-most ink pixel y
-    const colBottomMap: Record<number, number> = {};
-    regressionPixels.forEach(p => {
-      if (colBottomMap[p.x] === undefined || p.y > colBottomMap[p.x]) {
-        colBottomMap[p.x] = p.y;
-      }
-    });
-
-    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-    const colKeys = Object.keys(colBottomMap).map(Number).sort((a, b) => a - b);
-    const regressionN = colKeys.length;
-
-    colKeys.forEach(x => {
-      const y = colBottomMap[x];
-      sumX += x;
-      sumY += y;
-      sumXY += x * y;
-      sumXX += x * x;
-    });
-
-    const den = (regressionN * sumXX) - (sumX * sumX);
-    const m = den !== 0 ? ((regressionN * sumXY) - (sumX * sumY)) / den : 0;
+    // Linear regression on clean baseline points (outlier filtered for descenders)
+    const regressionResult = calculateRobustRegression(regressionPixels, minX, maxX);
+    const m = regressionResult.slope;
     
     // Invert the angle since Canvas Y coordinate increases downwards
     const angleRad = Math.atan(-m);
     const baselineAngle = Math.round((angleRad * 180) / Math.PI);
 
     let mainBodySlant: "upward" | "straight" | "downward" = "straight";
-    if (baselineAngle >= 5) {
+    if (baselineAngle >= 6) {
       mainBodySlant = "upward";
-    } else if (baselineAngle <= -5) {
+    } else if (baselineAngle <= -6) {
       mainBodySlant = "downward";
     } else {
       mainBodySlant = "straight";
     }
 
-    const slantConfidence = Math.min(0.96, 0.82 + Math.abs(baselineAngle) * 0.005);
+    const fitQuality = regressionResult.r2;
+    const slantConfidence = Math.max(0.65, Math.min(0.99, 0.70 + fitQuality * 0.25 + (regressionResult.count > 40 ? 0.04 : 0)));
 
     let underlineInfluence: "risingSupport" | "cutting" | "none" = "none";
     if (hasUnderline) {
@@ -451,58 +483,63 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
       }
     }
 
-    // 6. Starting Stroke Complexity
-    const leftLimit = minX + Math.round(inkW * 0.28);
-    const leftInkPixels = regressionPixels.filter(p => p.x <= leftLimit);
-    let leftInkCount = leftInkPixels.length;
-    if (leftInkCount === 0) leftInkCount = 1;
+    // 6. Starting Stroke Complexity (Scanline Intersection Density Method)
+    const leftLimit = minX + Math.round(inkW * 0.26);
+    
+    let totalIntersections = 0;
+    let scanLinesCount = 0;
+    const yScanStart = Math.round(minY + inkH * 0.15);
+    const yScanEnd = Math.round(minY + inkH * 0.85);
+    const yStep = Math.max(2, Math.round(inkH * 0.06));
 
-    let crossingsCount = 0;
-    leftInkPixels.forEach(p => {
-      // Count 8-neighbors
-      let neighbors = 0;
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          if (dy !== 0 || dx !== 0) {
-            const ny = p.y + dy;
-            const nx = p.x + dx;
-            if (ny >= 0 && ny < height && nx >= 0 && nx < width && isInk[ny][nx]) {
-              neighbors++;
-            }
+    for (let y = yScanStart; y <= yScanEnd; y += yStep) {
+      let intersections = 0;
+      let inStroke = false;
+      for (let x = minX; x <= leftLimit; x++) {
+        if (isInk[y]?.[x]) {
+          if (!inStroke) {
+            intersections++;
+            inStroke = true;
           }
+        } else {
+          inStroke = false;
         }
       }
-      if (neighbors >= 3) {
-        crossingsCount++;
-      }
-    });
+      totalIntersections += intersections;
+      scanLinesCount++;
+    }
 
-    const crossingDensity = crossingsCount / leftInkCount;
-    // Count disconnected component starters in the left 28%
+    const avgIntersections = scanLinesCount > 0 ? (totalIntersections / scanLinesCount) : 1;
+    
+    // Count starter components in left 26%
     const startersCount = components.filter(c => {
       const cx = (c.minX + c.maxX) / 2;
       return cx <= leftLimit;
     }).length;
 
-    // Starting clutter score computation
-    const startClutterScore = Math.max(0, Math.min(100, Math.round(crossingDensity * 220 + startersCount * 12)));
+    // Combine into starting clutter score (0 - 100)
+    const startClutterScore = Math.max(0, Math.min(100, Math.round(
+      (avgIntersections - 1.0) * 28 + (startersCount > 1 ? (startersCount - 1) * 15 : 0)
+    )));
+
     let startingStrokeComplexity: "clean" | "moderate" | "cluttered" = "clean";
-    if (startClutterScore > 58) {
+    if (startClutterScore > 50) {
       startingStrokeComplexity = "cluttered";
-    } else if (startClutterScore > 26) {
+    } else if (startClutterScore > 24) {
       startingStrokeComplexity = "moderate";
     } else {
       startingStrokeComplexity = "clean";
     }
 
-    const hasStartCuts = crossingDensity > 0.12 || startClutterScore > 40;
-    const startConfidence = Math.min(0.94, 0.80 + startClutterScore * 0.0014);
+    const hasStartCuts = avgIntersections > 2.4 || startClutterScore > 40;
+    const distToThreshold = Math.min(Math.abs(startClutterScore - 24), Math.abs(startClutterScore - 50));
+    const startConfidence = Math.max(0.70, Math.min(0.98, 0.80 + distToThreshold * 0.005));
 
     // 7. Topological Loop Finder (Hole Detector)
     const isOuterBg = Array.from({ length: height }, () => new Uint8Array(width));
     const bgQueue: { x: number; y: number }[] = [];
 
-    // Push all boundary background pixels
+    // Push boundary background pixels
     for (let x = 0; x < width; x++) {
       if (!isInk[0][x]) { isOuterBg[0][x] = 1; bgQueue.push({ x, y: 0 }); }
       if (!isInk[height-1][x]) { isOuterBg[height-1][x] = 1; bgQueue.push({ x, y: height-1 }); }
@@ -529,7 +566,6 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
       }
     }
 
-    // Unreached background pixels are enclosed holes!
     const visitedHole = Array.from({ length: height }, () => new Uint8Array(width));
     const holes: { height: number; area: number }[] = [];
 
@@ -592,7 +628,7 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
     const loopConfidence = Math.min(0.95, 0.84 + holes.length * 0.03);
 
     // 8. Estimate Pen Pressure
-    const avgInkBrightness = darkPixelSum / inkPixels.length; // Higher = darker/heavy pressure
+    const avgInkBrightness = darkPixelSum / inkPixels.length;
     let pressure: 'LIGHT' | 'MEDIUM' | 'HEAVY' = 'MEDIUM';
     if (avgInkBrightness > 165) {
       pressure = 'HEAVY';
@@ -604,7 +640,6 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
     const pressureConfidence = 0.88;
 
     // 9. Readability
-    // Count vertical white background columns to measure splits
     let verticalGaps = 0;
     let inGap = false;
     for (let x = minX; x <= maxX; x++) {
@@ -632,7 +667,6 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
 
     const spacing = verticalGaps > 3 ? "Balanced & Wide" : (verticalGaps === 0 ? "Compressed / Connected" : "Standard");
 
-    // Map backwards compatible fields nicely
     const slant: 'UPWARD' | 'STRAIGHT' | 'DOWNWARD' = 
       mainBodySlant === "upward" ? "UPWARD" : (mainBodySlant === "downward" ? "DOWNWARD" : "STRAIGHT");
     
@@ -690,6 +724,92 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
     console.error("Advanced Canvas processing failed, using safe fallback:", err);
     return getRandomDefaultMetrics();
   }
+}
+
+function calculateRobustRegression(pixels: { x: number; y: number }[], minX: number, maxX: number): { slope: number; r2: number; count: number } {
+  // Find bottom-most ink pixel for each column x
+  const colBottomMap: Record<number, number> = {};
+  pixels.forEach(p => {
+    if (colBottomMap[p.x] === undefined || p.y > colBottomMap[p.x]) {
+      colBottomMap[p.x] = p.y;
+    }
+  });
+
+  const cols = Object.keys(colBottomMap).map(Number).sort((a, b) => a - b);
+  if (cols.length < 5) {
+    return { slope: 0, r2: 0, count: cols.length };
+  }
+
+  // First-pass regression
+  let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0, sumYY = 0;
+  const n = cols.length;
+  cols.forEach(x => {
+    const y = colBottomMap[x];
+    sumX += x;
+    sumY += y;
+    sumXY += x * y;
+    sumXX += x * x;
+    sumYY += y * y;
+  });
+
+  const num = (n * sumXY) - (sumX * sumY);
+  const denX = (n * sumXX) - (sumX * sumX);
+  const denY = (n * sumYY) - (sumY * sumY);
+  
+  if (denX === 0) return { slope: 0, r2: 0, count: n };
+  const slope = num / denX;
+  const intercept = (sumY - slope * sumX) / n;
+
+  // Filter out descender outliers (pixels hanging far below the trend line)
+  // residuals: actual Y minus predicted Y.
+  // In canvas coords, larger Y is lower on the page. Outlier descenders have large positive residuals.
+  const residuals: number[] = [];
+  cols.forEach(x => {
+    const y = colBottomMap[x];
+    const predY = slope * x + intercept;
+    residuals.push(y - predY);
+  });
+
+  const meanResidual = residuals.reduce((a, b) => a + b, 0) / n;
+  const stdResidual = Math.sqrt(residuals.map(r => Math.pow(r - meanResidual, 2)).reduce((a, b) => a + b, 0) / n);
+
+  const cleanCols: number[] = [];
+  cols.forEach((x, idx) => {
+    const res = residuals[idx];
+    if (res <= 1.2 * stdResidual || stdResidual < 4) {
+      cleanCols.push(x);
+    }
+  });
+
+  // Second-pass regression on clean columns
+  if (cleanCols.length < 5) {
+    return { slope, r2: 0.5, count: n };
+  }
+
+  let cSumX = 0, cSumY = 0, cSumXY = 0, cSumXX = 0, cSumYY = 0;
+  const cn = cleanCols.length;
+  cleanCols.forEach(x => {
+    const y = colBottomMap[x];
+    cSumX += x;
+    cSumY += y;
+    cSumXY += x * y;
+    cSumXX += x * x;
+    cSumYY += y * y;
+  });
+
+  const cNum = (cn * cSumXY) - (cSumX * cSumY);
+  const cDenX = (cn * cSumXX) - (cSumX * cSumX);
+  const cDenY = (cn * cSumYY) - (cSumY * cSumY);
+
+  if (cDenX === 0) return { slope: 0, r2: 0, count: cn };
+  const cleanSlope = cNum / cDenX;
+
+  let r2 = 0;
+  if (cDenX !== 0 && cDenY !== 0) {
+    r2 = Math.pow(cNum, 2) / (cDenX * cDenY);
+  }
+
+  return { slope: cleanSlope, r2, count: cn };
 }
 
 function getRandomDefaultMetrics(): VisualMetrics {

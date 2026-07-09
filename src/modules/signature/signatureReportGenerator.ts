@@ -52,6 +52,15 @@ export interface SignatureDossier {
     penType: string;
     direction: string;
   };
+  confidenceScores?: {
+    slant: number;
+    underline: number;
+    finalDot: number;
+    startingClutter: number;
+    loop: number;
+    readability: number;
+    pressure: number;
+  };
 }
 
 export function generateLocalSignatureReport(
@@ -267,6 +276,7 @@ export function generateLocalSignatureReport(
       blueprint,
       penType,
       direction
-    }
+    },
+    confidenceScores: metrics.confidenceScores
   };
 }
