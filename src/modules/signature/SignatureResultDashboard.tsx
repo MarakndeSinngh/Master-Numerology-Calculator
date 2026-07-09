@@ -37,6 +37,9 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
     pressure: 0.85
   };
 
+  const underlineConfVal = Math.round((conf.underline ?? 0.85) * 100);
+  const isUnderlineLowConf = underlineConfVal >= 40 && underlineConfVal <= 65;
+
   const baselineAngleVal = raw?.baselineAngle ?? (metrics.slantLabel === "signature.metrics.slant.upward" ? 12 : (metrics.slantLabel === "signature.metrics.slant.downward" ? -8 : 0));
   const slantCategoryVal = getTranslatedKey(language, metrics.slantLabel);
   const hasUnderlineVal = raw?.hasUnderline ?? (metrics.underlineLabel !== "signature.metrics.underline.none");
@@ -45,6 +48,7 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
   const underlineCutsSignatureVal = raw?.underlineCutsSignature ?? (metrics.underlineLabel === "signature.metrics.underline.cutting");
   const hasFinalDotVal = raw?.hasFinalDot ?? (metrics.finalDotLabel === "signature.metrics.finalDot.present");
   const finalDotConfidenceVal = Math.round((conf.finalDot ?? 0.85) * 100);
+  const isFinalDotLowConf = finalDotConfidenceVal >= 40 && finalDotConfidenceVal <= 65;
   const startingStrokeComplexityVal = getTranslatedKey(language, metrics.startingLabel);
   const loopBalanceVal = getTranslatedKey(language, metrics.loopsLabel);
   const readabilityScoreVal = Math.round((conf.readability ?? 0.85) * 100);
@@ -294,7 +298,14 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                   <td className="py-2 px-3 font-medium text-indigo-700">{slantCategoryVal}</td>
                   <td className="py-2 px-3 text-center font-mono text-slate-500">{Math.round((conf.slant ?? 0.85) * 100)}%</td>
                   <td className="py-2 pl-4 text-slate-500 text-[9px] leading-tight">
-                    {getTranslatedKey(language, metrics.slantLabel === "signature.metrics.slant.upward" ? "signature.obs.slant.upward.desc" : "signature.obs.slant.straight.desc")}
+                    {getTranslatedKey(
+                      language, 
+                      metrics.slantLabel?.includes("upward") || metrics.slantLabel === "UPWARD"
+                        ? "signature.slant.upward.description" 
+                        : (metrics.slantLabel?.includes("downward") || metrics.slantLabel === "DOWNWARD"
+                          ? "signature.slant.downward.description"
+                          : "signature.slant.horizontal.description")
+                    )}
                   </td>
                 </tr>
 
@@ -315,11 +326,16 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                   <td className="py-2 pr-4 font-bold text-slate-900">{isHi ? "अंडरलाइन उपस्थिति" : "Underline Foundation"}</td>
                   <td className="py-2 px-3">
                     <span className={`font-semibold text-[9px] ${hasUnderlineVal ? "text-emerald-700" : "text-amber-700"}`}>
-                      {hasUnderlineVal ? (isHi ? "उपस्थित" : "Detected") : (isHi ? "अनुपस्थित" : "Missing")}
+                      {isUnderlineLowConf ? (
+                        isHi ? "संभावित (अनिश्चित)" : "Possible / Uncertain"
+                      ) : (
+                        hasUnderlineVal ? (isHi ? "उपस्थित" : "Detected") : (isHi ? "अनुपस्थित" : "Missing")
+                      )}
                     </span>
                   </td>
-                  <td className="py-2 px-3 text-center font-mono text-slate-500">{Math.round((conf.underline ?? 0.85) * 100)}%</td>
+                  <td className="py-2 px-3 text-center font-mono text-slate-500">{underlineConfVal}%</td>
                   <td className="py-2 pl-4 text-slate-500 text-[9px] leading-tight">
+                    {isUnderlineLowConf ? (isHi ? "[संभावित/अनिश्चित विश्लेषण] " : "[Possible/Uncertain Analysis] ") : ""}
                     {getTranslatedKey(language, hasUnderlineVal ? "signature.obs.underline.present.desc" : "signature.obs.underline.none.desc")}
                   </td>
                 </tr>
@@ -369,11 +385,16 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                   <td className="py-2 pr-4 font-bold text-slate-900">{getTranslatedKey(language, "signature.metrics.finalDot")}</td>
                   <td className="py-2 px-3">
                     <span className={`font-semibold text-[9px] ${hasFinalDotVal ? "text-amber-700 bg-amber-50 px-1 rounded" : "text-emerald-700"}`}>
-                      {hasFinalDotVal ? (isHi ? "हाँ (अवरोध)" : "Yes (Barrier)") : (isHi ? "नहीं" : "No")}
+                      {isFinalDotLowConf ? (
+                        isHi ? "संभावित (अनिश्चित)" : "Possible / Uncertain"
+                      ) : (
+                        hasFinalDotVal ? (isHi ? "हाँ (अवरोध)" : "Yes (Barrier)") : (isHi ? "नहीं" : "No")
+                      )}
                     </span>
                   </td>
                   <td className="py-2 px-3 text-center font-mono text-slate-500">{finalDotConfidenceVal}%</td>
                   <td className="py-2 pl-4 text-slate-500 text-[9px] leading-tight">
+                    {isFinalDotLowConf ? (isHi ? "[संभावित/अनिश्चित विश्लेषण] " : "[Possible/Uncertain Analysis] ") : ""}
                     {getTranslatedKey(language, hasFinalDotVal ? "signature.obs.dot.present.desc" : "signature.obs.dot.none.desc")}
                   </td>
                 </tr>
@@ -384,7 +405,12 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                   <td className="py-2 px-3 font-medium text-slate-800">{startingStrokeComplexityVal}</td>
                   <td className="py-2 px-3 text-center font-mono text-slate-500">{Math.round((conf.startingClutter ?? 0.85) * 100)}%</td>
                   <td className="py-2 pl-4 text-slate-500 text-[9px] leading-tight">
-                    {getTranslatedKey(language, startingStrokeComplexityVal.includes("clean") || startingStrokeComplexityVal.includes("स्वच्छ") ? "signature.obs.starting.clean.desc" : "signature.obs.starting.complex.desc")}
+                    {getTranslatedKey(
+                      language, 
+                      metrics.startingLabel?.includes("clean") || metrics.startingLabel === "CLEAN"
+                        ? "signature.obs.starting.clean.desc" 
+                        : "signature.obs.starting.complex.desc"
+                    )}
                   </td>
                 </tr>
 
@@ -410,9 +436,9 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                   <td className="py-2 pl-4 text-slate-500 text-[9px] leading-tight">
                     {getTranslatedKey(
                       language, 
-                      metrics.readabilityLabel === "signature.metrics.readability.clear" 
+                      metrics.readabilityLabel?.includes("clear") || metrics.readabilityLabel === "CLEAR"
                         ? "signature.obs.readability.clear.desc" 
-                        : (metrics.readabilityLabel === "signature.metrics.readability.moderate"
+                        : (metrics.readabilityLabel?.includes("moderate") || metrics.readabilityLabel === "MODERATE"
                           ? "signature.obs.readability.moderate.desc"
                           : "signature.obs.readability.unclear.desc")
                     )}
@@ -427,9 +453,9 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                   <td className="py-2 pl-4 text-slate-500 text-[9px] leading-tight">
                     {getTranslatedKey(
                       language, 
-                      metrics.pressureLabel === "signature.metrics.pressure.heavy" 
+                      metrics.pressureLabel?.includes("heavy") || metrics.pressureLabel === "HEAVY"
                         ? "signature.obs.pressure.heavy.desc" 
-                        : (metrics.pressureLabel === "signature.metrics.pressure.medium"
+                        : (metrics.pressureLabel?.includes("medium") || metrics.pressureLabel === "MEDIUM"
                           ? "signature.obs.pressure.medium.desc"
                           : "signature.obs.pressure.light.desc")
                     )}

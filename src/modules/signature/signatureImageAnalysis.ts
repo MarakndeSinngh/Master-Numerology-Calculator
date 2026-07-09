@@ -217,9 +217,9 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
 
     for (const c of components) {
       const cy = (c.minY + c.maxY) / 2;
-      const isBottom = cy > minY + inkH * 0.42; // Lower half
-      const isWide = c.width >= 0.35 * inkW; // Covered span
-      const isFlat = c.height <= 0.20 * inkH && c.height <= 32; // Thin aspect
+      const isBottom = cy > minY + inkH * 0.38; // Lower part (more generous)
+      const isWide = c.width >= 0.22 * inkW; // Covered span (more generous)
+      const isFlat = c.height <= 0.28 * inkH && c.height <= 48; // Thin aspect (more generous)
       
       if (isBottom && isWide && isFlat) {
         const aspect = c.width / c.height;
@@ -257,7 +257,7 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
 
     // B. Hough-like line segment scan (CONNECTED UNDERLINES)
     if (!hasUnderline) {
-      const yScanStart = Math.round(minY + inkH * 0.45);
+      const yScanStart = Math.round(minY + inkH * 0.40); // More generous start
       const yScanEnd = maxY;
       let maxLineWeight = 0;
       
@@ -276,7 +276,7 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
           let segEndX = -1;
 
           for (let x = minX; x <= maxX; x++) {
-            const yc = Math.round(y0 + (x - minX) * Math.sin(rad));
+            const yc = Math.round(y0 + (x - minX) * Math.tan(rad)); // Correct slope math (tan instead of sin)
             
             let foundInk = false;
             for (let dy = -1; dy <= 1; dy++) {
@@ -302,7 +302,7 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
                   currentSegmentLength++;
                 } else {
                   const span = segEndX - segStartX + 1;
-                  if (span >= 0.38 * inkW && span > maxLineWeight) {
+                  if (span >= 0.22 * inkW && span > maxLineWeight) { // More generous threshold
                     maxLineWeight = span;
                     underlineAngle = angle;
                     bestUnderlineY = y0;
@@ -319,7 +319,7 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
 
           if (activeSegment) {
             const span = segEndX - segStartX + 1;
-            if (span >= 0.38 * inkW && span > maxLineWeight) {
+            if (span >= 0.22 * inkW && span > maxLineWeight) {
               maxLineWeight = span;
               underlineAngle = angle;
               bestUnderlineY = y0;
@@ -330,7 +330,7 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
         }
       }
 
-      if (maxLineWeight >= 0.38 * inkW) {
+      if (maxLineWeight >= 0.22 * inkW) {
         hasUnderline = true;
         underlineConfidence = Math.min(0.95, 0.70 + (underlineSpanWidth / inkW) * 0.25);
       }
@@ -342,7 +342,7 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
       const uAngleRad = -bestAngleRad; // align with canvas coordinates
       
       for (let x = minX; x <= maxX; x++) {
-        const yc = Math.round(bestUnderlineY + (x - minX) * Math.sin(uAngleRad));
+        const yc = Math.round(bestUnderlineY + (x - minX) * Math.tan(uAngleRad)); // Correct slope math
         let inkAbove = false;
         let inkBelow = false;
 
@@ -361,7 +361,7 @@ export async function analyzeSignatureImage(imageSrc: string): Promise<VisualMet
       }
 
       const overlapRatio = overlapColumns / underlineSpanWidth;
-      const avgY = bestUnderlineY + (underlineSpanWidth / 2) * Math.sin(uAngleRad);
+      const avgY = bestUnderlineY + (underlineSpanWidth / 2) * Math.tan(uAngleRad); // Correct slope math
 
       if (overlapRatio > 0.20) {
         underlinePosition = "cutsName";

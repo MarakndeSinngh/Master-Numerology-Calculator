@@ -93,48 +93,12 @@ export const SignatureNumerologyPage: React.FC<SignatureNumerologyPageProps> = (
       const localMetrics = await analyzeSignatureImage(data.image);
       setLocalMetrics(localMetrics);
 
-      // Step 2: Try calling the backend endpoint for Gemini-powered structural analysis
+      // Step 2: Run with high-fidelity local analysis directly (removing backend API fetch to avoid 405 Method Not Allowed errors on static host)
       let apiResult: any = null;
-      try {
-        const response = await fetch('/api/signature-audit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            image: data.image,
-            personalDetails: { name: data.name, dob: data.dob, profession: data.intent },
-            manualSelection: { styleId: 'RISING_UNDERLINE' },
-            driver,
-            conductor,
-            nameNumber: chaldeanValue,
-            description: {
-              nameSigned: data.name,
-              size: localMetrics.pressure === 'HEAVY' ? 'Large' : 'Medium',
-              slant: localMetrics.slant === 'UPWARD' ? 'Forward' : (localMetrics.slant === 'DOWNWARD' ? 'Backward' : 'Straight'),
-              legibility: localMetrics.readability === 'CLEAR' ? 'Very Clear' : 'Moderately Clear',
-              underline: localMetrics.underline === 'PRESENT' ? 'Yes' : 'No',
-              underlineDesc: localMetrics.underline === 'PRESENT' ? 'Single horizontal line' : '',
-              flourishes: localMetrics.loops === 'EXCESSIVE' ? 'Yes' : 'No',
-              pressure: localMetrics.pressure,
-              speed: 'Quick and flowing',
-              firstVsLast: 'Equally balanced'
-            },
-            language
-          })
-        });
-
-        if (response.ok) {
-          const json = await response.json();
-          if (json && json.psychologicalInterpretation) {
-            apiResult = json;
-          }
-        }
-      } catch (apiErr) {
-        console.warn("Signature Audit API failed or timed out. Falling back to local synthesizer:", apiErr);
-      }
 
       // Step 3: Parse results and generate visual report dossier
+      const scoreBreakdown = calculateSignatureScore(localMetrics, data.intent, driver, conductor);
+
       if (apiResult) {
         // Map backend report structure back into our dossier schema
         const mappedDossier: SignatureDossier = {
@@ -170,10 +134,10 @@ export const SignatureNumerologyPage: React.FC<SignatureNumerologyPageProps> = (
           executiveSummary: {
             overallVibeKey: apiResult.compatibilityScore?.score >= 9 ? 'signature.report.excellent' : (apiResult.compatibilityScore?.score >= 7 ? 'signature.report.good' : 'signature.report.mixed'),
             score: apiResult.compatibilityScore?.score || 8,
-            mainPositiveKey: localMetrics.slant === 'UPWARD' ? 'signature.obs.slant.upward.title' : 'signature.obs.slant.straight.title',
-            mainPositiveDescKey: localMetrics.slant === 'UPWARD' ? 'signature.obs.slant.upward.desc' : 'signature.obs.slant.straight.desc',
-            criticalCorrectionKey: localMetrics.underline === 'NONE' ? 'signature.obs.underline.none.title' : (localMetrics.underline === 'CUTTING' ? 'signature.obs.underline.cuts.title' : 'signature.obs.dot.present.title'),
-            criticalCorrectionDescKey: localMetrics.underline === 'NONE' ? 'signature.obs.underline.none.desc' : (localMetrics.underline === 'CUTTING' ? 'signature.obs.underline.cuts.desc' : 'signature.obs.dot.present.desc'),
+            mainPositiveKey: scoreBreakdown.positives[0]?.titleKey || (localMetrics.slant === 'UPWARD' ? 'signature.obs.slant.upward.title' : 'signature.obs.slant.straight.title'),
+            mainPositiveDescKey: scoreBreakdown.positives[0]?.descKey || (localMetrics.slant === 'UPWARD' ? 'signature.obs.slant.upward.desc' : 'signature.obs.slant.straight.desc'),
+            criticalCorrectionKey: scoreBreakdown.negatives[0]?.titleKey || (localMetrics.underline === 'NONE' ? 'signature.obs.underline.none.title' : (localMetrics.underline === 'CUTTING' ? 'signature.obs.underline.cuts.title' : 'signature.obs.dot.present.title')),
+            criticalCorrectionDescKey: scoreBreakdown.negatives[0]?.descKey || (localMetrics.underline === 'NONE' ? 'signature.obs.underline.none.desc' : (localMetrics.underline === 'CUTTING' ? 'signature.obs.underline.cuts.desc' : 'signature.obs.dot.present.desc')),
             summaryText: apiResult.compatibilityScore?.detailedExplanation || apiResult.psychologicalInterpretation?.confidenceLevel || ""
           },
           intentBreakdowns: [
@@ -215,7 +179,6 @@ export const SignatureNumerologyPage: React.FC<SignatureNumerologyPageProps> = (
         setDossier(mappedDossier);
       } else {
         // Fallback: Use fully deterministic local scoring and report generation
-        const scoreBreakdown = calculateSignatureScore(localMetrics, data.intent, driver, conductor);
         const localDossier = generateLocalSignatureReport(
           data.name,
           data.dob,

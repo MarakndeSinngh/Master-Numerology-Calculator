@@ -129,11 +129,12 @@ export const SignatureUploadForm: React.FC<SignatureUploadFormProps> = ({
         {/* Full Name & DOB */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold flex items-center gap-1">
+            <label htmlFor="sig-fullName" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold flex items-center gap-1">
               <User className="w-3.5 h-3.5 text-slate-400" />
               {getTranslatedKey(language, "signature.form.fullName")} <span className="text-red-500">*</span>
             </label>
             <input
+              id="sig-fullName"
               type="text"
               required
               value={name}
@@ -144,11 +145,12 @@ export const SignatureUploadForm: React.FC<SignatureUploadFormProps> = ({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold flex items-center gap-1">
+            <label htmlFor="sig-dob" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-slate-400" />
               {getTranslatedKey(language, "signature.form.dob")}
             </label>
             <input
+              id="sig-dob"
               type="date"
               value={dob}
               onChange={(e) => setDob(e.target.value)}
@@ -160,10 +162,11 @@ export const SignatureUploadForm: React.FC<SignatureUploadFormProps> = ({
         {/* Gender Alignment & Mobile Number */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
+            <label htmlFor="sig-gender" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
               {getTranslatedKey(language, "signature.form.gender")}
             </label>
             <select
+              id="sig-gender"
               value={gender}
               onChange={(e) => setGender(e.target.value)}
               className="w-full bg-white border border-slate-200 text-xs px-4 py-3 rounded-xl text-slate-800 font-sans focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/10 focus:border-[#1E3A8A] transition-all"
@@ -175,11 +178,12 @@ export const SignatureUploadForm: React.FC<SignatureUploadFormProps> = ({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold flex items-center gap-1">
+            <label htmlFor="sig-mobile" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold flex items-center gap-1">
               <Smartphone className="w-3.5 h-3.5 text-slate-400" />
               {getTranslatedKey(language, "signature.form.mobile")}
             </label>
             <input
+              id="sig-mobile"
               type="tel"
               value={mobile}
               onChange={(e) => setMobile(e.target.value)}
@@ -192,11 +196,12 @@ export const SignatureUploadForm: React.FC<SignatureUploadFormProps> = ({
         {/* Signature Intent & Writing Hand */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold flex items-center gap-1">
+            <label htmlFor="sig-intent" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold flex items-center gap-1">
               <FileText className="w-3.5 h-3.5 text-slate-400" />
               {getTranslatedKey(language, "signature.form.intent")}
             </label>
             <select
+              id="sig-intent"
               value={intent}
               onChange={(e) => setIntent(e.target.value)}
               className="w-full bg-white border border-slate-200 text-xs px-4 py-3 rounded-xl text-slate-800 font-sans focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/10 focus:border-[#1E3A8A] transition-all"
@@ -211,10 +216,11 @@ export const SignatureUploadForm: React.FC<SignatureUploadFormProps> = ({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
+            <label htmlFor="sig-hand" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
               {getTranslatedKey(language, "signature.form.writingHand")}
             </label>
             <select
+              id="sig-hand"
               value={hand}
               onChange={(e) => setHand(e.target.value)}
               className="w-full bg-white border border-slate-200 text-xs px-4 py-3 rounded-xl text-slate-800 font-sans focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/10 focus:border-[#1E3A8A] transition-all"
@@ -229,7 +235,7 @@ export const SignatureUploadForm: React.FC<SignatureUploadFormProps> = ({
 
         {/* Drag & Drop File Upload */}
         <div className="space-y-1.5">
-          <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
+          <label htmlFor="sig-fileInput" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
             {getTranslatedKey(language, "signature.form.upload")} <span className="text-red-500">*</span>
           </label>
           
@@ -261,6 +267,8 @@ export const SignatureUploadForm: React.FC<SignatureUploadFormProps> = ({
             >
               <input
                 ref={fileInputRef}
+                id="sig-fileInput"
+                aria-label="Upload Signature File"
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 className="hidden"

@@ -125,6 +125,9 @@ export const SIGNATURE_TRANSLATIONS: Record<string, Record<string, string>> = {
     "signature.obs.slant.downward.desc": "A downward slope indicates blocked momentum, declining stamina, or self-doubt at critical moments. It siphons wealth and drains material energy.",
     "signature.obs.slant.straight.title": "Flat Stable Horizon",
     "signature.obs.slant.straight.desc": "A horizontal signature indicates stable emotions, strong balance, and high reliability. However, it may sometimes lack progressive expansion drive.",
+    "signature.slant.upward.description": "Your signature rises upwards from left to right. This shows strong ambition, optimism, and progressive career rise. It allows solar and Jovian energy flow.",
+    "signature.slant.horizontal.description": "A horizontal signature indicates stable emotions, strong balance, and high reliability. However, it may sometimes lack progressive expansion drive.",
+    "signature.slant.downward.description": "A downward slope indicates blocked momentum, declining stamina, or self-doubt at critical moments. It siphons wealth and drains material energy.",
     
     "signature.obs.underline.present.title": "Confident Foundation",
     "signature.obs.underline.present.desc": "A clean underline underneath your name provides a cosmic foundation, indicating strong self-support, professional recognition, and reliability.",
@@ -271,6 +274,9 @@ export const SIGNATURE_TRANSLATIONS: Record<string, Record<string, string>> = {
     "signature.obs.slant.downward.desc": "नीचे की ओर झुकाव गिरते हुए आत्मविश्वास, थकान, या महत्वपूर्ण क्षणों में आत्म-संदेह का संकेत माना जाता है। यह धन संचय को रोकता है और ऊर्जा को नष्ट करता है।",
     "signature.obs.slant.straight.title": "समतल स्थिर हस्ताक्षर",
     "signature.obs.slant.straight.desc": "एक समतल हस्ताक्षर मजबूत मानसिक संतुलन, भावनात्मक स्थिरता और विश्वसनीयता को दर्शाता है। हालांकि, इसमें कभी-कभी तेजी से बढ़ने की महत्वाकांक्षा की कमी हो सकती है।",
+    "signature.slant.upward.description": "आपका हस्ताक्षर बाएं से दाएं ऊपर की ओर बढ़ता है, जो महत्वाकांक्षा, विकास और करियर में आगे बढ़ने की ऊर्जा को दर्शाता है। यह सूर्य और बृहस्पति की ऊर्जा को आकर्षित करता है।",
+    "signature.slant.horizontal.description": "एक समतल हस्ताक्षर मजबूत मानसिक संतुलन, भावनात्मक स्थिरता और विश्वसनीयता को दर्शाता है। हालांकि, इसमें कभी-कभी तेजी से बढ़ने की महत्वाकांक्षा की कमी हो सकती है।",
+    "signature.slant.downward.description": "नीचे की ओर झुकाव गिरते हुए आत्मविश्वास, थकान, या महत्वपूर्ण क्षणों में आत्म-संदेह का संकेत माना जाता है। यह धन संचय को रोकता है और ऊर्जा को नष्ट करता है।",
 
     "signature.obs.underline.present.title": "आत्मविश्वास की नींव",
     "signature.obs.underline.present.desc": "नाम के नीचे खींची गई साफ रेखा एक मजबूत ब्रह्मांडीय नींव प्रदान करती है। यह आत्मनिर्भरता, पेशेवर पहचान और सामाजिक प्रतिष्ठा को दर्शाती है।",

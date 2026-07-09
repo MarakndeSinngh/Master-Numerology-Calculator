@@ -218,9 +218,9 @@ const App: React.FC = () => {
       
       const isValid = validPaths.some(p => path.includes(p));
       if (!isValid) {
-        window.history.replaceState(null, '', '/mobile-numerology');
+        window.history.replaceState(null, '', '/');
         path = 'mobile-numerology';
-        setPathname('/mobile-numerology');
+        setPathname('/');
       } else {
         setPathname(window.location.pathname);
       }

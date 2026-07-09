@@ -1193,98 +1193,8 @@ export default function PremiumConsultations({ activeToolFromRoute }: PremiumCon
     const fallbackErrorMessage = "LeoFamily Signature Analysis temporarily unavailable. Please use manual signature style selection.";
 
     try {
-      const response = await fetch('/api/signature-audit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          image: sigImage || undefined,
-          personalDetails: { name: sigName, dob: sigDob, profession: sigProfession },
-          manualSelection: { styleId: signatureStyle },
-          driver: getDriverNumber(sigDob),
-          conductor: getConductorNumber(sigDob),
-          nameNumber: getChaldeanNameNumber(sigName),
-          description: {
-            nameSigned: sigDescNameSigned || sigName,
-            size: sigDescSize,
-            slant: sigDescSlant,
-            legibility: sigDescLegibility,
-            underline: sigDescUnderline,
-            underlineDesc: sigDescUnderlineDesc,
-            flourishes: sigDescFlourishes,
-            flourishesDesc: sigDescFlourishesDesc,
-            pressure: sigDescPressure,
-            speed: sigDescSpeed,
-            firstVsLast: sigDescFirstVsLast,
-            specialCharacteristics: sigDescSpecial
-          },
-          language: lang
-        })
-      });
-
-      // Safely validate content-type headers before calling response.json()
-      const contentType = response.headers.get("content-type") || "";
-      let result: any = null;
-
-      if (contentType.includes("application/json")) {
-        try {
-          result = await response.json();
-        } catch (jsonErr) {
-          console.error("Failed to parse JSON response payload:", jsonErr);
-        }
-      } else {
-        // Log actual response text to aid in debugging without exposing to the user
-        try {
-          const rawText = await response.text();
-          console.error("Non-JSON Server Error Response Detected:", {
-            status: response.status,
-            statusText: response.statusText,
-            bodySample: rawText.slice(0, 1000)
-          });
-        } catch (textErr) {
-          console.error("Failed to read non-JSON response text:", textErr);
-        }
-      }
-
-      if (!response.ok || !result) {
-        // If the AI image analysis API fails, log details internally
-        console.error("Signature Audit failed with status:", response.status, "and parsed result:", result);
-        
-        // Automatically switch to manual signature style selection as a fallback
-        const fallbackResult = generateLocal7PartSignatureAudit(
-          signatureStyle || 'RISING_UNDERLINE',
-          sigName,
-          sigDob,
-          {
-            nameSigned: sigDescNameSigned,
-            size: sigDescSize,
-            slant: sigDescSlant,
-            legibility: sigDescLegibility,
-            underline: sigDescUnderline,
-            underlineDesc: sigDescUnderlineDesc,
-            flourishes: sigDescFlourishes,
-            flourishesDesc: sigDescFlourishesDesc,
-            pressure: sigDescPressure,
-            speed: sigDescSpeed,
-            firstVsLast: sigDescFirstVsLast,
-            specialCharacteristics: sigDescSpecial
-          }
-        );
-        setSigAuditResult(fallbackResult);
-        handleSignatureTrigger(signatureStyle || 'RISING_UNDERLINE');
-        
-        throw new Error(fallbackErrorMessage);
-      }
-
-      setSigAuditResult(result);
-    } catch (err: any) {
-      console.error("Signature Audit API Flow Error:", err);
-      // Ensure we display the exact user-friendly message requested
-      setSigError(fallbackErrorMessage);
-      
-      // Automatically switch to manual signature style selection on any failure
-      const fallbackResult = generateLocal7PartSignatureAudit(
+      // Use local high-fidelity analysis directly to avoid 405 Method Not Allowed network errors on static hosts
+      const localResult = generateLocal7PartSignatureAudit(
         signatureStyle || 'RISING_UNDERLINE',
         sigName,
         sigDob,
@@ -1303,8 +1213,11 @@ export default function PremiumConsultations({ activeToolFromRoute }: PremiumCon
           specialCharacteristics: sigDescSpecial
         }
       );
-      setSigAuditResult(fallbackResult);
+      setSigAuditResult(localResult);
       handleSignatureTrigger(signatureStyle || 'RISING_UNDERLINE');
+    } catch (err: any) {
+      console.error("Signature Audit Error:", err);
+      setSigError(fallbackErrorMessage);
     } finally {
       setIsAnalyzingSig(false);
     }
@@ -1377,8 +1290,9 @@ export default function PremiumConsultations({ activeToolFromRoute }: PremiumCon
 
             <form onSubmit={handleVehicleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Vehicle Plate Number (eg. MH12AB1234)</label>
+                <label htmlFor="vehicle-plate" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Vehicle Plate Number (eg. MH12AB1234)</label>
                 <input
+                  id="vehicle-plate"
                   type="text"
                   required
                   placeholder="e.g. MH12AB1234"
@@ -1388,8 +1302,9 @@ export default function PremiumConsultations({ activeToolFromRoute }: PremiumCon
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Your Driver / Birth Root Number</label>
+                <label htmlFor="vehicle-driver" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Your Driver / Birth Root Number</label>
                 <select
+                  id="vehicle-driver"
                   value={vehicleDriver}
                   onChange={(e) => setVehicleDriver(parseInt(e.target.value, 10))}
                   className="w-full bg-white border border-[#E5E7EB] py-3 px-4 rounded-xl text-sm font-sans focus:outline-none"
@@ -1550,8 +1465,9 @@ export default function PremiumConsultations({ activeToolFromRoute }: PremiumCon
               <div className="space-y-6">
                 <form onSubmit={handleHouseSubmit} className="flex gap-3">
                   <div className="flex-1 space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">House / Apartment / Flat Number (any structure)</label>
+                    <label htmlFor="house-quick-num" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">House / Apartment / Flat Number (any structure)</label>
                     <input
+                      id="house-quick-num"
                       type="text"
                       required
                       placeholder="e.g. B-101 or 403"
@@ -2458,8 +2374,9 @@ export default function PremiumConsultations({ activeToolFromRoute }: PremiumCon
               <div className="space-y-6">
                 <form onSubmit={handleBusinessSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Business Firm Name</label>
+                    <label htmlFor="business-name" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Business Firm Name</label>
                     <input
+                      id="business-name"
                       type="text"
                       required
                       placeholder="e.g. Leo Occult Enterprises"
@@ -2469,8 +2386,9 @@ export default function PremiumConsultations({ activeToolFromRoute }: PremiumCon
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Primary Owner's Driver Number</label>
+                    <label htmlFor="business-driver" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Primary Owner's Driver Number</label>
                     <select
+                      id="business-driver"
                       value={businessDriver}
                       onChange={(e) => setBusinessDriver(parseInt(e.target.value, 10))}
                       className="w-full bg-white border border-[#E5E7EB] py-3 px-4 rounded-xl text-sm font-sans focus:outline-none"

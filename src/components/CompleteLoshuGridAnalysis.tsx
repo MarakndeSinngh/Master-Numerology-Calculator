@@ -415,10 +415,11 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
         
         <form onSubmit={handleCalculate} className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end relative z-10">
           <div className="space-y-2 md:col-span-2">
-            <label className="block text-[10px] font-mono uppercase text-slate-500 tracking-widest font-bold">Subject's Full Name (for sound vibrations)</label>
+            <label htmlFor="loshu-name" className="block text-[10px] font-mono uppercase text-slate-500 tracking-widest font-bold">Subject's Full Name (for sound vibrations)</label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
+                id="loshu-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -429,10 +430,11 @@ export const CompleteLoshuGridAnalysis: React.FC<CompleteLoshuGridAnalysisProps>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-[10px] font-mono uppercase text-[#D97706] tracking-widest font-bold">Select Date of Birth</label>
+            <label htmlFor="loshu-dob" className="block text-[10px] font-mono uppercase text-[#D97706] tracking-widest font-bold">Select Date of Birth</label>
             <div className="relative">
               <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D97706]/70" />
               <input
+                id="loshu-dob"
                 type="date"
                 value={dob}
                 onChange={(e) => setDob(e.target.value)}

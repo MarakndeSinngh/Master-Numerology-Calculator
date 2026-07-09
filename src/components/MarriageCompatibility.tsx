@@ -258,10 +258,11 @@ export default function MarriageCompatibility() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Full Name</label>
+                <label htmlFor="p1Name" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                   <input
+                    id="p1Name"
                     type="text"
                     required
                     placeholder="Enter full name..."
@@ -273,10 +274,11 @@ export default function MarriageCompatibility() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Date of Birth</label>
+                <label htmlFor="p1Dob" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Date of Birth</label>
                 <div className="relative">
                   <Calendar className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                   <input
+                    id="p1Dob"
                     type="date"
                     required
                     value={p1Dob}
@@ -287,10 +289,11 @@ export default function MarriageCompatibility() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Mobile Number (Optional)</label>
+                <label htmlFor="p1Mobile" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Mobile Number (Optional)</label>
                 <div className="relative">
                   <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                   <input
+                    id="p1Mobile"
                     type="tel"
                     placeholder="e.g. 9876543210"
                     value={p1Mobile}
@@ -312,10 +315,11 @@ export default function MarriageCompatibility() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Full Name</label>
+                <label htmlFor="p2Name" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                   <input
+                    id="p2Name"
                     type="text"
                     required
                     placeholder="Enter full name..."
@@ -327,10 +331,11 @@ export default function MarriageCompatibility() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Date of Birth</label>
+                <label htmlFor="p2Dob" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Date of Birth</label>
                 <div className="relative">
                   <Calendar className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                   <input
+                    id="p2Dob"
                     type="date"
                     required
                     value={p2Dob}
@@ -341,10 +346,11 @@ export default function MarriageCompatibility() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Mobile Number (Optional)</label>
+                <label htmlFor="p2Mobile" className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Mobile Number (Optional)</label>
                 <div className="relative">
                   <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                   <input
+                    id="p2Mobile"
                     type="tel"
                     placeholder="e.g. 9876543210"
                     value={p2Mobile}
