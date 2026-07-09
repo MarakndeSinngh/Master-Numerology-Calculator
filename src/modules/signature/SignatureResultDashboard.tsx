@@ -298,14 +298,17 @@ export const SignatureResultDashboard: React.FC<SignatureResultDashboardProps> =
                   <td className="py-2 px-3 font-medium text-indigo-700">{slantCategoryVal}</td>
                   <td className="py-2 px-3 text-center font-mono text-slate-500">{Math.round((conf.slant ?? 0.85) * 100)}%</td>
                   <td className="py-2 pl-4 text-slate-500 text-[9px] leading-tight">
-                    {getTranslatedKey(
-                      language, 
-                      metrics.slantLabel?.includes("upward") || metrics.slantLabel === "UPWARD"
-                        ? "signature.slant.upward.description" 
-                        : (metrics.slantLabel?.includes("downward") || metrics.slantLabel === "DOWNWARD"
-                          ? "signature.slant.downward.description"
-                          : "signature.slant.horizontal.description")
-                    )}
+                    {(() => {
+                      const slantLabelLower = (metrics.slantLabel || "").toLowerCase();
+                      return getTranslatedKey(
+                        language, 
+                        slantLabelLower.includes("upward") || slantLabelLower.includes("ascent")
+                          ? "signature.slant.upward.description" 
+                          : (slantLabelLower.includes("downward") || slantLabelLower.includes("descent")
+                            ? "signature.slant.downward.description"
+                            : "signature.slant.horizontal.description")
+                      );
+                    })()}
                   </td>
                 </tr>
 

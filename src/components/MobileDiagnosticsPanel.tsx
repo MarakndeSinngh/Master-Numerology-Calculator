@@ -129,6 +129,421 @@ const planetMapping: Record<number, {
   }
 };
 
+const DIAG_TRANSLATIONS: Record<string, Record<string, string>> = {
+  en: {
+    'diagnostics': 'Diagnostics',
+    'rating': 'Rating',
+    'summary': 'Summary',
+    'digitAnalysis': 'Digit Analysis',
+    'chaldeanPairs': 'Chaldean Pairs',
+    'planetaryEnergy': 'Planetary Energy',
+    'scoreboard': 'Scoreboard',
+    'astrologicalChart': 'Astrological Chart',
+    'remediesMatrix': 'Remedies Matrix',
+    'aiCounseling': 'AI Counseling',
+    'certifiedReport': 'Certified Report',
+    'dobAnchor': 'DOB Anchor',
+    'mobileNumber': 'Mobile Number',
+    'driverNumber': 'Driver Number (Mulank)',
+    'conductorNumber': 'Conductor Number (Bhagyank)',
+    'vibratesTo': 'Vibrates to',
+    'vibrationalCompatibility': 'Vibrational Compatibility Analysis',
+    'careerImpact': 'Career Impact',
+    'activeDestinyMatrix': 'Active Destiny Matrix',
+    'mobileDiagnostics': 'Mobile Diagnostics',
+    'overallResonance': 'Overall Resonance',
+    'overallResonanceDesc': 'Shoring up entire auric shield frequency',
+    'businessGrowth': 'Business Growth',
+    'businessGrowthDesc': 'Promoting raw commerce, liquid assets & negotiation accuracy',
+    'relationshipsAlignment': 'Relationships Alignment',
+    'relationshipsAlignmentDesc': 'Easing friction, marital bonds & domestic grace',
+    'healthEnergyReserve': 'Health Energy Reserve',
+    'healthEnergyReserveDesc': 'Preventing sudden stress and support vitality fields',
+    'spiritualAlignmentBlock': 'Spiritual Alignment Block',
+    'spiritualAlignmentBlockDesc': 'Unlocking deep intuition, calm & cosmic awareness',
+    'mobileVibrationNumber': 'Mobile Vibration Number',
+    'driverNumberMatch': 'Driver Number (Mulank) Match',
+    'conductorNumberMatch': 'Conductor Number (Bhagyank) Match',
+    'planetaryAlignment': 'Planetary Alignment',
+    'resonanceCoefficientMetrics': 'Resonance Coefficient Metrics',
+    'vedicAuraScoreboard': 'Vedic Aura Resonance Scoreboard',
+    'understandHowDivisions': 'Understand how individual life divisions react to the mobile device vibrational field in real-time.',
+    'auraPortalInterpretations': 'Aura Portal Division Interpretations',
+    'clickToExpand': 'Click to expand and explore precise mathematical impacts shaping each aspect of your worldly activity.',
+    'personalityInfluence': 'Personality Influence Profile',
+    'careerImpactCorporate': 'Career Impact & Corporate Advancements',
+    'wealthPotential': 'Wealth Potential & Asset Attraction',
+    'indianNumerologyAlignment': 'Indian Numerology Alignment Report',
+    'compatibilityCheck': 'Mobile & Birth Grid Compatibility Check',
+    'notProvided': 'Not Provided',
+    'notComputed': 'Not Computed',
+    'luxuryAstroDiagnostics': 'Luxury Astro Diagnostics Installed',
+    'relationshipStatus': 'Relationship Status',
+    'marriageCompatibility': 'Marriage Compatibility',
+    'friendly': 'Friendly',
+    'hostile': 'Enemy / Hostile',
+    'neutral': 'Neutral',
+    'quickMobileScan': 'Quick Mobile Scan',
+    'ratingHighlyCompatible': 'Highly Compatible (Auspicious) 🌟',
+    'ratingCompatible': 'Compatible (Favorable) 👍',
+    'ratingAverage': 'Average (Adjustments Suggested) ⚖️',
+    'ratingIncompatible': 'Hostile / Incompatible (Remedies Required) ⚠️',
+    'verdictHigh': 'Your mobile total {mobileReduced} forms an exceptionally favorable planetary alignment with your Driver #{driver} and Conductor #{conductor}. This amplifies active material vibrations and clears financial bottlenecks.',
+    'verdictCompatible': 'The mobile total {mobileReduced} has a balanced, supportive energy with your core charts. It remains a reliable channel for business and daily communications.',
+    'verdictAverage': 'Your mobile total {mobileReduced} is neutral or slightly frictional. Spelling modifications or a revised primary digit ending can help bypass the structural static.',
+    'verdictHostile': 'Significant energetic resistance exists. Mobile total {mobileReduced} clashes with either your Driver #{driver} or Conductor #{conductor}. This can trigger unexpected career delays or miscommunications. Planetary corrections are highly advised.',
+    'collapsibleChapters': 'Collapsible Chapters',
+    'personalityTitle': 'Personality Influence Profile',
+    'personalityContent': 'Under standard Chaldean calculations, your mobile total resolves to {compound} ({reduced}). This establishes a magnetic administrative pull affecting how friends, family, and peers perceive your primary digital vibrations. It fosters rapid decision-making but warns of sudden leadership misunderstandings if ego is not kept steady.',
+    'careerTitle': 'Career Impact & Corporate Advancements',
+    'careerContent': 'Career progression registers at a beautiful 92%. The intense presence of prominent digits in positions 3, 5, and 8 safeguards against institutional delays, easing administrative approvals, government contracts, and executive status preservation. It fosters direct authoritative command when dealing with supervisors.',
+    'wealthTitle': 'Wealth Potential & Asset Attraction',
+    'wealthContent': 'Your abundance attraction score calculates at {wealthScore}%. This evaluates the stable placements of the numbers 5, 8, and 6 inside the final positional grids. If present, it creates excellent support structures for investments, land deals, and retail commerce. It encourages persistent cash reserves but warns offset stress from zeroes.',
+    'relationshipsTitle': 'Relationship Impact & Domestic Grace',
+    'relationshipsContent': 'Registers at 85% stability. Excellent harmonious elements shape position 4 (partnerships) and position 6 (marriage alignments). It establishes robust friendly bridges, helps clear sudden doubts, and fosters deep emotional loyalty. Ensure to avoid repeating digits that spark rudeness traps.',
+    'healthTitle': 'Health Vitality Reserves & Stress Prevention',
+    'healthContent': 'Maintains a sturdy 80% resilience coordinate. Position 3 health calculations indicate stable sun vitality, ensuring fine digestive energy. Make sure to avoid late over-thinking loops during moon nodes and maintain active water intake patterns to support high spiritual vitality limits.',
+    'spiritualTitle': 'Spiritual Influence & Intuitive Resonance',
+    'spiritualContent': 'Unlocks a fine 90% spiritual alignment block. Strongly supported by Chaldean wisdom nodes (7 and 3), this configuration fosters excellent occult research aptitude, sharp intuitive insights during crisis controls, and deep, quiet meditation quality.',
+    'overallMobileAlignment': 'Overall Mobile Alignment',
+    'resonance': 'Resonance',
+    'overallAlignmentDesc': 'The absolute Chaldean numerical alignment of your combined digit totals with your birthday energy grids.',
+    'vedicSepharial': 'Vedic Sepharial',
+    'score': 'Score',
+    'moneyAttractionScore': 'Money Attraction Score',
+    'abundance': 'Abundance',
+    'moneyScoreDesc': 'Evaluates the status of financial multipliers: Mercury (5), Venus (6), and Saturn (8) in prominent focal cells.',
+    'lalKitabProsperity': 'Lal Kitab Prosperity',
+    'careerDriveCommand': 'Career & Drive Command',
+    'authority': 'Authority',
+    'careerScoreDesc': 'Measures leadership resonance based on Sun (1), Saturn (8), and Mars (9) combinations inside your numbers.',
+    'karmaAlignment': 'Karma Alignment',
+    'relationshipHarmony': 'Relationship Harmony',
+    'auraSync': 'Aura Sync',
+    'relationshipScoreDesc': 'Evaluates relationship stability based on Moon (2) and Venus (6) support, penalizing for hostile digit pairs.',
+    'mitraPlanetaryGrid': 'Mitra planetary grid',
+    'communicationStrength': 'Communication Strength',
+    'expression': 'Expression',
+    'communicationScoreDesc': 'Measures voice resonance, marketing clarity, and defensive dialog bridging using Mercury (5) weightings.',
+    'budhChandraNode': 'Budh & Chandra Node',
+    'stabilityFoundations': 'Stability & Foundations',
+    'grounding': 'Grounding',
+    'stabilityScoreDesc': 'Evaluates life anchors, financial discipline, resistance to debts, and safety nets from Saturn (8) forces.',
+    'shaniRahuBalance': 'Shani & Rahu Balance',
+    'requiresDob': 'Requires DOB',
+    'pleaseEnterDob': 'Please enter your Date of Birth (DOB) as optional input or in Advanced Mode to compute driver, conductor, and birth grid compatibility with this mobile number.'
+  },
+  hi: {
+    'diagnostics': 'निदान',
+    'rating': 'रेटिंग',
+    'summary': 'सारांश',
+    'digitAnalysis': 'अंक विश्लेषण',
+    'chaldeanPairs': 'कैल्डियन जोड़े',
+    'planetaryEnergy': 'ग्रह ऊर्जा',
+    'scoreboard': 'स्कोरबोर्ड',
+    'astrologicalChart': 'ज्योतिषीय चार्ट',
+    'remediesMatrix': 'उपाय मैट्रिक्स',
+    'aiCounseling': 'एआई परामर्श',
+    'certifiedReport': 'प्रमाणित रिपोर्ट',
+    'dobAnchor': 'जन्म तिथि एंकर',
+    'mobileNumber': 'मोबाइल नंबर',
+    'driverNumber': 'मूलांक (ड्राइवर नंबर)',
+    'conductorNumber': 'भाग्यांक (कंडक्टर नंबर)',
+    'vibratesTo': 'कंपन संरेखण',
+    'vibrationalCompatibility': 'कंपन अनुकूलता विश्लेषण',
+    'careerImpact': 'करियर प्रभाव',
+    'activeDestinyMatrix': 'सक्रिय भाग्य मैट्रिक्स',
+    'mobileDiagnostics': 'मोबाइल डायग्नोस्टिक्स',
+    'overallResonance': 'समग्र अनुनाद',
+    'overallResonanceDesc': 'संपूर्ण आभा कवच आवृत्ति को सुदृढ़ करना',
+    'businessGrowth': 'व्यापार वृद्धि',
+    'businessGrowthDesc': 'व्यापार, तरल संपत्ति और बातचीत सटीकता को बढ़ावा देना',
+    'relationshipsAlignment': 'संबंध संरेखण',
+    'relationshipsAlignmentDesc': 'घर्षण को कम करना, वैवाहिक बंधन और घरेलू सद्भाव',
+    'healthEnergyReserve': 'स्वास्थ्य ऊर्जा आरक्षित',
+    'healthEnergyReserveDesc': 'अचानक तनाव को रोकना और महत्वपूर्ण ऊर्जा क्षेत्रों का समर्थन करना',
+    'spiritualAlignmentBlock': 'आद्यात्मिक संरेखण ब्लॉक',
+    'spiritualAlignmentBlockDesc': 'गहरी अंतर्ज्ञान, शांति और ब्रह्मांडीय जागरूकता को अनलॉक करना',
+    'mobileVibrationNumber': 'मोबाइल कंपन संख्या',
+    'driverNumberMatch': 'मूलांक (ड्राइवर नंबर) मिलान',
+    'conductorNumberMatch': 'भाग्यांक (कंडक्टर नंबर) मिलान',
+    'planetaryAlignment': 'ग्रह संरेखण',
+    'resonanceCoefficientMetrics': 'अनुनाद गुणांक मेट्रिक्स',
+    'vedicAuraScoreboard': 'वैदिक आभा अनुनाद स्कोरबोर्ड',
+    'understandHowDivisions': 'समझें कि व्यक्तिगत जीवन विभाग वास्तविक समय में मोबाइल डिवाइस के कंपन क्षेत्र के साथ कैसे प्रतिक्रिया करते हैं।',
+    'auraPortalInterpretations': 'आभा पोर्टल प्रभाग व्याख्या',
+    'clickToExpand': 'अपने सांसारिक कार्य के प्रत्येक पहलू को आकार देने वाले सटीक गणितीय प्रभावों का विस्तार और पता लगाने के लिए क्लिक करें।',
+    'personalityInfluence': 'व्यक्तित्व प्रभाव प्रोफ़ाइल',
+    'careerImpactCorporate': 'करियर प्रभाव और कॉर्पोरेट प्रगति',
+    'wealthPotential': 'धन क्षमता और संपत्ति आकर्षण',
+    'indianNumerologyAlignment': 'भारतीय अंकशास्त्र संरेखण रिपोर्ट',
+    'compatibilityCheck': 'मोबाइल और जन्म ग्रिड अनुकूलता जांच',
+    'notProvided': 'प्रदान नहीं किया गया',
+    'notComputed': 'गणना नहीं की गई',
+    'luxuryAstroDiagnostics': 'लक्जरी खगोल निदान स्थापित',
+    'relationshipStatus': 'रिश्ते की स्थिति',
+    'marriageCompatibility': 'विवाह अनुकूलता',
+    'friendly': 'अनुकूल',
+    'hostile': 'शत्रुतापूर्ण',
+    'neutral': 'तटस्थ',
+    'quickMobileScan': 'त्वरित मोबाइल स्कैन',
+    'ratingHighlyCompatible': 'अत्यधिक अनुकूल (शुभ) 🌟',
+    'ratingCompatible': 'अनुकूल (सकारात्मक) 👍',
+    'ratingAverage': 'औसत (सुझाव अपेक्षित) ⚖️',
+    'ratingIncompatible': 'प्रतिकूल / असंगत (उपाय आवश्यक) ⚠️',
+    'verdictHigh': 'आपका मोबाइल कुल {mobileReduced} आपके मूलांक #{driver} और भाग्यांक #{conductor} के साथ एक असाधारण अनुकूल ग्रह संरेखण बनाता है। यह सक्रिय भौतिक कंपनों को बढ़ाता है और वित्तीय बाधाओं को दूर करता है।',
+    'verdictCompatible': 'मोबाइल कुल {mobileReduced} आपके मुख्य चार्ट के साथ एक संतुलित, सहायक ऊर्जा रखता है। यह व्यवसाय और दैनिक संचार के लिए एक विश्वसनीय माध्यम बना हुआ है।',
+    'verdictAverage': 'आपका मोबाइल कुल {mobileReduced} तटस्थ या थोड़ा घर्षणयुक्त है। नाम या वर्तनी में संशोधन या संशोधित प्राथमिक अंक समाप्ति संरचनात्मक बाधाओं को दूर करने में मदद कर सकती है।',
+    'verdictHostile': 'महत्वपूर्ण ऊर्जा प्रतिरोध मौजूद है। मोबाइल कुल {mobileReduced} आपके मूलांक #{driver} या भाग्यांक #{conductor} के साथ संघर्ष करता है। यह अप्रत्याशित करियर विलंब या गलत संचार को ट्रिगर कर सकता है। ग्रह सुधार की अत्यधिक सलाह दी जाती है।',
+    'collapsibleChapters': 'संकुचित अध्याय',
+    'personalityTitle': 'व्यक्तित्व प्रभाव प्रोफ़ाइल',
+    'personalityContent': 'मानक कैल्डियन गणनाओं के तहत, आपका मोबाइल कुल {compound} ({reduced}) पर समाप्त होता है। यह एक चुंबकीय प्रशासनिक आकर्षण स्थापित करता है जो प्रभावित करता है कि मित्र, परिवार और साथी आपके प्राथमिक डिजिटल कंपनों को कैसे देखते हैं। यह त्वरित निर्णय लेने को बढ़ावा देता है लेकिन अहंकार को स्थिर नहीं रखने पर अचानक नेतृत्व की गलतफहमियों की चेतावनी देता है।',
+    'careerTitle': 'करियर प्रभाव और कॉर्पोरेट प्रगति',
+    'careerContent': 'करियर की प्रगति एक सुंदर 92% पर दर्ज की गई है। स्थिति 3, 5 और 8 में प्रमुख अंकों की तीव्र उपस्थिति संस्थागत देरी के खिलाफ सुरक्षा प्रदान करती है, प्रशासनिक अनुमोदन, सरकारी अनुबंधों और कार्यकारी स्थिति के संरक्षण को आसान बनाती है। यह पर्यवेक्षकों के साथ व्यवहार करते समय सीधे आधिकारिक कमान को बढ़ावा देता है।',
+    'wealthTitle': 'धन क्षमता और संपत्ति आकर्षण',
+    'wealthContent': 'आपका प्रचुरता आकर्षण स्कोर {wealthScore}% पर आंका गया है। यह अंतिम स्थितिगत ग्रिड के अंदर संख्या 5, 8 और 6 के स्थिर स्थान का मूल्यांकन करता है। यदि मौजूद है, तो यह निवेश, भूमि सौदों और खुदरा व्यापार के लिए उत्कृष्ट समर्थन संरचनाएं बनाता है। यह लगातार नकद आरक्षित रखने को प्रोत्साहित करता है लेकिन शून्यों से उत्पन्न होने वाले तनाव की चेतावनी देता है।',
+    'relationshipsTitle': 'संबंध प्रभाव और घरेलू सद्भाव',
+    'relationshipsContent': '85% स्थिरता पर दर्ज है। उत्कृष्ट सामंजस्यपूर्ण तत्व स्थिति 4 (साझेदारी) और स्थिति 6 (विवाह संरेखण) को आकार देते हैं। यह मजबूत दोस्ताना पुल स्थापित करता है, अचानक उठने वाले संदेहों को दूर करने में मदद करता है, और गहरी भावनात्मक निष्ठा को बढ़ावा देता है। उन दोहराए गए अंकों से बचें जो अशिष्ट व्यवहार के जाल को जन्म देते हैं।',
+    'healthTitle': 'स्वास्थ्य जीवन शक्ति भंडार और तनाव की रोकथाम',
+    'healthContent': 'एक मजबूत 80% लचीलापन समन्वय बनाए रखता है। स्थिति 3 स्वास्थ्य गणनाएं स्थिर सूर्य जीवन शक्ति का संकेत देती हैं, जिससे ठीक पाचन ऊर्जा सुनिश्चित होती है। चंद्र नोड्स के दौरान देर से अत्यधिक सोचने के चक्र से बचना सुनिश्चित करें और उच्च आध्यात्मिक जीवन शक्ति सीमाओं का समर्थन करने के लिए सक्रिय रूप से पानी पीने की आदतें बनाए रखें।',
+    'spiritualTitle': 'आध्यात्मिक प्रभाव और सहज अनुनाद',
+    'spiritualContent': 'एक उत्कृष्ट 90% आध्यात्मिक संरेखण ब्लॉक को अनलॉक करता है। कैल्डियन ज्ञान नोड्स (7 और 3) द्वारा दृढ़ता से समर्थित, यह विन्यास उत्कृष्ट गूढ़ अनुसंधान योग्यता, संकट नियंत्रण के दौरान तीव्र सहज अंतर्दृष्टि और गहरी, शांत ध्यान गुणवत्ता को बढ़ावा देता है।',
+    'overallMobileAlignment': 'समग्र मोबाइल संरेखण',
+    'resonance': 'अनुनाद',
+    'overallAlignmentDesc': 'आपके जन्मदिन ऊर्जा ग्रिड के साथ आपके संयुक्त अंकों के पूर्ण कैल्डियन संख्यात्मक संरेखण।',
+    'vedicSepharial': 'वैदिक सेफ़रिएल',
+    'score': 'स्कोर',
+    'moneyAttractionScore': 'धन आकर्षण स्कोर',
+    'abundance': 'प्रचुरता',
+    'moneyScoreDesc': 'वित्तीय गुणांकों की स्थिति का मूल्यांकन करता है: प्रमुख कोशिकाओं में बुध (5), शुक्र (6), और शनि (8)।',
+    'lalKitabProsperity': 'लाल किताब समृद्धि',
+    'careerDriveCommand': 'करियर और नेतृत्व कमान',
+    'authority': 'प्राधिकरण',
+    'careerScoreDesc': 'आपके अंकों के भीतर सूर्य (1), शनि (8), और मंगल (9) संयोजनों के आधार पर नेतृत्व अनुनाद को मापता है।',
+    'karmaAlignment': 'कर्म संरेखण',
+    'relationshipHarmony': 'संबंध सद्भाव',
+    'auraSync': 'आभा सिंक',
+    'relationshipScoreDesc': 'शत्रुतापूर्ण अंकों के लिए दंडित करते हुए, चंद्र (2) और शुक्र (6) के समर्थन के आधार पर संबंध स्थिरता का मूल्यांकन करता है।',
+    'mitraPlanetaryGrid': 'मित्र ग्रह ग्रिड',
+    'communicationStrength': 'संचार शक्ति',
+    'expression': 'अभिव्यक्ति',
+    'communicationScoreDesc': 'बुध (5) भार का उपयोग करके आवाज के अनुनाद, विपणन स्पष्टता और रक्षात्मक संवाद का मापन करता है।',
+    'budhChandraNode': 'बुध और चंद्र नोड',
+    'stabilityFoundations': 'स्थिरता और नींव',
+    'grounding': 'आधारभूत',
+    'stabilityScoreDesc': 'शनि (8) बलों से जीवन एंकर, वित्तीय अनुशासन, ऋण के प्रतिरोध और सुरक्षा जाल का मूल्यांकन करता है।',
+    'shaniRahuBalance': 'शनि और राहु संतुलन',
+    'requiresDob': 'जन्म तिथि आवश्यक है',
+    'pleaseEnterDob': 'इस मोबाइल नंबर के साथ ड्राइवर, कंडक्टर और जन्म ग्रिड अनुकूलता की गणना करने के लिए कृपया वैकल्पिक इनपुट के रूप में या उन्नत मोड में अपनी जन्म तिथि (DOB) दर्ज करें।'
+  },
+  gu: {
+    'diagnostics': 'નિદાન',
+    'rating': 'રેટિંગ',
+    'summary': 'સારાંશ',
+    'digitAnalysis': 'અંક વિશ્લેષણ',
+    'chaldeanPairs': 'કેલ્ડિયન જોડી',
+    'planetaryEnergy': 'ગ્રહ ઉર્જા',
+    'scoreboard': 'સ્કોરબોર્ડ',
+    'astrologicalChart': 'જ્યોતિષીય ચાર્ટ',
+    'remediesMatrix': 'ઉપાય મેટ્રિક્સ',
+    'aiCounseling': 'એઆઈ કાઉન્સેલિંગ',
+    'certifiedReport': 'પ્રમાણિત અહેવાલ',
+    'dobAnchor': 'જન્મ તારીખ એન્કર',
+    'mobileNumber': 'મોબાઇલ નંબર',
+    'driverNumber': 'મૂલાંક (ડ્રાઇવર નંબર)',
+    'conductorNumber': 'ભાગ્યાંક (કંડક્ટર નંબર)',
+    'vibratesTo': 'કંપન સંરેખણ',
+    'vibrationalCompatibility': 'કંપન સુસંગતતા વિશ્લેષણ',
+    'careerImpact': 'કારકિર્દી પ્રભાવ',
+    'activeDestinyMatrix': 'સક્રિય ભાગ્ય મેટ્રિક્સ',
+    'mobileDiagnostics': 'મોબાઇલ ડાયગ્નોસ્ટિક્સ',
+    'overallResonance': 'સમગ્ર અનુકૂલન',
+    'overallResonanceDesc': 'સમગ્ર આભા કવચ આવૃત્તિને મજબૂત બનાવવી',
+    'businessGrowth': 'વ્યાપાર વૃદ્ધિ',
+    'businessGrowthDesc': 'વ્યાપાર, પ્રવાહી અસ્કયામતો અને વાટાઘાટોની ચોકસાઈને પ્રોત્સાહન આપવું',
+    'relationshipsAlignment': 'સંબંધ સંરેખણ',
+    'relationshipsAlignmentDesc': 'ઘર્ષણ ઘટાડવું, લગ્ન સંબંધો અને કૌટુંબિક સંવાદિતા',
+    'healthEnergyReserve': 'આરોગ્ય ઊર્જા અનામત',
+    'healthEnergyReserveDesc': 'અચાનક તણાવ અટકાવવો અને મહત્વપૂર્ણ ઉર્જા ક્ષેત્રોને ટેકો આપવો',
+    'spiritualAlignmentBlock': 'આધ્યાત્મિક સંરેખણ બ્લોક',
+    'spiritualAlignmentBlockDesc': 'ઊંડી અંતર્જ્ઞાન, શાંતિ અને બ્રહ્માંડની જાગૃતિને અનલૉક કરવી',
+    'mobileVibrationNumber': 'મોબાઇલ કંપન સંખ્યા',
+    'driverNumberMatch': 'મૂલાંક (ડ્રાઇવર નંબર) મેચ',
+    'conductorNumberMatch': 'ભાગ્યાંક (કંડક્ટર નંબર) મેચ',
+    'planetaryAlignment': 'ગ્રહ સંરેખણ',
+    'resonanceCoefficientMetrics': 'અનુકૂલન ગુણાંક મેટ્રિક્સ',
+    'vedicAuraScoreboard': 'વૈદિક આભા અનુકૂલન સ્કોરબોર્ડ',
+    'understandHowDivisions': 'સમજો કે વ્યક્તિગત જીવન વિભાગો વાસ્તવિક સમયમાં મોબાઇલ ઉપકરણના કંપન ક્ષેત્ર સાથે કેવી પ્રતિક્રિયા આપે છે.',
+    'auraPortalInterpretations': 'આભા પોર્ટલ વિભાગ અર્થઘટન',
+    'clickToExpand': 'તમારી સાંસારિક પ્રવૃત્તિના દરેક પાસાને આકાર આપતી ચોક્કસ ગાણિતિક અસરોને વિસ્તૃત કરવા અને અન્વેષણ કરવા માટે ક્લિક કરો.',
+    'personalityInfluence': 'વ્યક્તિત્વ પ્રભાવ પ્રોફાઇલ',
+    'careerImpactCorporate': 'કારકિર્દી પ્રભાવ અને કોર્પોરેટ પ્રગતિ',
+    'wealthPotential': 'સંપત્તિ ક્ષમતા અને સંપત્તિ આકર્ષણ',
+    'indianNumerologyAlignment': 'ભારતીય અંકશાસ્ત્ર સંરેખણ અહેવાલ',
+    'compatibilityCheck': 'મોબાઇલ અને જન્મ ગ્રીડ સુસંગતતા તપાસ',
+    'notProvided': 'પૂરી પાડવામાં આવેલ નથી',
+    'notComputed': 'ગણતરી કરેલ નથી',
+    'luxuryAstroDiagnostics': 'કાયમી જ્યોતિષીય નિદાન સ્થાપિત',
+    'relationshipStatus': 'સંબંધ સ્થિતિ',
+    'marriageCompatibility': 'લગ્ન સુસંગતતા',
+    'friendly': 'મિત્રતાપૂર્ણ',
+    'hostile': 'શત્રુતાપૂર્ણ',
+    'neutral': 'તટસ્થ',
+    'quickMobileScan': 'ઝડપી મોબાઇલ સ્કેન',
+    'ratingHighlyCompatible': 'અત્યંત સુસંગત (શુભ) 🌟',
+    'ratingCompatible': 'સુસંગત (સકારાત્મક) 👍',
+    'ratingAverage': 'સરેરાશ (સુધારા સૂચવેલા) ⚖️',
+    'ratingIncompatible': 'પ્રતિકૂળ / અસુસંગત (ઉપાયો જરૂરી) ⚠️',
+    'verdictHigh': 'તમારો મોબાઇલ કુલ {mobileReduced} તમારા મૂલાંક #{driver} અને ભાગ્યાંક #{conductor} સાથે અસાધારણ સાનુકૂળ ગ્રહોની ગોઠવણી બનાવે છે. આ સક્રિય ભૌતિક કંપનોને વિસ્તૃત કરે છે અને નાણાકીય અડચણો દૂર કરે છે.',
+    'verdictCompatible': 'મોબાઇલ કુલ {mobileReduced} તમારા મુખ્ય ચાર્ટ સાથે સંતુલિત, સહાયક ઉર્જા ધરાવે છે. તે વ્યવસાય અને દૈનિક સંચાર માટે વિશ્વસનીય ચેનલ તરીકે રહે છે.',
+    'verdictAverage': 'તમારો મોબાઇલ કુલ {mobileReduced} તટસ્થ અથવા સહેજ ઘર્ષણયુક્ત છે. જોડણીમાં ફેરફાર અથવા સુધારેલ પ્રાથમિક અંક સમાપ્તિ માળખાકીય અવરોધોને બાયપાસ કરવામાં મદદ કરી શકે છે.',
+    'verdictHostile': 'નોંધપાત્ર ઊર્જા પ્રતિકાર અસ્તિત્વમાં છે. મોબાઇલ કુલ {mobileReduced} તમારા મૂલાંક #{driver} અથવા ભાગ્યાંક #{conductor} સાથે અથડાય છે. આ અણધારી કારકિર્દી વિલંબ અથવા ખોટા સંચારને ઉત્તેજિત કરી શકે છે. ગ્રહોના સુધારાની ખૂબ ભલામણ કરવામાં આવે છે.',
+    'collapsibleChapters': 'સંકુચિત પ્રકરણો',
+    'personalityTitle': 'વ્યક્તિત્વ પ્રભાવ પ્રોફાઇલ',
+    'personalityContent': 'માનક કેલ્ડિયન ગણતરીઓ હેઠળ, તમારો મોબાઇલ કુલ {compound} ({reduced}) પર સમાપ્ત થાય છે. આ એક ચુંબકીય વહીવટી આકર્ષણ સ્થાપિત કરે છે જે તમારા મિત્રો, કુટુંબીજનો અને સાથીદારો તમારા પ્રાથમિક ડિજિટલ કંપનોને કેવી રીતે જુએ છે તેને અસર કરે છે. તે ઝડપી નિર્ણય લેવાને પ્રોત્સાહન આપે છે પરંતુ જો અહંકાર સ્થિર ન રાખવામાં આવે તો અચાનક નેતૃત્વની ગેરસમજની ચેતવણી આપે છે.',
+    'careerTitle': 'કારકિર્દી પ્રભાવ અને કોર્પોરેટ પ્રગતિ',
+    'careerContent': 'કારકિર્દીની પ્રગતિ સુંદર 92% પર નોંધાયેલ છે. સ્થાનો 3, 5 અને 8 માં અગ્રણી અંકોની તીવ્ર હાજરી સંસ્થાકીય વિલંબ સામે રક્ષણ આપે છે, વહીવટી મંજૂરીઓ, સરકારી કરારો અને વહીવટી દરજ્જો જાળવવાનું સરળ બનાવે છે. તે સુપરવાઇઝરો સાથે કામ કરતી વખતે સીધો સત્તાવાર આદેશ વધારે છે.',
+    'wealthTitle': 'સંપત્તિ ક્ષમતા અને સંપત્તિ આકર્ષણ',
+    'wealthContent': 'તમારો વિપુલતા આકર્ષણ સ્કોર {wealthScore}% પર ગણવામાં આવે છે. આ અંતિમ સ્થાનિક ગ્રીડમાં સંખ્યા 5, 8 અને 6 ના સ્થિર પ્લેસમેન્ટનું મૂલ્યાંકન કરે છે. જો હાજર હોય, તો તે રોકાણો, જમીનના સોદા અને છૂટક વેપાર માટે ઉત્તમ સપોર્ટ સ્ટ્રક્ચર બનાવે છે. તે સતત રોકડ અનામતને પ્રોત્સાહિત કરે છે પરંતુ શૂન્યથી થતા તણાવની ચેતવણી આપે છે.',
+    'relationshipsTitle': 'સંબંધ પ્રભાવ અને કૌટુંબિક સંવાદિતા',
+    'relationshipsContent': '85% સ્થિરતા પર નોંધાયેલ છે. ઉત્કૃષ્ટ સુમેળભર્યા તત્વો સ્થાન 4 (ભાગીદારી) અને સ્થાન 6 (લગ્ન સંરેખણ) ને આકાર આપે છે. તે મંજૂરી આપે છે, અચાનક ઉભા થતા શંકાઓ દૂર કરે છે અને વફાદારીને પ્રોત્સાહન આપે છે.',
+    'healthTitle': 'આરોગ્ય જીવનશક્તિ અનામત અને તણાવ નિવારણ',
+    'healthContent': 'મજબૂત 80% સ્થિતિસ્थाપકતા સંકલન જાળવી રાખે છે. સ્થાન 3 આરોગ્ય ગણતરીઓ સ્થિર સૂર્ય જીવનશક્તિ સૂચવે છે. મહેરબાની કરીને રાત્રે મોડે સુધી વિચારવાનું ટાળો અને પુષ્કળ પાણી પીવો.',
+    'spiritualTitle': 'આધ્યાત્મિક પ્રભાવ અને સહજ અનુકૂલન',
+    'spiritualContent': 'એક સુંદર 90% આધ્યાત્મિક સંરેખણ બ્લોકને અનલૉક કરે છે. આ ગોઠવણી ઊંડી આધ્યાત્મિક પ્રગતિ અને ધ્યાન કરવાની ક્ષમતા વધારે છે.',
+    'overallMobileAlignment': 'સમગ્ર મોબાઇલ ગોઠવણી',
+    'resonance': 'અનુનાદ',
+    'overallAlignmentDesc': 'તમારા જન્મદિવસની ઉર્જા ગ્રીડ સાથે તમારા સંયુક્ત અંકોની સંપૂર્ણ કેલ્ડિયન સંખ્યાત્મક ગોઠવણી.',
+    'vedicSepharial': 'વૈદિક સેફરિયલ',
+    'score': 'સ્કોર',
+    'moneyAttractionScore': 'નાણાં આકર્ષણ સ્કોર',
+    'abundance': 'વિપુલતા',
+    'moneyScoreDesc': 'નાણાકીય ગુણકોની સ્થિતિનું મૂલ્યાંકન કરે છે: મુખ્ય કોષોમાં બુધ (5), શુક્ર (6), અને શનિ (8).',
+    'lalKitabProsperity': 'લાલ કિતાબ સમૃદ્ધિ',
+    'careerDriveCommand': 'કારકિર્દી અને નેતૃત્વ કમાન્ડ',
+    'authority': 'સત્તાધિકાર',
+    'careerScoreDesc': 'તમારા અંકોમાં સૂર્ય (1), શનિ (8), અને મંગળ (9) સંયોજનોના આધારે નેતૃત્વના સ્તરને માપે છે.',
+    'karmaAlignment': 'કર્મ ગોઠવણી',
+    'relationshipHarmony': 'સંબંધ સંવાદિતા',
+    'auraSync': 'આભા સિંક',
+    'relationshipScoreDesc': 'પ્રતિકૂળ અંકો માટે દંડ કરીને, ચંદ્ર (2) અને શુક્ર (6) ના સમર્થનના આધારે સંબંધની સ્થિરતાનું મૂલ્યાંકન કરે છે.',
+    'mitraPlanetaryGrid': 'મિત્ર ગ્રહ ગ્રીડ',
+    'communicationStrength': 'સંચાર શક્તિ',
+    'expression': 'અભિવ્યક્તિ',
+    'communicationScoreDesc': 'બુધ (5) વેઇટેજ સાથે અવાજ પ્રતિધ્વનિ, માર્કેટિંગ સ્પષ્ટતા અને રક્ષણાત્મક સંવાદ ક્ષમતા માપે છે.',
+    'budhChandraNode': 'બુધ અને ચંદ્ર નોડ',
+    'stabilityFoundations': 'સ્થિરતા અને પાયો',
+    'grounding': 'ગ્રાઉન્ડિંગ',
+    'stabilityScoreDesc': 'શનિ (8) દળોથી નાણાકીય શિસ્ત, દેવાં સામે પ્રતિકાર અને સુરક્ષા નેટ્સનું મૂલ્યાંકન કરે છે.',
+    'shaniRahuBalance': 'શનિ અને રાહુ સંતુલન',
+    'requiresDob': 'જન્મ તારીખ જરૂરી છે',
+    'pleaseEnterDob': 'આ મોબાઇલ નંબર સાથે ડ્રાઇવર, કંડક્ટર અને જન્મ ગ્રીડ સુસંગતતાની ગણતરી કરવા માટે કૃપા કરીને તમારી જન્મ તારીખ (DOB) વૈકલ્પિક ઇનપુટ તરીકે અથવા એડવાન્સ્ડ મોડમાં દાખલ કરો।'
+  },
+  mr: {
+    'diagnostics': 'निदान',
+    'rating': 'रेटिंग',
+    'summary': 'सारांश',
+    'digitAnalysis': 'अंक विश्लेषण',
+    'chaldeanPairs': 'कॅल्डियन जोड्या',
+    'planetaryEnergy': 'ग्रह ऊर्जा',
+    'scoreboard': 'स्कोरबोर्ड',
+    'astrologicalChart': 'ज्योतिषीय चार्ट',
+    'remediesMatrix': 'उपाय मॅट्रिक्स',
+    'aiCounseling': 'एआय समुपदेशन',
+    'certifiedReport': 'प्रमाणित अहवाल',
+    'dobAnchor': 'जन्म तारीख अँकर',
+    'mobileNumber': 'मोबाईल नंबर',
+    'driverNumber': 'मूलांक (ड्रायव्हर नंबर)',
+    'conductorNumber': 'भाग्यांक (कंडक्टर नंबर)',
+    'vibratesTo': 'कंपन संरेखन',
+    'vibrationalCompatibility': 'कंपन अनुकूलता विश्लेषण',
+    'careerImpact': 'करिअर प्रभाव',
+    'activeDestinyMatrix': 'सक्रिय भाग्य मॅट्रिक्स',
+    'mobileDiagnostics': 'मोबाईल डायग्नोस्टिक्स',
+    'overallResonance': 'समग्र अनुनाद',
+    'overallResonanceDesc': 'संपूर्ण आभा कवच वारंवारता मजबूत करणे',
+    'businessGrowth': 'व्यवसाय वाढ',
+    'businessGrowthDesc': 'व्यापार, तरल मालमत्ता आणि वाटाठीची अचूकता वाढवणे',
+    'relationshipsAlignment': 'संबंध संरेखन',
+    'relationshipsAlignmentDesc': 'तणाव कमी करणे, वैवाहिक संबंध आणि कौटुंबिक सुसंवाद',
+    'healthEnergyReserve': 'आरोग्य ऊर्जा राखीव',
+    'healthEnergyReserveDesc': 'अचानक येणारा ताण रोखणे आणि महत्वपूर्ण ऊर्जा क्षेत्रांना आधार देणे',
+    'spiritualAlignmentBlock': 'आध्यात्मिक संरेखन ब्लॉक',
+    'spiritualAlignmentBlockDesc': 'खोल अंतर्ज्ञान, शांतता आणि विश्वात्मक जागरूकता अनलॉक करणे',
+    'mobileVibrationNumber': 'मोबाईल कंपन संख्या',
+    'driverNumberMatch': 'मूलांक (ड्रायव्हर नंबर) जुळणी',
+    'conductorNumberMatch': 'भाग्यांक (कंडक्टर नंबर) जुळणी',
+    'planetaryAlignment': 'ग्रह संरेखन',
+    'resonanceCoefficientMetrics': 'अनुनाद गुणांक मेट्रिक्स',
+    'vedicAuraScoreboard': 'वैदिक आभा अनुनाद स्कोरबोर्ड',
+    'understandHowDivisions': 'वैयक्तिक जीवन विभाग रिअल-टाइममध्ये मोबाईल डिव्हाइसच्या कंपन क्षेत्राशी कशा प्रतिक्रिया देतात हे समजून घ्या.',
+    'auraPortalInterpretations': 'आभा पोर्टल विभाग व्याख्या',
+    'clickToExpand': 'आपल्या सांसारिक कार्याच्या प्रत्येक पैलूला आकार देणाऱ्या अचूक गणितीय प्रभावांचा विस्तार आणि शोध घेण्यासाठी क्लिक करा.',
+    'personalityInfluence': 'व्यक्तिमत्व प्रभाव प्रोफाइल',
+    'careerImpactCorporate': 'करिअर प्रभाव आणि कॉर्पोरेट प्रगती',
+    'wealthPotential': 'संपत्ती क्षमता आणि मालमत्ता आकर्षण',
+    'indianNumerologyAlignment': 'भारतीय अंकशास्त्र संरेखन अहवाल',
+    'compatibilityCheck': 'मोबाईल आणि जन्म ग्रिड सुसंगतता तपासणी',
+    'notProvided': 'दिलेले नाही',
+    'notComputed': 'गणना केली नाही',
+    'luxuryAstroDiagnostics': 'लक्झरी खगोल निदान स्थापित',
+    'relationshipStatus': 'नात्याची स्थिती',
+    'marriageCompatibility': 'विवाह सुसंगतता',
+    'friendly': 'अनुकूल',
+    'hostile': 'शत्रुत्वपूर्ण',
+    'neutral': 'तटस्थ',
+    'quickMobileScan': 'त्वरित मोबाईल स्कॅन',
+    'ratingHighlyCompatible': 'अत्यंत सुसंगत (शुभ) 🌟',
+    'ratingCompatible': 'सुसंगत (सकारात्मक) 👍',
+    'ratingAverage': 'सरासरी (बदल सुचवले आहेत) ⚖️',
+    'ratingIncompatible': 'प्रतिकूल / असंगत (उपाय आवश्यक आहेत) ⚠️',
+    'verdictHigh': 'तुमची मोबाईल एकूण {mobileReduced} तुमच्या मूलांक #{driver} आणि भाग्यांक #{conductor} सोबत अत्यंत अनुकूल ग्रह संरेखन तयार करते. हे सक्रिय भौतिक कंपन वाढवते आणि आर्थिक अडचणी दूर करते.',
+    'verdictCompatible': 'मोबाईल एकूण {mobileReduced} तुमच्या मुख्य चार्टसह संतुलित, आश्वासक ऊर्जा ठेवते. हे व्यवसाय आणि रोजच्या संवादासाठी एक विश्वासार्ह माध्यम आहे.',
+    'verdictAverage': 'तुमची मोबाईल एकूण {mobileReduced} तटस्थ किंवा किंचित घर्षणयुक्त आहे. स्पेलिंगमधील बदल किंवा सुधारित प्राथमिक अंक समाप्ती संरचनात्मक अडथळे दूर करण्यास मदत करू शकतात.',
+    'verdictHostile': 'मोठ्या प्रमाणावर ऊर्जा प्रतिरोध आहे. मोबाईल एकूण {mobileReduced} तुमच्या मूलांक #{driver} किंवा भाग्यांक #{conductor} सोबत संघर्ष करतो. यामुळे अनपेक्षित करिअर विलंब किंवा गैरसमज होऊ शकतात. ग्रहांच्या उपायांचा सल्ला दिला जातो.',
+    'collapsibleChapters': 'संकुचित अध्याय',
+    'personalityTitle': 'व्यक्तिमत्व प्रभाव प्रोफाइल',
+    'personalityContent': 'मानक कॅल्डियन गणनानुसार, तुमची मोबाईल एकूण {compound} ({reduced}) वर समाप्त होते. हे एक चुंबकीय प्रशासकीय आकर्षण प्रस्थापित करते जे मित्र, कुटुंब आणि सहकारी तुमचे प्राथमिक डिजिटल कंपन कसे पाहतात यावर परिणाम करते.',
+    'careerTitle': 'करिअर प्रभाव आणि कॉर्पोरेट प्रगती',
+    'careerContent': 'करिअरची प्रगती ९२% वर नोंदवली गेली आहे. स्थान ३, ५ आणि ८ मधील प्रमुख अंकांची तीव्र उपस्थिती संस्थात्मक विलंबापासून संरक्षण करते, प्रशासकीय मंजुरी आणि कार्यकारी दर्जाचे जतन सुलभ करते.',
+    'wealthTitle': 'संपत्ती क्षमता आणि मालमत्ता आकर्षण',
+    'wealthContent': 'तुमचा विपुलता आकर्षण स्कोर {wealthScore}% वर मोजला गेला आहे. हे ५, ८ आणि ६ च्या स्थिर स्थानाचे मूल्यमापन करते. हे सातत्याने रोख राखीव ठेवण्यास प्रोत्साहित करते.',
+    'relationshipsTitle': 'संबंध प्रभाव आणि कौटुंबिक सुसंवाद',
+    'relationshipsContent': '८५% स्थिरतेवर नोंदणीकृत आहे. उत्कृष्ट सुसंवादी घटक स्थान ४ आणि ६ ला आकार देतात. हे मजबूत मैत्रीपूर्ण पूल प्रस्थापित करते.',
+    'healthTitle': 'आरोग्य चैतन्य राखीव आणि ताण प्रतिबंध',
+    'healthContent': 'एक मजबूत ८०% लवचिकता समन्वय राखते. स्थान ३ मधील आरोग्य गणना स्थिर सूर्य चैतन्य दर्शवते. पुरेशा प्रमाणात पाणी पिण्याची सवय ठेवा.',
+    'spiritualTitle': 'आध्यात्मिक प्रभाव आणि अंतर्ज्ञानी अनुनाद',
+    'spiritualContent': '९०% आध्यात्मिक संरेखन ब्लॉक अनलॉक करते. हे कॉन्फिगरेशन ध्यान आणि गहन आध्यात्मिक प्रगती करण्यास मदत करते.',
+    'overallMobileAlignment': 'समग्र मोबाईल संरेखन',
+    'resonance': 'अनुनाद',
+    'overallAlignmentDesc': 'तुमच्या वाढदिवसाच्या उर्जा ग्रिडसह तुमच्या एकत्रित अंकांच्या पूर्ण कॅल्डियन संख्यात्मक संरेखन.',
+    'vedicSepharial': 'वैदिक सेफरिअल',
+    'score': 'स्कोर',
+    'moneyAttractionScore': 'पैसा आकर्षण स्कोर',
+    'abundance': 'विपुलता',
+    'moneyScoreDesc': 'वित्तीय गुणाकारांच्या स्थितीचे मूल्यमापन करते: मुख्य पेशींमध्ये बुध (5), शुक्र (6), आणि शनी (8).',
+    'lalKitabProsperity': 'लाल किताब समृद्धी',
+    'careerDriveCommand': 'करिअर आणि नेतृत्व कमान',
+    'authority': 'प्राधिकरण',
+    'careerScoreDesc': 'तुमच्या अंकांमधील सूर्य (1), शनी (8), आणि मंगळ (9) संयोजनांवर आधारित नेतृत्व अनुनाद मोजते.',
+    'karmaAlignment': 'कर्म संरेखन',
+    'relationshipHarmony': 'संबंध सुसंवाद',
+    'auraSync': 'आभा सिंक',
+    'relationshipScoreDesc': 'शत्रुत्वपूर्ण अंकांसाठी दंड आकारताना, चंद्र (2) आणि शुक्र (6) च्या समर्थनावर आधारित संबंधांच्या स्थिरतेचे मूल्यमापन करते.',
+    'mitraPlanetaryGrid': 'मित्र ग्रह ग्रिड',
+    'communicationStrength': 'संवाद शक्ती',
+    'expression': 'अभिव्यक्ती',
+    'communicationScoreDesc': 'बुध (5) वेटिंग वापरून आवाजाचा अनुनाद, विपणन स्पष्टता आणि बचावात्मक संवाद मोजतो.',
+    'budhChandraNode': 'बुध आणि चंद्र नोड',
+    'stabilityFoundations': 'स्थिरता आणि पाया',
+    'grounding': 'ग्राउंडिंग',
+    'stabilityScoreDesc': 'शनी (8) बलांपासून जीवन अँकर, आर्थिक शिस्त, कर्जाचा प्रतिकार आणि सुरक्षा जाळ्यांचे मूल्यमापन करते.',
+    'shaniRahuBalance': 'शनी आणि राहू संतुलन',
+    'requiresDob': 'जन्म तारीख आवश्यक आहे',
+    'pleaseEnterDob': 'या मोबाईल क्रमांकासह ड्रायव्हर, कंडक्टर आणि जन्म ग्रिड सुसंगतता मोजण्यासाठी कृपया पर्यायी इनपुट म्हणून किंवा प्रगत मोडमध्ये तुमची जन्म तारीख (DOB) प्रविष्ट करा।'
+  }
+};
+
 const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
   personalDetails,
   dobData,
@@ -139,6 +554,66 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
   onSaveReport
 }) => {
   const { lang, t } = useLanguage();
+  
+  const getDT = (key: string, fallback: string): string => {
+    const dict = DIAG_TRANSLATIONS[lang] || DIAG_TRANSLATIONS['en'];
+    return dict[key] || fallback;
+  };
+
+  const getPlanetName = (num: number): string => {
+    const keys: Record<number, string> = {
+      1: 'planets.sun',
+      2: 'planets.moon',
+      3: 'planets.jupiter',
+      4: 'planets.rahu',
+      5: 'planets.mercury',
+      6: 'planets.venus',
+      7: 'planets.ketu',
+      8: 'planets.saturn',
+      9: 'planets.mars'
+    };
+    return t(keys[num] || 'planets.sun');
+  };
+
+  const planetEmojis: Record<number, string> = {
+    1: '☀️',
+    2: '🌙',
+    3: '🕉️',
+    4: '⚡',
+    5: '💬',
+    6: '✨',
+    7: '🧩',
+    8: '⚖️',
+    9: '🛡️'
+  };
+
+  const getRelTranslation = (rel: string): string => {
+    if (rel === 'Friendly') return getDT('friendly', 'Friendly');
+    if (rel === 'Enemy / Hostile') return getDT('hostile', 'Enemy / Hostile');
+    return getDT('neutral', 'Neutral');
+  };
+
+  const getRatingTranslation = (rating: string): string => {
+    if (rating.includes('Highly Compatible')) return getDT('ratingHighlyCompatible', 'Highly Compatible (Auspicious) 🌟');
+    if (rating.includes('Hostile') || rating.includes('Incompatible')) return getDT('ratingIncompatible', 'Hostile / Incompatible (Remedies Required) ⚠️');
+    if (rating.includes('Compatible')) return getDT('ratingCompatible', 'Compatible (Favorable) 👍');
+    if (rating.includes('Average')) return getDT('ratingAverage', 'Average (Adjustments Suggested) ⚖️');
+    return rating;
+  };
+
+  const getTranslatedVerdict = (score: number, mobileReduced: number, driver: number, conductor: number): string => {
+    let template = '';
+    if (score >= 85) template = getDT('verdictHigh', 'Your mobile total {mobileReduced} forms an exceptionally favorable planetary alignment with your Driver #{driver} and Conductor #{conductor}. This amplifies active material vibrations and clears financial bottlenecks.');
+    else if (score >= 70) template = getDT('verdictCompatible', 'The mobile total {mobileReduced} has a balanced, supportive energy with your core charts. It remains a reliable channel for business and daily communications.');
+    else if (score >= 50) template = getDT('verdictAverage', 'Your mobile total {mobileReduced} is neutral or slightly frictional. Spelling modifications or a revised primary digit ending can help bypass the structural static.');
+    else template = getDT('verdictHostile', 'Significant energetic resistance exists. Mobile total {mobileReduced} clashes with either your Driver #{driver} or Conductor #{conductor}. This can trigger unexpected career delays or miscommunications. Planetary corrections are highly advised.');
+
+    return template
+      .replace('{mobileReduced}', String(mobileReduced))
+      .replace('{driver}', String(driver))
+      .replace('{conductor}', String(conductor));
+  };
+
   // Use remedies from prop or fallback
   const internalRemedies = remedies;
 
@@ -347,22 +822,22 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
       <div className="sticky top-0 z-50 bg-[#FFFFFF] border border-[#E5E7EB] shadow-sm/90 backdrop-blur-md border-b border-[#E5E7EB] shadow-xl py-4 px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto gap-4 scrollbar-none">
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[#D97706] font-cinzel text-xs font-bold tracking-widest uppercase">Diagnostics:</span>
+            <span className="text-[#D97706] font-cinzel text-xs font-bold tracking-widest uppercase">{getDT('diagnostics', 'Diagnostics')}:</span>
             <div className="bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/20 px-3 py-1 rounded-full text-[10px] font-mono">
-              Rating: {mobileData.rating}
+              {getDT('rating', 'Rating')}: {getRatingTranslation(mobileData.rating)}
             </div>
           </div>
           <div className="flex gap-1 shrink-0">
             {[
-              { id: 'hero', label: 'Summary', ref: heroRef },
-              { id: 'breakdown', label: 'Digit Analysis', ref: breakdownRef },
-              { id: 'pairs', label: 'Chaldean Pairs', ref: pairsRef },
-              { id: 'vibration', label: 'Planetary Energy', ref: vibrationRef },
-              { id: 'scoreboard', label: 'Scoreboard', ref: scoreboardRef },
-              { id: 'report', label: 'Astrological Chart', ref: reportRef },
-              { id: 'remedies', label: 'Remedies Matrix', ref: remediesRef },
-              { id: 'ai', label: 'AI Counseling', ref: aiRef },
-              { id: 'pdf', label: 'Certified Report', ref: pdfRef },
+              { id: 'hero', label: getDT('summary', 'Summary'), ref: heroRef },
+              { id: 'breakdown', label: getDT('digitAnalysis', 'Digit Analysis'), ref: breakdownRef },
+              { id: 'pairs', label: getDT('chaldeanPairs', 'Chaldean Pairs'), ref: pairsRef },
+              { id: 'vibration', label: getDT('planetaryEnergy', 'Planetary Energy'), ref: vibrationRef },
+              { id: 'scoreboard', label: getDT('scoreboard', 'Scoreboard'), ref: scoreboardRef },
+              { id: 'report', label: getDT('astrologicalChart', 'Astrological Chart'), ref: reportRef },
+              { id: 'remedies', label: getDT('remediesMatrix', 'Remedies Matrix'), ref: remediesRef },
+              { id: 'ai', label: getDT('aiCounseling', 'AI Counseling'), ref: aiRef },
+              { id: 'pdf', label: getDT('certifiedReport', 'Certified Report'), ref: pdfRef },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -390,45 +865,45 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 relative z-10">
             <div className="space-y-4 text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/20 rounded-full font-mono text-[9px] uppercase tracking-widest font-bold">
-                <Sparkles className="w-3 h-3 text-amber-600 animate-spin-slow" /> Luxury Astro Diagnostics Installed
+                <Sparkles className="w-3 h-3 text-amber-600 animate-spin-slow" /> {getDT('luxuryAstroDiagnostics', 'Luxury Astro Diagnostics Installed')}
               </div>
               
               <h2 className="font-cinzel text-3xl md:text-5xl font-black text-[#1F2937] tracking-wide uppercase leading-none">
-                {isQuickMode ? "Quick Mobile Scan" : personalDetails.name}
+                {isQuickMode ? getDT('quickMobileScan', "Quick Mobile Scan") : personalDetails.name}
               </h2>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 pt-2">
                 <div className="flex items-center gap-2.5">
                   <User className="w-4 h-4 text-[#D97706]" />
                   <div>
-                    <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">DOB Anchor</span>
+                    <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">{getDT('dobAnchor', 'DOB Anchor')}</span>
                     <span className="text-xs text-[#1F2937] font-mono font-bold">
-                      {personalDetails.dob ? personalDetails.dob : "Not Provided"}
+                      {personalDetails.dob ? personalDetails.dob : getDT('notProvided', "Not Provided")}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Smartphone className="w-4 h-4 text-[#D97706]" />
                   <div>
-                    <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">Mobile Number</span>
+                    <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">{getDT('mobileNumber', 'Mobile Number')}</span>
                     <span className="text-xs text-[#1F2937] font-mono font-bold tracking-wider">{personalDetails.mobile}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Activity className="w-4 h-4 text-[#D97706]" />
                   <div>
-                    <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">Driver Number (Mulank)</span>
+                    <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">{getDT('driverNumber', 'Driver Number (Mulank)')}</span>
                     <span className="text-xs text-[#D97706] font-bold">
-                      {dobData ? `Mulank #${dobData.birthNumber}` : "Not Computed"}
+                      {dobData ? `${getDT('driverNumber', 'Mulank')} #${dobData.birthNumber}` : getDT('notComputed', "Not Computed")}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Award className="w-4 h-4 text-[#D97706]" />
                   <div>
-                    <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">Conductor Number (Bhagyank)</span>
+                    <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-wider font-bold">{getDT('conductorNumber', 'Conductor Number (Bhagyank)')}</span>
                     <span className="text-xs text-[#D97706] font-bold">
-                      {dobData ? `Bhagyank #${dobData.lifePathNumber}` : "Not Computed"}
+                      {dobData ? `${getDT('conductorNumber', 'Bhagyank')} #${dobData.lifePathNumber}` : getDT('notComputed', "Not Computed")}
                     </span>
                   </div>
                 </div>
@@ -441,18 +916,10 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                 {mobileData.reducedTotal}
               </div>
               <div>
-                <span className="block text-[9px] font-mono text-slate-500 uppercase tracking-widest font-bold">Mobile Vibration Number</span>
+                <span className="block text-[9px] font-mono text-slate-500 uppercase tracking-widest font-bold">{getDT('mobileVibrationNumber', 'Mobile Vibration Number')}</span>
                 <span className="text-base text-[#1F2937] font-cinzel font-bold block">{mobileData.compoundTotal} / {mobileData.reducedTotal}</span>
                 <span className="text-[10px] text-slate-700 font-mono font-semibold uppercase bg-[#D97706]/10 px-2 py-0.5 rounded mt-1 inline-block">
-                  {mobileData.reducedTotal === 1 ? 'Vibrates to Sun ☀️' :
-                   mobileData.reducedTotal === 2 ? 'Vibrates to Moon 🌙' :
-                   mobileData.reducedTotal === 3 ? 'Vibrates to Jupiter 🕉️' :
-                   mobileData.reducedTotal === 4 ? 'Vibrates to Rahu ⚡' :
-                   mobileData.reducedTotal === 5 ? 'Vibrates to Mercury 💬' :
-                   mobileData.reducedTotal === 6 ? 'Vibrates to Venus ✨' :
-                   mobileData.reducedTotal === 7 ? 'Vibrates to Ketu 🧩' :
-                   mobileData.reducedTotal === 8 ? 'Vibrates to Saturn ⚖️' :
-                   'Vibrates to Mars 🛡️'}
+                  {getDT('vibratesTo', 'Vibrates to')} {getPlanetName(mobileData.reducedTotal)} {planetEmojis[mobileData.reducedTotal] || ''}
                 </span>
               </div>
             </div>
@@ -467,17 +934,17 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-[#E5E7EB]/70">
               <div className="space-y-1">
                 <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold flex items-center gap-1.5">
-                  <Award className="w-4 h-4 text-[#D97706] animate-pulse" /> Indian Numerology Alignment Report
+                  <Award className="w-4 h-4 text-[#D97706] animate-pulse" /> {getDT('indianNumerologyAlignment', 'Indian Numerology Alignment Report')}
                 </span>
                 <h3 className="font-playfair text-xl md:text-2xl font-black text-[#1F2937]">
-                  Mobile & Birth Grid Compatibility Check
+                  {getDT('compatibilityCheck', 'Mobile & Birth Grid Compatibility Check')}
                 </h3>
               </div>
               <div className="flex items-center gap-3 bg-[#FDFCF7] border border-[#D97706]/20 px-4 py-2.5 rounded-2xl shrink-0">
                 <div className="text-right">
-                  <span className="block text-[8px] font-mono text-[#6B7280] uppercase tracking-wider font-bold">Planetary Alignment</span>
+                  <span className="block text-[8px] font-mono text-[#6B7280] uppercase tracking-wider font-bold">{getDT('planetaryAlignment', 'Planetary Alignment')}</span>
                   <span className="text-xs font-bold text-[#D97706] block">
-                    {compatibility.rating}
+                    {getRatingTranslation(compatibility.rating)}
                   </span>
                 </div>
                 <div className="w-10 h-10 bg-[#D97706] text-white rounded-xl flex items-center justify-center font-playfair text-base font-black shadow-md shadow-[#D97706]/20">
@@ -489,35 +956,35 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 pt-6">
               <div className="lg:col-span-2 space-y-4">
                 <h4 className="font-sans text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Vibrational Compatibility Analysis
+                  {getDT('vibrationalCompatibility', 'Vibrational Compatibility Analysis')}
                 </h4>
                 <p className="text-base text-slate-800 leading-relaxed font-sans">
-                  {compatibility.verdict}
+                  {getTranslatedVerdict(compatibility.score, mobileData.reducedTotal, dobData.birthNumber, dobData.lifePathNumber)}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div className="bg-[#FDFCF7] border border-[#E5D7C6]/40 p-4 rounded-2xl space-y-1">
-                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-wider font-bold block">Driver Number (Mulank) Match</span>
+                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-wider font-bold block">{getDT('driverNumberMatch', 'Driver Number (Mulank) Match')}</span>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-slate-900">Mulank #{dobData.birthNumber}</span>
+                      <span className="text-sm font-semibold text-slate-900">{getDT('driverNumber', 'Mulank')} #{dobData.birthNumber}</span>
                       <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full ${
                         compatibility.driverRel === 'Friendly' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                         compatibility.driverRel === 'Enemy / Hostile' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
                         'bg-slate-50 text-slate-700 border border-slate-200'
                       }`}>
-                        {compatibility.driverRel}
+                        {getRelTranslation(compatibility.driverRel)}
                       </span>
                     </div>
                   </div>
                   <div className="bg-[#FDFCF7] border border-[#E5D7C6]/40 p-4 rounded-2xl space-y-1">
-                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-wider font-bold block">Conductor Number (Bhagyank) Match</span>
+                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-wider font-bold block">{getDT('conductorNumberMatch', 'Conductor Number (Bhagyank) Match')}</span>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-slate-900">Bhagyank #{dobData.lifePathNumber}</span>
+                      <span className="text-sm font-semibold text-slate-900">{getDT('conductorNumber', 'Bhagyank')} #{dobData.lifePathNumber}</span>
                       <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full ${
                         compatibility.conductorRel === 'Friendly' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                         compatibility.conductorRel === 'Enemy / Hostile' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
                         'bg-slate-50 text-slate-700 border border-slate-200'
                       }`}>
-                        {compatibility.conductorRel}
+                        {getRelTranslation(compatibility.conductorRel)}
                       </span>
                     </div>
                   </div>
@@ -547,24 +1014,24 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-[#E5E7EB]/70">
               <div className="space-y-1">
                 <span className="text-[10px] font-mono text-[#D97706] uppercase tracking-widest block font-bold flex items-center gap-1.5">
-                  <Award className="w-4 h-4 text-[#D97706]" /> Indian Numerology Alignment Report
+                  <Award className="w-4 h-4 text-[#D97706]" /> {getDT('indianNumerologyAlignment', 'Indian Numerology Alignment Report')}
                 </span>
                 <h3 className="font-playfair text-xl md:text-2xl font-black text-[#1F2937]">
-                  Mobile & Birth Grid Compatibility Check
+                  {getDT('compatibilityCheck', 'Mobile & Birth Grid Compatibility Check')}
                 </h3>
               </div>
               <div className="flex items-center gap-3 bg-[#FDFCF7] border border-[#D97706]/20 px-4 py-2.5 rounded-2xl shrink-0">
                 <div className="text-right">
-                  <span className="block text-[8px] font-mono text-[#6B7280] uppercase tracking-wider font-bold">Planetary Alignment</span>
-                  <span className="text-xs font-bold text-[#D97706] block">
-                    Requires DOB
+                  <span className="block text-[8px] font-mono text-[#6B7280] uppercase tracking-wider font-bold">{getDT('planetaryAlignment', 'Planetary Alignment')}</span>
+                  <span className="text-xs font-bold text-[#D97706] block font-sans">
+                    {getDT('requiresDob', 'Requires DOB')}
                   </span>
                 </div>
               </div>
             </div>
             <div className="pt-6">
-              <p className="text-sm text-slate-500 italic">
-                Please enter your Date of Birth (DOB) as optional input or in Advanced Mode to compute driver, conductor, and birth grid compatibility with this mobile number.
+              <p className="text-sm text-slate-500 italic font-sans">
+                {getDT('pleaseEnterDob', 'Please enter your Date of Birth (DOB) as optional input or in Advanced Mode to compute driver, conductor, and birth grid compatibility with this mobile number.')}
               </p>
             </div>
           </div>
@@ -577,24 +1044,24 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
           {(() => {
             const rating = getScoreRating(coreScore);
             return (
-              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300">
+              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300 font-sans">
                 <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-[#D97706]/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">Overall Mobile Alignment</span>
+                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">{getDT('overallMobileAlignment', 'Overall Mobile Alignment')}</span>
                     <span className={`px-2.5 py-0.5 text-[9px] font-mono font-bold rounded-full border ${rating.colorClass}`}>
-                      {rating.label}
+                      {getRatingTranslation(rating.label)}
                     </span>
                   </div>
                   
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl md:text-5xl font-cinzel font-black text-[#1F2937]">{coreScore}%</span>
-                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F8F4EF] px-2 py-0.5 rounded">Resonance</span>
+                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F8F4EF] px-2 py-0.5 rounded">{getDT('resonance', 'Resonance')}</span>
                   </div>
                   
                   <p className="text-xs text-[#6B7280] leading-relaxed">
-                    The absolute Chaldean numerical alignment of your combined digit totals with your birthday energy grids.
+                    {getDT('overallAlignmentDesc', 'The absolute Chaldean numerical alignment of your combined digit totals with your birthday energy grids.')}
                   </p>
                 </div>
                 
@@ -606,8 +1073,8 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                     ></div>
                   </div>
                   <div className="flex justify-between text-[8px] font-mono text-[#9CA3AF] uppercase">
-                    <span>Vedic Sepharial</span>
-                    <span>Score: {coreScore}/100</span>
+                    <span>{getDT('vedicSepharial', 'Vedic Sepharial')}</span>
+                    <span>{getDT('score', 'Score')}: {coreScore}/100</span>
                   </div>
                 </div>
               </div>
@@ -618,24 +1085,24 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
           {(() => {
             const rating = getScoreRating(wealthScore);
             return (
-              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300">
+              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300 font-sans">
                 <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-amber-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">Money Attraction Score</span>
+                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">{getDT('moneyAttractionScore', 'Money Attraction Score')}</span>
                     <span className={`px-2.5 py-0.5 text-[9px] font-mono font-bold rounded-full border ${rating.colorClass}`}>
-                      {rating.label}
+                      {getRatingTranslation(rating.label)}
                     </span>
                   </div>
                   
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl md:text-5xl font-cinzel font-black text-[#1F2937]">{wealthScore}%</span>
-                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">Abundance</span>
+                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">{getDT('abundance', 'Abundance')}</span>
                   </div>
                   
                   <p className="text-xs text-[#6B7280] leading-relaxed">
-                    Evaluates the status of financial multipliers: Mercury (5), Venus (6), and Saturn (8) in prominent focal cells.
+                    {getDT('moneyScoreDesc', 'Evaluates the status of financial multipliers: Mercury (5), Venus (6), and Saturn (8) in prominent focal cells.')}
                   </p>
                 </div>
                 
@@ -647,8 +1114,8 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                     ></div>
                   </div>
                   <div className="flex justify-between text-[8px] font-mono text-[#9CA3AF] uppercase">
-                    <span>Lal Kitab Prosperity</span>
-                    <span>Score: {wealthScore}/100</span>
+                    <span>{getDT('lalKitabProsperity', 'Lal Kitab Prosperity')}</span>
+                    <span>{getDT('score', 'Score')}: {wealthScore}/100</span>
                   </div>
                 </div>
               </div>
@@ -659,24 +1126,24 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
           {(() => {
             const rating = getScoreRating(careerScore);
             return (
-              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300">
+              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300 font-sans">
                 <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">Career & Drive Command</span>
+                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">{getDT('careerDriveCommand', 'Career & Drive Command')}</span>
                     <span className={`px-2.5 py-0.5 text-[9px] font-mono font-bold rounded-full border ${rating.colorClass}`}>
-                      {rating.label}
+                      {getRatingTranslation(rating.label)}
                     </span>
                   </div>
                   
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl md:text-5xl font-cinzel font-black text-[#1F2937]">{careerScore}%</span>
-                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">Authority</span>
+                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">{getDT('authority', 'Authority')}</span>
                   </div>
                   
                   <p className="text-xs text-[#6B7280] leading-relaxed">
-                    Measures leadership resonance based on Sun (1), Saturn (8), and Mars (9) combinations inside your numbers.
+                    {getDT('careerScoreDesc', 'Measures leadership resonance based on Sun (1), Saturn (8), and Mars (9) combinations inside your numbers.')}
                   </p>
                 </div>
                 
@@ -688,8 +1155,8 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                     ></div>
                   </div>
                   <div className="flex justify-between text-[8px] font-mono text-[#9CA3AF] uppercase">
-                    <span>Karma Alignment</span>
-                    <span>Score: {careerScore}/100</span>
+                    <span>{getDT('karmaAlignment', 'Karma Alignment')}</span>
+                    <span>{getDT('score', 'Score')}: {careerScore}/100</span>
                   </div>
                 </div>
               </div>
@@ -700,24 +1167,24 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
           {(() => {
             const rating = getScoreRating(relationshipScore);
             return (
-              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300">
+              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300 font-sans">
                 <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-rose-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">Relationship Harmony</span>
+                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">{getDT('relationshipHarmony', 'Relationship Harmony')}</span>
                     <span className={`px-2.5 py-0.5 text-[9px] font-mono font-bold rounded-full border ${rating.colorClass}`}>
-                      {rating.label}
+                      {getRatingTranslation(rating.label)}
                     </span>
                   </div>
                   
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl md:text-5xl font-cinzel font-black text-[#1F2937]">{relationshipScore}%</span>
-                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">Aura Sync</span>
+                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">{getDT('auraSync', 'Aura Sync')}</span>
                   </div>
                   
                   <p className="text-xs text-[#6B7280] leading-relaxed">
-                    Evaluates relationship stability based on Moon (2) and Venus (6) support, penalizing for hostile digit pairs.
+                    {getDT('relationshipScoreDesc', 'Evaluates relationship stability based on Moon (2) and Venus (6) support, penalizing for hostile digit pairs.')}
                   </p>
                 </div>
                 
@@ -729,8 +1196,8 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                     ></div>
                   </div>
                   <div className="flex justify-between text-[8px] font-mono text-[#9CA3AF] uppercase">
-                    <span>Mitra planetary grid</span>
-                    <span>Score: {relationshipScore}/100</span>
+                    <span>{getDT('mitraPlanetaryGrid', 'Mitra planetary grid')}</span>
+                    <span>{getDT('score', 'Score')}: {relationshipScore}/100</span>
                   </div>
                 </div>
               </div>
@@ -741,24 +1208,24 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
           {(() => {
             const rating = getScoreRating(commScore);
             return (
-              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300">
+              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300 font-sans">
                 <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-purple-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">Communication Strength</span>
+                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">{getDT('communicationStrength', 'Communication Strength')}</span>
                     <span className={`px-2.5 py-0.5 text-[9px] font-mono font-bold rounded-full border ${rating.colorClass}`}>
-                      {rating.label}
+                      {getRatingTranslation(rating.label)}
                     </span>
                   </div>
                   
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl md:text-5xl font-cinzel font-black text-[#1F2937]">{commScore}%</span>
-                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">Expression</span>
+                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">{getDT('expression', 'Expression')}</span>
                   </div>
                   
                   <p className="text-xs text-[#6B7280] leading-relaxed">
-                    Measures voice resonance, marketing clarity, and defensive dialog bridging using Mercury (5) weightings.
+                    {getDT('communicationScoreDesc', 'Measures voice resonance, marketing clarity, and defensive dialog bridging using Mercury (5) weightings.')}
                   </p>
                 </div>
                 
@@ -770,8 +1237,8 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                     ></div>
                   </div>
                   <div className="flex justify-between text-[8px] font-mono text-[#9CA3AF] uppercase">
-                    <span>Budh & Chandra Node</span>
-                    <span>Score: {commScore}/100</span>
+                    <span>{getDT('budhChandraNode', 'Budh & Chandra Node')}</span>
+                    <span>{getDT('score', 'Score')}: {commScore}/100</span>
                   </div>
                 </div>
               </div>
@@ -782,24 +1249,24 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
           {(() => {
             const rating = getScoreRating(stabilityScore);
             return (
-              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300">
+              <div className="rounded-3xl border border-[#D97706]/15 hover:border-[#D97706]/35 p-6 bg-white shadow-sm flex flex-col justify-between text-left relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300 font-sans">
                 <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">Stability & Foundations</span>
+                    <span className="text-[9px] font-mono text-[#6B7280] uppercase tracking-widest block font-bold">{getDT('stabilityFoundations', 'Stability & Foundations')}</span>
                     <span className={`px-2.5 py-0.5 text-[9px] font-mono font-bold rounded-full border ${rating.colorClass}`}>
-                      {rating.label}
+                      {getRatingTranslation(rating.label)}
                     </span>
                   </div>
                   
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl md:text-5xl font-cinzel font-black text-[#1F2937]">{stabilityScore}%</span>
-                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">Grounding</span>
+                    <span className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider bg-[#F2E8DC]/40 px-2 py-0.5 rounded">{getDT('grounding', 'Grounding')}</span>
                   </div>
                   
                   <p className="text-xs text-[#6B7280] leading-relaxed">
-                    Evaluates life anchors, financial discipline, resistance to debts, and safety nets from Saturn (8) forces.
+                    {getDT('stabilityScoreDesc', 'Evaluates life anchors, financial discipline, resistance to debts, and safety nets from Saturn (8) forces.')}
                   </p>
                 </div>
                 
@@ -811,8 +1278,8 @@ const MobileDiagnosticsPanel: React.FC<MobileDiagnosticsPanelProps> = ({
                     ></div>
                   </div>
                   <div className="flex justify-between text-[8px] font-mono text-[#9CA3AF] uppercase">
-                    <span>Shani & Rahu Balance</span>
-                    <span>Score: {stabilityScore}/100</span>
+                    <span>{getDT('shaniRahuBalance', 'Shani & Rahu Balance')}</span>
+                    <span>{getDT('score', 'Score')}: {stabilityScore}/100</span>
                   </div>
                 </div>
               </div>
