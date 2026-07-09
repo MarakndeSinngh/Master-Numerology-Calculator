@@ -61,6 +61,7 @@ export interface SignatureDossier {
     readability: number;
     pressure: number;
   };
+  rawMetrics?: VisualMetrics;
 }
 
 export function generateLocalSignatureReport(
@@ -277,6 +278,7 @@ export function generateLocalSignatureReport(
       penType,
       direction
     },
-    confidenceScores: metrics.confidenceScores
+    confidenceScores: metrics.confidenceScores,
+    rawMetrics: metrics
   };
 }
