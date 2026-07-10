@@ -2187,7 +2187,7 @@ You must return the data in the EXACT JSON format matching this schema:
     const cPlanet = planetMap[conductor] || planetMap[5];
     const nPlanet = planetMap[nameNumber % 9 || 9] || planetMap[6];
 
-    return `# AI GRAND NUMEROLOGY LIFE REPORT & VEDIC BLUEPRINT
+    return `# LEO FAMILY NUMEROLOGY LIFE REPORT & VEDIC BLUEPRINT
 **Prepared for**: ${name} (Resonating Name: ${pName})
 **Vedic Registry ID**: LFN-${Math.floor(100000 + Math.random() * 900000)}
 **Date of Birth**: ${dobStr}
