@@ -120,7 +120,7 @@ export const TRANSLATIONS = {
     'nav.occult': 'Occult Science',
     'nav.reset': 'Reset Profile',
     'nav.loadDemo': '🔮 Load Expert Pattern',
-    'tab.aiConsultation': 'AI Grand Consultation Hub 🔮',
+    'tab.aiConsultation': 'LEO FAMILY Consultation Hub 🔮',
     'tab.mobileNumerology': 'Mobile Numerology',
     'tab.loshuGrid': 'Vedic Lo Shu Grid',
     'tab.marriageCompatibility': 'Marriage Synastry',

@@ -2200,7 +2200,7 @@ You must return the data in the EXACT JSON format matching this schema:
 
 ## 1. Executive Summary
 
-Welcome to your comprehensive **AI Grand Numerology Consultation**. This high-level, majestic summary synthesizes your birth date, name frequencies, and planetary positions under the ancient Chaldean and Vedic sciences. By looking at the core alignment of your **Driver (Mulank) Number ${driver}** and your **Conductor (Bhagyank) Number ${conductor}**, we unlock the energetic framework governing your current material reality.
+Welcome to your comprehensive **LEO FAMILY Numerology Consultation**. This high-level, majestic summary synthesizes your birth date, name frequencies, and planetary positions under the ancient Chaldean and Vedic sciences. By looking at the core alignment of your **Driver (Mulank) Number ${driver}** and your **Conductor (Bhagyank) Number ${conductor}**, we unlock the energetic framework governing your current material reality.
 
 Your life is not a series of random events, but a beautifully choreographed symphony of numerical vibrations. The Sun, Moon, and planetary transits continually shape your subconscious patterns and material outcomes. Your Driver Number ${driver} governs your inner self-identity, instant behaviors, and core temperament, while your Conductor Number ${conductor} rules your ultimate destiny path, life purpose, and karmic checkpoints.
 
